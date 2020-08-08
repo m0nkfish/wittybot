@@ -2,9 +2,9 @@
   "name": "wittybot",
   "description": "Example",
   "version": "0.0.0",
-  "main": "dist/index.js",
+  "main": "dist/bot.js",
   "scripts": {
-    "start": "node bot.js",
+    "start": "node dist/bot.js",
     "build": "tsc",
     "postinstall": "npm run build"
   },
