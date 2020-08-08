@@ -5,13 +5,13 @@ const client = new Discord.Client();
 client.on('ready', () => {
   console.log('ready!')
   
-  const channel = client.channels.cache.find(ch => ch.name === 'wittybot');
+  const channel = client.channels.get(`wittybot`)
   if (channel) {
-    channel.send(`deployment successful`);
+    channel.send(`deployment successful`)
   }
 });
 
-client.on('message', message => {
+client.on('message', (message: any) => {
   if (message.content === 'ping') {
     console.log('received ping')
     message.reply('pong');
