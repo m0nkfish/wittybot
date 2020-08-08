@@ -4,6 +4,11 @@ const client = new Discord.Client();
 
 client.on('ready', () => {
   console.log('ready!')
+  
+  const channel = client.guild.channels.cache.find(ch => ch.name === 'wittybot');
+  if (channel) {
+    channel.send(`deployment successful`);
+  }
 });
 
 client.on('message', message => {
