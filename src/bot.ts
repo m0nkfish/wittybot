@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { createEntropy, MersenneTwister19937, pick, shuffle, uuid4 } from 'random-js'
+import { createEntropy, MersenneTwister19937, pick, shuffle } from 'random-js'
 
 const placeholder = '_____'
 const prompts = [
