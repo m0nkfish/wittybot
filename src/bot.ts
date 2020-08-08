@@ -1,14 +1,9 @@
-const Discord = require('discord.js');
+import * as Discord from 'discord.js'
 
 const client = new Discord.Client();
 
 client.on('ready', () => {
   console.log('ready!')
-  
-  const channel = client.channels.get(`wittybot`)
-  if (channel) {
-    channel.send(`deployment successful`)
-  }
 });
 
 client.on('message', (message: any) => {
