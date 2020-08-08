@@ -75,3 +75,6 @@ jspm_packages
 
 # Heroku Env
 .env
+
+# Dist
+dist
