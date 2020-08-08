@@ -56,7 +56,7 @@ client.on('message', message => {
       if (state.type !== 'inactive') {
         message.channel.send(`There is already a game active, fool`)
       } else {
-        message.channel.send(`Prepare yourselves for witticisms galore! Send submissions by direct message in the next 10 seconds`)
+        message.channel.send(`Prepare yourselves for witticisms galore! Send submissions by direct message in the next 30 seconds`)
         const prompt = choosePrompt()
         message.channel.send(`PROMPT: ${prompt}`)
         state = { type: 'prompting', prompt, submissions: [] }
@@ -95,7 +95,7 @@ client.on('message', message => {
               }, 10000)
             }
           }
-        }, 10000)
+        }, 30000)
       }
     } else {
       message.channel.send(`wittybot only works in #wittybot`)
