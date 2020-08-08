@@ -81,7 +81,7 @@ client.on('message', message => {
                   message.channel.send(`Voting over! Scores:`)
                   message.channel.send(`PROMPT: ${prompt}`)
                   const withVotes = [...state.submissions.map(x => ({ ...x, votes: [] as Discord.User[]}))]
-                  state.votes.forEach(v => withVotes[v.index].votes.push(v.user))
+                  state.votes.forEach(v => withVotes[v.index - 1].votes.push(v.user))
                   withVotes.sort((a, b) => a.votes.length - b.votes.length)
                   withVotes.forEach(x => {
                     message.channel.send(`${x.text} (${x.votes.length} votes)`)
