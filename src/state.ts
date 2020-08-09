@@ -100,10 +100,12 @@ export class SubmissionState implements GameState {
       .setTitle(`Time's up!`)
       .setDescription([
         `Vote for your favourite by DMing <@${this.context.client.user?.id}> with the entry number.`,
+        ``,
         `Complete the following sentence:`,
         `**${this.prompt}**`,
+        ``,
+        ...shuffled.map((x, i) => `${i + 1}. ${x.submission}`)
       ].join('\n'))
-      .addFields(shuffled.map((x, i) => ({ name: (i + 1), value: x.submission })))
 
     return CompositeAction([
       NewState(VotingState.begin(this.context, this.channel, this.prompt, shuffled)),
@@ -173,9 +175,23 @@ export class VotingState implements GameState {
     new VotingState(this.context, this.channel, this.prompt, this.submissions, new Map(this.votes).set(user, entry))
 
   finish = () => {
-    const withVotes = [...this.submissions.map(x => ({ ...x, votes: [] as Discord.User[] }))]
+    const withVotes = [...this.submissions.map(x => ({ ...x, votes: [] as Discord.User[], voted: false }))]
     this.votes.forEach((entry, user) => withVotes[entry - 1].votes.push(user))
-    withVotes.sort((a, b) => a.votes.length - b.votes.length)
+    withVotes.forEach(x => {
+      if (this.votes.has(x.user)) {
+        x.voted = true
+      }
+    })
+
+    withVotes.sort((a, b) => {
+      if (a.voted && !b.voted) {
+        return 1
+      }
+      if (!a.voted && b.voted) {
+        return -1
+      }
+      return a.votes.length - b.votes.length
+    })
 
     const embed = new Discord.MessageEmbed()
       .setTitle(`The votes are in!`)
@@ -183,7 +199,10 @@ export class VotingState implements GameState {
         `Complete the following sentence:`,
         `**${this.prompt}**`,
       ])
-      .addFields(withVotes.map(x => ({ name: `${x.user.username} with ${x.votes.length} votes`, value: x.submission })))
+      .addFields(withVotes.map(x =>
+        x.voted
+          ? { name: `${x.user.username} with ${x.votes.length} votes`, value: x.submission }
+          : { name: `${x.user.username} who didn't vote`, value: x.submission }))
 
     return CompositeAction([
       EmbedMessage(this.channel, embed),
