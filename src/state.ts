@@ -14,6 +14,7 @@ export type GameState = {
   receive(command: Command): Action | undefined
 }
 
+/** Default state, no active game */
 export class IdleState implements GameState {
   constructor(readonly context: Context) { }
 
@@ -46,6 +47,7 @@ export class IdleState implements GameState {
   }
 }
 
+/** Prompt decided, submissions being accepted */
 export class SubmissionState implements GameState {
 
   constructor(
@@ -107,6 +109,7 @@ export class SubmissionState implements GameState {
   static begin = (context: Context, channel: Discord.TextChannel, prompt: Prompt) => new SubmissionState(context, channel, prompt, new Map())
 }
 
+/** Submission phase complete; voting stage */
 export class VotingState implements GameState {
 
   constructor(
@@ -160,7 +163,6 @@ export class VotingState implements GameState {
     const embed = new Discord.MessageEmbed()
       .setTitle(`The votes are in!`)
       .setDescription([
-        `In order of most to least votes:`,
         `Complete the following sentence:`,
         `**${this.prompt}**`,
       ])
