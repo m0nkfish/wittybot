@@ -12,7 +12,7 @@ client.on('ready', () => {
   channel.send(`deployment successful`)
 });
 
-const engine = new Engine({ client, config: { submitDurationSec: 60, voteDurationSec: 30 } })
+const engine = new Engine({ client, config: { submitDurationSec: 60, voteDurationSec: 30, testMode: true } })
 engine.run()
 
 client.login(process.env.BOT_TOKEN);

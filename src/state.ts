@@ -87,7 +87,7 @@ export class SubmissionState implements GameState {
     new SubmissionState(this.context, this.channel, this.prompt, new Map(this.submissions).set(user, submission))
 
   finish = (): Action => {
-    if (this.submissions.size < 3) {
+    if (!this.context.config.testMode && this.submissions.size < 3) {
       return CompositeAction([
         Message(this.channel, `Not enough submissions to continue`),
         NewState(new IdleState(this.context))
@@ -147,7 +147,7 @@ export class VotingState implements GameState {
       }
 
       const submission = this.submissions[entry - 1]
-      if (submission.user === user) {
+      if (!this.context.config.testMode && submission.user === user) {
         return Message(user.dmChannel, `You cannot vote for your own entry`)
       }
 
