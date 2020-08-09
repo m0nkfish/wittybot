@@ -4,16 +4,10 @@ import { Action, CompositeAction, NewState, DelayedAction, EmbedMessage, FromSta
 import { choosePrompt } from './prompts';
 import { shuffle } from 'random-js';
 import { mt } from './random';
+import { Context } from './context';
 
 type Prompt = string
 type Submission = { user: Discord.User, submission: string }
-type Context = {
-  client: Discord.Client
-  config: {
-    submitDurationSec: 60
-    voteDurationSec: 30
-  }
-}
 
 export type GameState = {
   interpreter(message: Discord.Message): Command | null
