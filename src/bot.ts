@@ -34,6 +34,7 @@ type Command =
 
 
 const Message = Case('post-message', (channel: Discord.TextChannel | Discord.DMChannel, message: string) => ({ channel, message }))
+const EmbedMessage = Case('embed-message', (channel: Discord.TextChannel | Discord.DMChannel, embed: Discord.MessageEmbed) => ({ channel, embed }))
 const NewState = Case('new-state', (newState: GameState) => ({ newState }))
 const CompositeAction = Case('composite-action', (actions: Action[]) => ({ actions }))
 const DelayedAction = Case('delayed-action', (delayMs: number, action: Action) => ({ delayMs, action }))
@@ -42,6 +43,7 @@ const NullAction = Case('null-action', () => ({}))
 
 type Action =
 | ReturnType<typeof Message>
+| ReturnType<typeof EmbedMessage>
 | ReturnType<typeof NewState>
 | ReturnType<typeof NullAction>
 | Case<'composite-action', { actions: Action[] }>
@@ -75,12 +77,18 @@ class IdleState implements GameState {
 
   static begin = (channel: Discord.TextChannel) => {
     const prompt = choosePrompt()
+    const embed = new Discord.MessageEmbed()
+      .setTitle('A new round begins!')
+      .setDescription([
+        `Complete the following sentence:`,
+        `**${prompt}**`,
+        `You have ${config.submissionDurationSec} seconds to come up with an answer; submit by DMing <@${client.user?.id}>`
+      ].join('\n'))
+      
     return CompositeAction([
       NewState(SubmissionState.begin(channel, prompt)),
       DelayedAction(config.submissionDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState ? state.finish() : NullAction())),
-      Message(channel, `A new round begins!`),
-      Message(channel, `Complete this sentence: ${prompt}`),
-      Message(channel, `You have ${config.submissionDurationSec} seconds to come up with an answer; submit by DMing ${client.user?.username}`),
+      EmbedMessage(channel, embed)
     ])
   }
 }
@@ -104,7 +112,7 @@ class SubmissionState implements GameState {
         messages.push(Message(command.user.dmChannel, `Replacement submission accepted`))
       } else {
         messages.push(Message(command.user.dmChannel, `Submission accepted`))
-        messages.push(Message(this.channel, `Submission received from ${command.user.username}`))
+        messages.push(Message(this.channel, `Submission received from <@${command.user.id}>`))
       }
       return CompositeAction([
         ...messages,
@@ -125,14 +133,20 @@ class SubmissionState implements GameState {
     }
 
     const shuffled = shuffle(mt, Array.from(this.submissions).map(([user, submission]) => ({ user, submission })))
-    const entryMessages=  shuffled.map((x, i) => Message(this.channel, `${i+1}: ${x.submission}`))
+
+    const embed = new Discord.MessageEmbed()
+      .setTitle(`Time's up!`)
+      .setDescription([
+        `Vote for your favourite by DMing <@${client.user?.id}> with the entry number.`,
+        `Complete the following sentence:`,
+        `**${this.prompt}**`,
+      ].join('\n'))
+      .addFields(shuffled.map((x, i) => ({ name: i, value: x })))
 
     return CompositeAction([
       NewState(VotingState.begin(this.channel, this.prompt, shuffled)),
       DelayedAction(config.votingDurationSec * 1000, FromStateAction(state => state instanceof VotingState ? state.finish() : NullAction())),
-      Message(this.channel, `Time's up! Vote for your favourite by DMing ${client.user?.username} with the entry number. You have ${config.votingDurationSec} seconds to vote`),
-      Message(this.channel, `${this.prompt}`),
-      ...entryMessages,
+      EmbedMessage(this.channel, embed)
     ])
   }
 
@@ -188,9 +202,17 @@ class VotingState implements GameState {
     this.votes.forEach((entry, user) => withVotes[entry - 1].votes.push(user))
     withVotes.sort((a, b) => a.votes.length - b.votes.length)
 
+    const embed = new Discord.MessageEmbed()
+      .setTitle(`The votes are in!`)
+      .setDescription([
+        `In order of most to least votes:`,
+        `Complete the following sentence:`,
+        `**${this.prompt}**`,
+      ])
+      .addFields(withVotes.map(x => ({ name: `<@${x.user.id}> with ${x.votes.length} votes`, value: x.submission })))
+
     return CompositeAction([
-      Message(this.channel, `Voting complete! In order of most to least votes:`),
-      ...withVotes.map(x => Message(this.channel, `${x.submission} (${x.votes.length} from ${x.votes.map(v => v.username).join('; ')}})`)),
+      EmbedMessage(this.channel, embed),
       NewState(new IdleState())
     ])
   }
@@ -219,6 +241,8 @@ function interpret(action: Action) {
     state = action.newState
   } else if (action.type === 'post-message') {
     action.channel.send(action.message)
+  } else if (action.type === 'embed-message') {
+    action.channel.send({ embed: action.embed.setColor('#A4218A') })
   }
 }
 
