@@ -12,6 +12,12 @@ client.on('ready', () => {
   channel.send(`deployment successful`)
 });
 
+client.on('messageDelete', msg => {
+  if (msg.author === client.user && msg.channel instanceof Discord.TextChannel) {
+    msg.channel.send('Someone deleted a wittybot message from this channel...!')
+  }
+})
+
 const engine = new Engine({ client, config: { submitDurationSec: 60, voteDurationSec: 30 } })
 engine.run()
 
