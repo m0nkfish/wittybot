@@ -1,3 +1,10 @@
+import { pick } from 'random-js';
+import { mt } from './random';
+
+export function choosePrompt() {
+  return pick(mt, prompts)
+}
+
 export const prompts = [
   "_____ gives me nightmares.",
   "_____ is better than sex...",
