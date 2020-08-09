@@ -168,7 +168,7 @@ class VotingState implements GameState {
         return Message(user.dmChannel, `You must have submitted an entry in order to vote`)
       }
 
-      const submission = this.submissions[entry]
+      const submission = this.submissions[entry - 1]
       if (submission.user === user) {
         return Message(user.dmChannel, `You cannot vote for your own entry`)
       }
