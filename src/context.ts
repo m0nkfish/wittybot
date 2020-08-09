@@ -6,5 +6,6 @@ export type Context = {
     submitDurationSec: number
     voteDurationSec: number
     testMode?: boolean
+    autoRun?: boolean
   }
 }

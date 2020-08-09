@@ -29,11 +29,11 @@ export class IdleState implements GameState {
 
   receive(command: Command): Action | undefined {
     if (command.type === 'begin') {
-      return IdleState.begin(this.context, command.channel)
+      return IdleState.startRound(this.context, command.channel)
     }
   }
 
-  static begin = (context: Context, channel: Discord.TextChannel) => {
+  static startRound = (context: Context, channel: Discord.TextChannel) => {
     const prompt = choosePrompt()
     const embed = new Discord.MessageEmbed()
       .setTitle('A new round begins!')
@@ -204,9 +204,13 @@ export class VotingState implements GameState {
           ? { name: `${x.user.username} with ${x.votes.length} votes`, value: x.submission }
           : { name: `${x.user.username} who didn't vote`, value: x.submission }))
 
+    const nextState = this.context.config.autoRun
+        ? IdleState.startRound(this.context, this.channel)
+        : NewState(new IdleState(this.context))
+
     return CompositeAction([
       EmbedMessage(this.channel, embed),
-      NewState(new IdleState(this.context))
+      nextState
     ])
   }
 
