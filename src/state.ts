@@ -185,12 +185,12 @@ export class VotingState implements GameState {
 
     withVotes.sort((a, b) => {
       if (a.voted && !b.voted) {
-        return 1
-      }
-      if (!a.voted && b.voted) {
         return -1
       }
-      return a.votes.length - b.votes.length
+      if (!a.voted && b.voted) {
+        return 1
+      }
+      return b.votes.length - a.votes.length
     })
 
     const embed = new Discord.MessageEmbed()
