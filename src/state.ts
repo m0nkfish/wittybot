@@ -103,7 +103,7 @@ export class SubmissionState implements GameState {
         `Complete the following sentence:`,
         `**${this.prompt}**`,
       ].join('\n'))
-      .addFields(shuffled.map((x, i) => ({ name: i, value: x })))
+      .addFields(shuffled.map((x, i) => ({ name: (i + 1), value: x.submission })))
 
     return CompositeAction([
       NewState(VotingState.begin(this.context, this.channel, this.prompt, shuffled)),
@@ -183,7 +183,7 @@ export class VotingState implements GameState {
         `Complete the following sentence:`,
         `**${this.prompt}**`,
       ])
-      .addFields(withVotes.map(x => ({ name: `<@${x.user.id}> with ${x.votes.length} votes`, value: x.submission })))
+      .addFields(withVotes.map(x => ({ name: `${x.user.username} with ${x.votes.length} votes`, value: x.submission })))
 
     return CompositeAction([
       EmbedMessage(this.channel, embed),
