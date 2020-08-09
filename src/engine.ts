@@ -4,7 +4,7 @@ import { Action } from './actions';
 
 export class Engine {
   state: GameState
-  
+
   constructor(readonly context: Context) {
     this.state = new IdleState(context)
   }
@@ -13,11 +13,6 @@ export class Engine {
     this.context.client.on('message', message => {
       if (message.author.bot) {
         return
-      }
-
-      if (message.content === 'ping') {
-        console.log('received ping')
-        message.reply('pong');
       }
 
       const command = this.state.interpreter(message)
