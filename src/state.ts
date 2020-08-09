@@ -2,7 +2,7 @@ import * as Discord from 'discord.js'
 import { Command, Begin, Submit, Vote } from './commands';
 import { Action, CompositeAction, NewState, DelayedAction, EmbedMessage, FromStateAction, NullAction, Message, UpdateState } from './actions';
 import { choosePrompt } from './prompts';
-import { shuffle } from 'random-js';
+import { shuffle, uuid4 } from 'random-js';
 import { mt } from './random';
 import { Context } from './context';
 
@@ -12,6 +12,10 @@ type Submission = { user: Discord.User, submission: string }
 export type GameState = {
   interpreter(message: Discord.Message): Command | null
   receive(command: Command): Action | undefined
+}
+
+type GameContext = Context & {
+  gameId: string
 }
 
 /** Default state, no active game */
@@ -39,9 +43,11 @@ export class IdleState implements GameState {
         `You have ${context.config.submitDurationSec} seconds to come up with an answer; submit by DMing <@${context.client.user?.id}>`
       ].join('\n'))
 
+    const gameId = uuid4(mt)
+
     return CompositeAction([
-      NewState(SubmissionState.begin(context, channel, prompt)),
-      DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState ? state.finish() : NullAction())),
+      NewState(SubmissionState.begin({ ...context, gameId }, channel, prompt)),
+      DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState && state.context.gameId === gameId ? state.finish() : NullAction())),
       EmbedMessage(channel, embed)
     ])
   }
@@ -51,7 +57,7 @@ export class IdleState implements GameState {
 export class SubmissionState implements GameState {
 
   constructor(
-    readonly context: Context,
+    readonly context: GameContext,
     readonly channel: Discord.TextChannel,
     readonly prompt: Prompt,
     readonly submissions: Map<Discord.User, string>) { }
@@ -101,19 +107,19 @@ export class SubmissionState implements GameState {
 
     return CompositeAction([
       NewState(VotingState.begin(this.context, this.channel, this.prompt, shuffled)),
-      DelayedAction(this.context.config.voteDurationSec * 1000, FromStateAction(state => state instanceof VotingState ? state.finish() : NullAction())),
+      DelayedAction(this.context.config.voteDurationSec * 1000, FromStateAction(state => state instanceof VotingState && state.context.gameId === this.context.gameId ? state.finish() : NullAction())),
       EmbedMessage(this.channel, embed)
     ])
   }
 
-  static begin = (context: Context, channel: Discord.TextChannel, prompt: Prompt) => new SubmissionState(context, channel, prompt, new Map())
+  static begin = (context: GameContext, channel: Discord.TextChannel, prompt: Prompt) => new SubmissionState(context, channel, prompt, new Map())
 }
 
 /** Submission phase complete; voting stage */
 export class VotingState implements GameState {
 
   constructor(
-    readonly context: Context,
+    readonly context: GameContext,
     readonly channel: Discord.TextChannel,
     readonly prompt: Prompt,
     readonly submissions: Submission[],
@@ -147,10 +153,21 @@ export class VotingState implements GameState {
 
       return CompositeAction([
         Message(user.dmChannel, `Vote recorded for entry ${entry}: '${submission.submission}'`),
-        UpdateState(state => state instanceof VotingState ? state.withVote(user, entry) : state)
+        FromStateAction(state => {
+          if (state instanceof VotingState && state.context.gameId === this.context.gameId) {
+            const newState = state.withVote(user, entry)
+            return newState.allVotesIn()
+              ? newState.finish()
+              : NewState(newState)
+          } else {
+            return NullAction()
+          }
+        })
       ])
     }
   }
+
+  allVotesIn = () => this.votes.size === this.submissions.length
 
   withVote = (user: Discord.User, entry: number) =>
     new VotingState(this.context, this.channel, this.prompt, this.submissions, new Map(this.votes).set(user, entry))
@@ -174,7 +191,7 @@ export class VotingState implements GameState {
     ])
   }
 
-  static begin = (context: Context, channel: Discord.TextChannel, prompt: Prompt, submissions: Submission[]) =>
+  static begin = (context: GameContext, channel: Discord.TextChannel, prompt: Prompt, submissions: Submission[]) =>
     new VotingState(context, channel, prompt, submissions, new Map())
 }
 
