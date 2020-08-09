@@ -1,32 +1,226 @@
 import * as Discord from 'discord.js'
 import { createEntropy, MersenneTwister19937, pick, shuffle } from 'random-js'
+import { prompts } from './prompts'
 
-const placeholder = '_____'
-const prompts = [
-  `a game of wittybot is sure to be ${placeholder}`,
-  `i feel witty, oh so witty, i feel witty and pretty and ${placeholder}`
-]
+type Prompt = string
+type Submission = { user: Discord.User, submission: string }
+
+const tryParseInt = (str: string) => {
+  try {
+    return Number.parseInt(str)
+  } catch {
+    return null
+  }
+}
+
+type Case<Key extends string, Res> = Res & { type: Key }
+const Case = <Key extends string, Args extends any[], Res>(type: Key, f: (...args: Args) => Res) => {
+  function ff(...args: Args) {
+    return {
+      ...f(...args),
+      type
+    }
+  }
+  return ff
+}
+
+const Begin = Case('begin', (user: Discord.User, channel: Discord.TextChannel) => ({ channel, user }))
+const Submit = Case('submit', (user: Discord.User, submission: string) => ({ user, submission }))
+const Vote = Case('vote', (user: Discord.User, entry: number) => ({ user, entry }))
+type Command =
+| ReturnType<typeof Begin>
+| ReturnType<typeof Submit>
+| ReturnType<typeof Vote>
+
+
+const Message = Case('post-message', (channel: Discord.TextChannel | Discord.DMChannel, message: string) => ({ channel, message }))
+const NewState = Case('new-state', (newState: GameState) => ({ newState }))
+const CompositeAction = Case('composite-action', (actions: Action[]) => ({ actions }))
+const DelayedAction = Case('delayed-action', (delayMs: number, action: Action) => ({ delayMs, action }))
+const FromStateAction = Case('from-state-action', (getAction: (state: GameState) => Action) => ({ getAction }))
+const NullAction = Case('null-action', () => ({}))
+
+type Action =
+| ReturnType<typeof Message>
+| ReturnType<typeof NewState>
+| ReturnType<typeof NullAction>
+| Case<'composite-action', { actions: Action[] }>
+| Case<'delayed-action', { delayMs: number, action: Action }>
+| Case<'from-state-action', { getAction: (state: GameState) => Action }>
+
+const UpdateState = (update: (state: GameState) => GameState) => FromStateAction(state => NewState(update(state)))
+
+type GameState = {
+  interpreter(message: Discord.Message): Command | null
+  receive(command: Command): Action | undefined
+}
+
+const config = {
+  submissionDurationSec: 60,
+  votingDurationSec: 60
+}
+class IdleState implements GameState {
+  constructor() {}
+
+  readonly interpreter = (message: Discord.Message) =>
+    message.channel instanceof Discord.TextChannel && message.content === "!witty"
+      ? Begin(message.author, message.channel)
+      : null
+
+  receive(command: Command): Action | undefined {
+    if (command.type === 'begin') {
+      return IdleState.begin(command.channel)
+    }
+  }
+
+  static begin = (channel: Discord.TextChannel) => {
+    const prompt = choosePrompt()
+    return CompositeAction([
+      NewState(SubmissionState.begin(channel, prompt)),
+      DelayedAction(config.submissionDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState ? state.finish() : NullAction())),
+      Message(channel, `A new round begins!`),
+      Message(channel, `Complete this sentence: ${prompt}`),
+      Message(channel, `You have ${config.submissionDurationSec} seconds to come up with an answer; submit by DMing ${client.user?.username}`),
+    ])
+  }
+}
+
+class SubmissionState implements GameState {
+
+  constructor(
+    readonly channel: Discord.TextChannel,
+    readonly prompt: Prompt,
+    readonly submissions: Map<Discord.User, string>) {}
+
+  interpreter = (message: Discord.Message) =>
+    message.channel instanceof Discord.DMChannel
+      ? Submit(message.author, message.content)
+      : null
+
+  receive(command: Command): Action | undefined {
+    if (command.type === 'submit') {
+      const messages: Action[] = []
+      if (this.submissions.has(command.user)) {
+        messages.push(Message(command.user.dmChannel, `Replacement submission accepted`))
+      } else {
+        messages.push(Message(command.user.dmChannel, `Submission accepted`))
+        messages.push(Message(this.channel, `Submission received from ${command.user.username}`))
+      }
+      return CompositeAction([
+        ...messages,
+        UpdateState(state => state instanceof SubmissionState ? state.withSubmission(command.user, command.submission) : state),
+      ])
+    }
+  }
+
+  withSubmission = (user: Discord.User, submission: string) => 
+    new SubmissionState(this.channel, this.prompt, new Map(this.submissions).set(user, submission))
+
+  finish = (): Action => {
+    if (this.submissions.size < 3) {
+      return CompositeAction([
+        Message(this.channel, `Not enough submissions to continue`),
+        NewState(new IdleState())
+      ])
+    }
+
+    const shuffled = shuffle(mt, Array.from(this.submissions).map(([user, submission]) => ({ user, submission })))
+    const entryMessages=  shuffled.map((x, i) => Message(this.channel, `${i+1}: ${x.submission}`))
+
+    return CompositeAction([
+      NewState(VotingState.begin(this.channel, this.prompt, shuffled)),
+      DelayedAction(config.votingDurationSec * 1000, FromStateAction(state => state instanceof VotingState ? state.finish() : NullAction())),
+      Message(this.channel, `Time's up! Vote for your favourite by DMing ${client.user?.username} with the entry number. You have ${config.votingDurationSec} seconds to vote`),
+      Message(this.channel, `${this.prompt}`),
+      ...entryMessages,
+    ])
+  }
+
+  static begin = (channel: Discord.TextChannel, prompt: Prompt) => new SubmissionState(channel, prompt, new Map())
+}
+
+class VotingState implements GameState {
+
+  constructor(
+    readonly channel: Discord.TextChannel,
+    readonly prompt: Prompt,
+    readonly submissions: Submission[],
+    readonly votes: Map<Discord.User, number>) { }
+
+  interpreter = (message: Discord.Message) => {
+    if (message.channel instanceof Discord.DMChannel) {
+      const entry = tryParseInt(message.content)
+      if (entry !== null) {
+        return Vote(message.author, entry)
+      }
+    }
+    return null
+  }
+
+  receive(command: Command): Action | undefined {
+    if (command.type === 'vote') {
+      const { entry, user } = command
+      if (entry < 1 || this.submissions.length < entry) {
+        return Message(user.dmChannel, `You must vote between 1 and ${this.submissions.length}`)
+      }
+
+      if (!this.submissions.some(x => x.user === user)) {
+        return Message(user.dmChannel, `You must have submitted an entry in order to vote`)
+      }
+
+      const submission = this.submissions[entry]
+      if (submission.user === user) {
+        return Message(user.dmChannel, `You cannot vote for your own entry`)
+      }
+
+      return CompositeAction([
+        Message(user.dmChannel, `Vote recorded for entry ${entry}: '${submission.submission}'`),
+        UpdateState(state => state instanceof VotingState ? state.withVote(user, entry) : state)
+      ])
+    }
+  }
+
+  withVote = (user: Discord.User, entry: number) =>
+    new VotingState(this.channel, this.prompt, this.submissions, new Map(this.votes).set(user, entry))
+
+  finish = () => {
+    const withVotes = [...this.submissions.map(x => ({ ...x, votes: [] as Discord.User[] }))]
+    this.votes.forEach((entry, user) => withVotes[entry - 1].votes.push(user))
+    withVotes.sort((a, b) => a.votes.length - b.votes.length)
+
+    return CompositeAction([
+      Message(this.channel, `Voting complete! In order of most to least votes:`),
+      ...withVotes.map(x => Message(this.channel, `${x.submission} (${x.votes.length} from ${x.votes.map(v => v.username).join('; ')}})`)),
+      NewState(new IdleState())
+    ])
+  }
+
+  static begin = (channel: Discord.TextChannel, prompt: Prompt, submissions: Submission[]) =>
+    new VotingState(channel, prompt, submissions, new Map())
+}
+
+
 const seed = createEntropy()
 const mt = MersenneTwister19937.seedWithArray(seed)
 function choosePrompt() {
   return pick(mt, prompts)
 }
 
-type Prompt = string
-type Submission = {
-  text: string
-  user: Discord.User
-}
-type Vote = {
-  index: number
-  user: Discord.User
-}
+let state: GameState = new IdleState()
 
-type State =
-| { type: 'inactive' }
-| { type: 'prompting', prompt: Prompt, submissions: Submission[] }
-| { type: 'voting', prompt: Prompt, submissions: Submission[], votes: Vote[] }
-let state: State = { type: 'inactive' }
+function interpret(action: Action) {
+  if (action.type === 'composite-action') {
+    action.actions.forEach(interpret);
+  } else if (action.type === 'delayed-action') {
+    setTimeout(() => interpret(action.action), action.delayMs)
+  } else if (action.type === 'from-state-action') {
+    interpret(action.getAction(state))
+  } else if (action.type === 'new-state') {
+    state = action.newState
+  } else if (action.type === 'post-message') {
+    action.channel.send(action.message)
+  }
+}
 
 const isWittyChan = (ch: Discord.Channel) => ch instanceof Discord.TextChannel && ch.name === 'wittybot'
 
@@ -51,82 +245,16 @@ client.on('message', message => {
     message.reply('pong');
   }
 
-  if (message.content === '!witty') {
-    if (isWittyChan(message.channel)) {
-      if (state.type !== 'inactive') {
-        message.channel.send(`There is already a game active, fool`)
-      } else {
-        message.channel.send(`Prepare yourselves for witticisms galore! Send submissions by direct message in the next 30 seconds`)
-        const prompt = choosePrompt()
-        message.channel.send(`PROMPT: ${prompt}`)
-        state = { type: 'prompting', prompt, submissions: [] }
-        setTimeout(() => {
-          if (state.type !== 'prompting') {
-            console.log(`aborting game, incorrect state ${state.type} found`)
-            state = { type: 'inactive' }
-          } else {
-            if (state.submissions.length < 1) {
-              message.channel.send(`No submissions, cancelling game`)
-              state = { type: 'inactive' }
-            } else {
-              const submissions = shuffle(mt, state.submissions)
-              state = { type: 'voting', prompt, submissions, votes: [] }
-              message.channel.send(`Time's up! Vote now from the options below by sending a direct message with the submission's number`)
-              message.channel.send(`PROMPT: ${prompt}`)
-              submissions.forEach((s, i) => {
-                message.channel.send(`${i+1}: ${s.text}`)
-              })
-
-              setTimeout(() => {
-                if (state.type !== 'voting') {
-                  console.log(`aborting game, incorrect state ${state.type} found`)
-                  state = { type: 'inactive' }
-                } else {
-                  message.channel.send(`Voting over! Scores:`)
-                  message.channel.send(`PROMPT: ${prompt}`)
-                  const withVotes = [...state.submissions.map(x => ({ ...x, votes: [] as Discord.User[]}))]
-                  state.votes.forEach(v => withVotes[v.index - 1].votes.push(v.user))
-                  withVotes.sort((a, b) => a.votes.length - b.votes.length)
-                  withVotes.forEach(x => {
-                    message.channel.send(`${x.text} (${x.votes.length} votes)`)
-                  })
-                  state = { type: 'inactive' }
-                }
-              }, 10000)
-            }
-          }
-        }, 30000)
-      }
-    } else {
-      message.channel.send(`wittybot only works in #wittybot`)
-    }
+  const command = state.interpreter(message)
+  if (!command) {
+    return
+  }
+  const action = state.receive(command)
+  if (!action) {
+    return
   }
 
-  if (message.channel instanceof Discord.DMChannel) {
-    const user = message.author
-    if (state.type === 'prompting') {
-      const existing = state.submissions.find(x => x.user === user)
-      if (existing) {
-        message.reply(`Replacing existing submission for prompt '${state.prompt}`)
-      } else {
-        message.reply(`Submission received for prompt '${state.prompt}'`)
-      }
-      const submission = { user, text: message.content }
-      state = { ...state, submissions: [...state.submissions.filter(x => x.user !== user), submission] }
-    } else if (state.type === 'voting') {
-      try {
-        const index = Number.parseInt(message.content)
-        if (1 <= index && index <= state.submissions.length) {
-          const submission = state.submissions[index + 1]
-          message.reply(`Vote counted for submission ${index}: ${submission.text}`)
-          const vote = { index, user }
-          state = {...state, votes: [...state.votes.filter(x => x.user !== user), vote]}
-        }
-      } catch {
-        // ignore
-      }
-    }
-  }
+  interpret(action)
 });
 
 client.login(process.env.BOT_TOKEN);
