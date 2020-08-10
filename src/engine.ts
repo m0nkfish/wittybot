@@ -42,13 +42,7 @@ export class Engine {
     }
 
     if (command.type === 'get-scores') {
-      return EmbedMessage(command.channel, new Discord.MessageEmbed()
-        .setTitle(`Scores on the doors...`)
-        .setDescription(
-          `The scores (since the bot was last restarted!) are:\n` +
-          this.state.context.scores.inOrder()
-            .map(([user, score]) => `${score} points: ${user.username}`)
-            .join('\n')))
+      return this.state.context.scores.show(command.channel)
     }
 
     if (command.type === 'notify-me') {
@@ -60,6 +54,7 @@ export class Engine {
         ])
       }
     }
+
     if (command.type === 'unnotify-me') {
       const role = getNotifyRole(command.member.guild)
       if (role) {
@@ -69,6 +64,7 @@ export class Engine {
         ])
       }
     }
+    
     if (command.type === 'help') {
       return EmbedMessage(command.channel, new Discord.MessageEmbed()
         .setTitle('Wittybot help')
