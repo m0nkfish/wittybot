@@ -75,12 +75,12 @@ export class Engine {
           `Wittybot is a simple, fast-paced text game where you submit text answers to prompts, then vote for the funniest one.`
         ])
         .addField('commands', [
-          `*!help* - you're looking at it`,
-          `*!witty* - start a new game`,
-          `*!skip* - skip the current prompt`,
-          `*!notify* - be notified when a new game starts`,
-          `*!unnotify* - stop being notified when a new game starts`,
-          `*!scores* - view the scoreboard`
+          `**!help** - you're looking at it`,
+          `**!witty** - start a new game`,
+          `**!skip** - skip the current prompt`,
+          `**!notify** - be notified when a new game starts`,
+          `**!unnotify** - stop being notified when a new game starts`,
+          `**!scores** - view the scoreboard`
         ]))
     }
   }
