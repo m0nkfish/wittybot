@@ -5,6 +5,7 @@ import { choosePrompt } from './prompts';
 import { shuffle, uuid4 } from 'random-js';
 import { mt } from './random';
 import { Context } from './context';
+import { DH_NOT_SUITABLE_GENERATOR } from 'constants';
 
 type Prompt = string
 type Submission = { user: Discord.User, submission: string }
@@ -149,6 +150,9 @@ export class VotingState implements GameState {
       }
 
       const submission = this.submissions[entry - 1]
+      if (!submission) {
+        return
+      }
       if (!this.context.config.testMode && submission.user === user) {
         return Message(user.dmChannel, `You cannot vote for your own entry`)
       }
@@ -220,8 +224,11 @@ export class VotingState implements GameState {
 
 const tryParseInt = (str: string) => {
   try {
-    return Number.parseInt(str)
+    const entry = Number.parseInt(str)
+    if (!isNaN(entry)) {
+      return entry
+    }
   } catch {
-    return null
   }
+  return null
 }
