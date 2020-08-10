@@ -5,6 +5,7 @@ import { choosePrompt } from './prompts';
 import { shuffle, uuid4 } from 'random-js';
 import { mt } from './random';
 import { Context } from './context';
+import { Scores } from './scores';
 
 type Prompt = string
 type Submission = { user: Discord.User, submission: string }
@@ -29,25 +30,25 @@ export class IdleState implements GameState {
 
   receive(command: Command): Action | undefined {
     if (command.type === 'begin') {
-      return IdleState.startRound(this.context, command.channel)
+      return this.startRound(command.channel)
     }
   }
 
-  static startRound = (context: Context, channel: Discord.TextChannel) => {
+  startRound = (channel: Discord.TextChannel) => {
     const prompt = choosePrompt()
     const embed = new Discord.MessageEmbed()
       .setTitle('A new round begins!')
       .setDescription([
         `Complete the following sentence:`,
         `**${prompt}**`,
-        `You have ${context.config.submitDurationSec} seconds to come up with an answer; submit by DMing <@${context.client.user?.id}>`
+        `You have ${this.context.config.submitDurationSec} seconds to come up with an answer; submit by DMing <@${this.context.client.user?.id}>`
       ].join('\n'))
 
     const gameId = uuid4(mt)
 
     return CompositeAction([
-      NewState(SubmissionState.begin({ ...context, gameId }, channel, prompt)),
-      DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState && state.context.gameId === gameId ? state.finish() : NullAction())),
+      NewState(SubmissionState.begin({ ...this.context, gameId }, channel, prompt)),
+      DelayedAction(this.context.config.submitDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState && state.context.gameId === gameId ? state.finish() : NullAction())),
       EmbedMessage(channel, embed)
     ])
   }
@@ -211,7 +212,7 @@ export class VotingState implements GameState {
       return b.votes.length - a.votes.length
     })
     
-    const embed = new Discord.MessageEmbed()
+    const resultsMessage = new Discord.MessageEmbed()
       .setTitle(`The votes are in!`)
       .setDescription([
         `Complete the following sentence:`,
@@ -230,9 +231,24 @@ export class VotingState implements GameState {
         return { name, value: x.submission }
       }))
 
+
+    const newContext = {
+      ...this.context,
+      scores: this.context.scores.add(new Scores(new Map(withVotes.map(x => [x.user, x.voted ? x.votes.length : 0]))))
+    }
+
+    const scoresMessage = new Discord.MessageEmbed()
+      .setTitle(`Scores on the doors...`)
+      .setDescription(
+        `The scores (since the bot was last restarted!) are:\n` +
+        newContext.scores.inOrder()
+          .map(([user, score]) => `${score} points: ${user.username}`)
+          .join('\n'))
+
     return CompositeAction([
-      EmbedMessage(this.channel, embed),
-      endGame(this.context, this.channel)
+      EmbedMessage(this.channel, resultsMessage),
+      EmbedMessage(this.channel, scoresMessage),
+      endGame(newContext, this.channel)
     ])
   }
 
@@ -245,7 +261,7 @@ function endGame(context: Context, channel: Discord.TextChannel) {
     ? NewState(new IdleState(context))
     : CompositeAction([
       NewState(new IdleState(context)),
-      DelayedAction(1000, FromStateAction(state => state instanceof IdleState ? IdleState.startRound(context, channel) : NullAction()))
+      DelayedAction(1000, FromStateAction(state => state instanceof IdleState ? state.startRound(channel) : NullAction()))
     ])
 }
 

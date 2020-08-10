@@ -1,5 +1,6 @@
 import * as Discord from 'discord.js'
 import { Engine } from './engine';
+import { Scores } from './scores';
 
 const client = new Discord.Client();
 
@@ -18,7 +19,7 @@ client.on('messageDelete', msg => {
   }
 })
 
-const engine = new Engine({ client, config: { submitDurationSec: 60, autoRun: true } })
+const engine = new Engine({ client, scores: Scores.empty(), config: { submitDurationSec: 60, autoRun: true } })
 engine.run()
 
 client.login(process.env.BOT_TOKEN);
