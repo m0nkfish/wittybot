@@ -13,8 +13,8 @@ function resource(name: string) {
 
 const all = [
   ...resource('MiscPrompts.txt'),
-  ...resource('Proverbs.txt'),
-  ...resource('Lyrics.txt')
+  ...resource('Proverbs.txt').map(line => `Confucius say: ${line}`),
+  ...resource('Lyrics.txt').map(line => `:notes: ${line} :notes:`)
 ]
 
 const globalReplace = {
