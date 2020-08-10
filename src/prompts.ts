@@ -11,7 +11,7 @@ function resource(name: string) {
     .filter(s => s !== '')
 }
 
-const misc = resource('MiscPrompts.txt')
+const misc = resource('MiscPrompts.txt').map(line => `:arrow_forward: ${line}`)
 const quotes = resource('Quotes.txt').map(line => `:speech_balloon: “${line}”`)
 const proverbs = resource('Proverbs.txt').map(line => `:older_man: Confucius say: ${line}`)
 const lyrics = resource('Lyrics.txt').map(line => `:notes: ${line} :notes:`)
