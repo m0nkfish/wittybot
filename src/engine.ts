@@ -1,8 +1,9 @@
 import { Context } from './context';
 import { IdleState, GameState } from './state';
-import { Action, EmbedMessage } from './actions';
+import { Action, EmbedMessage, AddUserToRole, RemoveUserFromRole, CompositeAction, Message } from './actions';
 import * as Discord from 'discord.js';
-import { Command, GetScores } from './commands';
+import { Command, GetScores, Help, NotifyMe, UnnotifyMe } from './commands';
+import { getNotifyRole } from './notify';
 
 export class Engine {
   state: GameState
@@ -17,9 +18,18 @@ export class Engine {
       return command
     }
 
-    if (message.content === "!scores") {
+    if (message.content === '!scores') {
       const channel = message.channel instanceof Discord.TextChannel ? message.channel : message.author.dmChannel
       return GetScores(message.author, channel)
+    }
+    if (message.content === '!help' && (message.channel instanceof Discord.TextChannel || message.channel instanceof Discord.DMChannel)) {
+      return Help(message.author, message.channel)
+    }
+    if (message.content === '!notify' && message.member) {
+      return NotifyMe(message.member)
+    }
+    if (message.content === '!unnotify' && message.member) {
+      return UnnotifyMe(message.member)
     }
   }
 
@@ -38,6 +48,40 @@ export class Engine {
           this.state.context.scores.inOrder()
             .map(([user, score]) => `${score} points: ${user.username}`)
             .join('\n')))
+    }
+
+    if (command.type === 'notify-me') {
+      const role = getNotifyRole(command.member.guild)
+      if (role) {
+        return CompositeAction([
+          AddUserToRole(command.member, role),
+          Message(command.member.user.dmChannel, `Wittybot will alert you when a new game is begun`)
+        ])
+      }
+    }
+    if (command.type === 'unnotify-me') {
+      const role = getNotifyRole(command.member.guild)
+      if (role) {
+        return CompositeAction([
+          RemoveUserFromRole(command.member, role),
+          Message(command.member.user.dmChannel, `Wittybot will no longer alert you when a new game is begun`)
+        ])
+      }
+    }
+    if (command.type === 'help') {
+      return EmbedMessage(command.channel, new Discord.MessageEmbed()
+        .setTitle('Wittybot help')
+        .setDescription([
+          `Wittybot is a simple, fast-paced text game where you submit text answers to prompts, then vote for the funniest one.`
+        ])
+        .addField('commands', [
+          `*!help* - you're looking at it`,
+          `*!witty* - start a new game`,
+          `*!skip* - skip the current prompt`,
+          `*!notify* - be notified when a new game starts`,
+          `*!unnotify* - stop being notified when a new game starts`,
+          `*!scores* - view the scoreboard`
+        ]))
     }
   }
 
@@ -74,6 +118,10 @@ export class Engine {
       action.channel.send(action.message)
     } else if (action.type === 'embed-message') {
       action.channel.send({ embed: action.embed.setColor('#A4218A') })
+    } else if (action.type === 'add-user-to-role') {
+      action.member.roles.add(action.role)
+    } else if (action.type === 'remove-user-from-role') {
+      action.member.roles.remove(action.role)
     }
   }
 }

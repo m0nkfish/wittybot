@@ -6,6 +6,7 @@ import { shuffle, uuid4 } from 'random-js';
 import { mt } from './random';
 import { Context } from './context';
 import { Scores } from './scores';
+import { getNotifyRole } from './notify';
 
 type Prompt = string
 type Submission = { user: Discord.User, submission: string }
@@ -31,7 +32,14 @@ export class IdleState implements GameState {
 
   receive(command: Command): Action | undefined {
     if (command.type === 'begin') {
-      return this.startRound(command.channel, [command.user])
+      const notifyRole = getNotifyRole(command.channel.guild)
+      const start = this.startRound(command.channel, [command.user])
+      return notifyRole
+        ? CompositeAction([
+          Message(command.channel, `Calling all <@${notifyRole}>! A new game has begun`),
+          start
+        ])
+        : start
     }
   }
 
