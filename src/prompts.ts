@@ -19,7 +19,9 @@ const all = [
 
 const globalReplace = {
   celeb: resource('People.txt'),
-  language: resource('Languages.txt')
+  language: resource('Languages.txt'),
+  country: resource('Countries.txt'),
+  nationality: resource('Nationalities.txt')
 }
 
 export function choosePrompt(users: string[]) {
