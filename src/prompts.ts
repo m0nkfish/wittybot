@@ -35,5 +35,5 @@ export function choosePrompt(users: string[]) {
     })
   }
   
-  return template(pick(mt, resource('TestPrompts.txt')))
+  return template(pick(mt, all))
 }
