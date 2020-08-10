@@ -13,6 +13,7 @@ function resource(name: string) {
 
 const all = [
   ...resource('MiscPrompts.txt'),
+  ...resource('Quotes.txt').map(line => `A wise person once said, “${line}”`),
   ...resource('Proverbs.txt').map(line => `Confucius say: ${line}`),
   ...resource('Lyrics.txt').map(line => `:notes: ${line} :notes:`)
 ]
