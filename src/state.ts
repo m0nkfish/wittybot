@@ -217,19 +217,19 @@ export class VotingState implements GameState {
       .setDescription([
         `Complete the following sentence:`,
         `**${this.prompt}**`,
+        ...withVotes.map(x => {
+          let name = x.user.username
+          if (x.voted) {
+            name = name + `, with ${x.votes.length} votes`
+            if (x.votes.length > 0) {
+              name = name + `: ${x.votes.map(v => v.username).join(', ')}`
+            }
+          } else {
+            name = name + `, who didn't vote`
+          }
+          return `• ${x.submission} (${name})`
+        })
       ])
-      .addFields(withVotes.map(x => {
-        let name = x.user.username
-        if (x.voted) {
-          name = name + ` with ${x.votes.length} votes`
-        } else {
-          name = name + ` (who didn't vote)`
-        }
-        if (x.votes.length > 0) {
-          name = name + ` (${x.votes.map(v => v.username).join(', ')})`
-        }
-        return { name, value: x.submission }
-      }))
 
 
     const newContext = {
@@ -243,7 +243,7 @@ export class VotingState implements GameState {
         `The scores (since the bot was last restarted!) are:\n` +
         newContext.scores.inOrder()
           .map(([user, score]) => `${score} points: ${user.username}`)
-          .join('\n'))
+          .join('; '))
 
     return CompositeAction([
       EmbedMessage(this.channel, resultsMessage),
