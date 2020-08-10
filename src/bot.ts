@@ -1,6 +1,7 @@
 import * as Discord from 'discord.js'
 import { Engine } from './engine';
 import { Scores } from './scores';
+import { prompts } from './prompts';
 
 const client = new Discord.Client();
 
@@ -16,7 +17,9 @@ client.on('ready', () => {
   if (!channel) {
     return
   }
-  channel.send(`Bot restarted/redeployed`)
+  channel.send({ embed: new Discord.MessageEmbed()
+    .setTitle('Bot restarted/redeployed')
+    .setFooter(`This version has ${prompts.length} miscellaneous prompts, quotes lyrics and proverbs`) })
 });
 
 client.on('messageDelete', msg => {

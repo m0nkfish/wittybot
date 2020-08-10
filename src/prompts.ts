@@ -11,11 +11,16 @@ function resource(name: string) {
     .filter(s => s !== '')
 }
 
-const all = [
-  ...resource('MiscPrompts.txt'),
-  ...resource('Quotes.txt').map(line => `A wise person once said, “${line}”`),
-  ...resource('Proverbs.txt').map(line => `Confucius say: ${line}`),
-  ...resource('Lyrics.txt').map(line => `:notes: ${line} :notes:`)
+const misc = resource('MiscPrompts.txt')
+const quotes = resource('Quotes.txt').map(line => `A wise person once said, “${line}”`)
+const proverbs = resource('Proverbs.txt').map(line => `Confucius say: ${line}`)
+const lyrics = resource('Lyrics.txt').map(line => `:notes: ${line} :notes:`)
+
+export const prompts = [
+  ...misc,
+  ...quotes,
+  ...proverbs,
+  ...lyrics
 ]
 
 const globalReplace = {
@@ -45,5 +50,5 @@ export function choosePrompt(users: string[]) {
       .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))
   }
   
-  return template(pick(mt, all))
+  return template(pick(mt, prompts))
 }
