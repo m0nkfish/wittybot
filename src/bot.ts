@@ -5,6 +5,12 @@ import { Scores } from './scores';
 const client = new Discord.Client();
 
 client.on('ready', () => {
+  client.user?.setPresence({
+    activity: {
+      type: 'PLAYING',
+      name: '!help'
+    }
+  })
   console.log('ready!')
   const channel = client.channels.cache.find(ch => ch instanceof Discord.TextChannel && ch.name === 'wittybot') as Discord.TextChannel | undefined
   if (!channel) {
