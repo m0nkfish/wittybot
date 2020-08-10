@@ -1,4 +1,5 @@
-import * as fs from 'fs'
+import { readFileSync } from 'fs'
+import path from 'path'
 import { pick } from 'random-js';
 import { mt } from './random';
 
@@ -6,7 +7,7 @@ export function choosePrompt() {
   return pick(mt, prompts)
 }
 
-const prompts = fs.readFileSync('../resources/General.txt', 'utf8').split('\n')
+const prompts = readFileSync(path.resolve(__dirname, 'resources/General.txt'), 'utf8').split('\n')
 
 const parameterisedPrompts = [
   "I hear {user} loves a good game of...",

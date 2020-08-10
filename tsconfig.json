@@ -8,6 +8,7 @@
     "strictNullChecks": true,
     "noImplicitThis": true,
     "inlineSourceMap": true,
+    "esModuleInterop": true
   },
   "include": [
     "src"
