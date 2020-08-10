@@ -7,7 +7,7 @@ export function choosePrompt() {
   return pick(mt, prompts)
 }
 
-const prompts = readFileSync(path.resolve(__dirname, 'resources/General.txt'), 'utf8').split('\n')
+const prompts = readFileSync(path.resolve(process.cwd(), 'resources/General.txt'), 'utf8').split('\n')
 
 const parameterisedPrompts = [
   "I hear {user} loves a good game of...",
