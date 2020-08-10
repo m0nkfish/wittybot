@@ -1,6 +1,8 @@
 import { Context } from './context';
 import { IdleState, GameState } from './state';
-import { Action } from './actions';
+import { Action, EmbedMessage } from './actions';
+import * as Discord from 'discord.js';
+import { Command, GetScores } from './commands';
 
 export class Engine {
   state: GameState
@@ -9,17 +11,48 @@ export class Engine {
     this.state = new IdleState(context)
   }
 
+  getCommand(message: Discord.Message): Command | undefined {
+    const command = this.state.interpreter(message)
+    if (command) {
+      return command
+    }
+
+    if (message.content === "!scores") {
+      const channel = message.channel instanceof Discord.TextChannel ? message.channel : message.author.dmChannel
+      return GetScores(message.author, channel)
+    }
+  }
+
+  getAction(command: Command) {
+    const action = this.state.receive(command)
+
+    if (action) {
+      return action
+    }
+
+    if (command.type === 'get-scores') {
+      return EmbedMessage(command.channel, new Discord.MessageEmbed()
+        .setTitle(`Scores on the doors...`)
+        .setDescription(
+          `The scores (since the bot was last restarted!) are:\n` +
+          this.state.context.scores.inOrder()
+            .map(([user, score]) => `${score} points: ${user.username}`)
+            .join('; ')))
+    }
+  }
+
   run() {
     this.context.client.on('message', message => {
       if (message.author.bot) {
         return
       }
 
-      const command = this.state.interpreter(message)
+      const command = this.getCommand(message)
       if (!command) {
         return
       }
-      const action = this.state.receive(command)
+      
+      const action = this.getAction(command)
       if (!action) {
         return
       }

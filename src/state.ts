@@ -11,6 +11,7 @@ type Prompt = string
 type Submission = { user: Discord.User, submission: string }
 
 export type GameState = {
+  readonly context: Context
   interpreter(message: Discord.Message): Command | null
   receive(command: Command): Action | undefined
 }
@@ -238,17 +239,8 @@ export class VotingState implements GameState {
       scores: this.context.scores.add(new Scores(new Map(withVotes.map(x => [x.user, x.voted ? x.votes.length : 0]))))
     }
 
-    const scoresMessage = new Discord.MessageEmbed()
-      .setTitle(`Scores on the doors...`)
-      .setDescription(
-        `The scores (since the bot was last restarted!) are:\n` +
-        newContext.scores.inOrder()
-          .map(([user, score]) => `${score} points: ${user.username}`)
-          .join('; '))
-
     return CompositeAction([
       EmbedMessage(this.channel, resultsMessage),
-      EmbedMessage(this.channel, scoresMessage),
       endGame(newContext, this.channel)
     ])
   }
