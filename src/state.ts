@@ -210,7 +210,7 @@ export class VotingState implements GameState {
       }
       return b.votes.length - a.votes.length
     })
-
+    
     const embed = new Discord.MessageEmbed()
       .setTitle(`The votes are in!`)
       .setDescription([
@@ -241,9 +241,12 @@ export class VotingState implements GameState {
 }
 
 function endGame(context: Context, channel: Discord.TextChannel) {
-  return context.config.autoRun
-    ? IdleState.startRound(context, channel)
-    : NewState(new IdleState(context))
+  return !context.config.autoRun
+    ? NewState(new IdleState(context))
+    : CompositeAction([
+      NewState(new IdleState(context)),
+      DelayedAction(1000, FromStateAction(state => state instanceof IdleState ? IdleState.startRound(context, channel) : NullAction()))
+    ])
 }
 
 const tryParseInt = (str: string) => {
