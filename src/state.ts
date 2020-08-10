@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { Command, Begin, Submit, Vote } from './commands';
+import { Command, Begin, Submit, Vote, Skip } from './commands';
 import { Action, CompositeAction, NewState, DelayedAction, EmbedMessage, FromStateAction, NullAction, Message, UpdateState } from './actions';
 import { choosePrompt } from './prompts';
 import { shuffle, uuid4 } from 'random-js';
@@ -62,10 +62,14 @@ export class SubmissionState implements GameState {
     readonly prompt: Prompt,
     readonly submissions: Map<Discord.User, string>) { }
 
-  interpreter = (message: Discord.Message) =>
-    message.channel instanceof Discord.DMChannel
-      ? Submit(message.author, message.content)
-      : null
+  interpreter = (message: Discord.Message) => {
+    if (message.channel instanceof Discord.DMChannel) {
+      return Submit(message.author, message.content)
+    } else if (message.channel === this.channel && message.content === '!skip') {
+      return Skip(message.author, message.channel)
+    }
+    return null
+  }
 
   receive(command: Command): Action | undefined {
     if (command.type === 'submit') {
@@ -80,6 +84,16 @@ export class SubmissionState implements GameState {
         ...messages,
         UpdateState(state => state instanceof SubmissionState ? state.withSubmission(command.user, command.submission) : state),
       ])
+    }
+    if (command.type === 'skip') {
+      if (this.submissions.size === 0) {
+        return CompositeAction([
+          Message(command.channel, `Skipping this prompt`),
+          endGame(this.context, this.channel)
+        ])
+      } else {
+        return Message(command.channel, `Prompt already has submissions; won't skip`)
+      }
     }
   }
 
@@ -207,18 +221,20 @@ export class VotingState implements GameState {
           ? { name: `${x.user.username} with ${x.votes.length} votes (${x.votes.map(v => v.username).join(', ')})`, value: x.submission }
           : { name: `${x.user.username} who didn't vote`, value: x.submission }))
 
-    const nextState = this.context.config.autoRun
-        ? IdleState.startRound(this.context, this.channel)
-        : NewState(new IdleState(this.context))
-
     return CompositeAction([
       EmbedMessage(this.channel, embed),
-      nextState
+      endGame(this.context, this.channel)
     ])
   }
 
   static begin = (context: GameContext, channel: Discord.TextChannel, prompt: Prompt, submissions: Submission[]) =>
     new VotingState(context, channel, prompt, submissions, new Map())
+}
+
+function endGame(context: Context, channel: Discord.TextChannel) {
+  return context.config.autoRun
+    ? IdleState.startRound(context, channel)
+    : NewState(new IdleState(context))
 }
 
 const tryParseInt = (str: string) => {
