@@ -121,7 +121,7 @@ export class SubmissionState implements GameState {
         `**${this.prompt}**`,
         ``,
         ...shuffled.map((x, i) => `${i + 1}. ${x.submission}`)
-      ].join('\n'))
+      ])
 
     return CompositeAction([
       NewState(VotingState.begin(this.context, this.channel, this.prompt, shuffled)),
@@ -217,6 +217,7 @@ export class VotingState implements GameState {
       .setDescription([
         `Complete the following sentence:`,
         `**${this.prompt}**`,
+        ``,
         ...withVotes.map(x => {
           let name = x.user.username
           if (x.voted) {
