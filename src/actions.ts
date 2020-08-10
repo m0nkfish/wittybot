@@ -2,8 +2,8 @@ import * as Discord from 'discord.js'
 import { Case } from './case'
 import { GameState } from './state'
 
-export const Message = Case('post-message', (channel: Discord.TextChannel | Discord.DMChannel, message: string) => ({ channel, message }))
-export const EmbedMessage = Case('embed-message', (channel: Discord.TextChannel | Discord.DMChannel, embed: Discord.MessageEmbed) => ({ channel, embed }))
+export const Message = Case('post-message', (destination: Discord.TextChannel | Discord.DMChannel | Discord.User, message: string) => ({ destination, message }))
+export const EmbedMessage = Case('embed-message', (destination: Discord.TextChannel | Discord.DMChannel | Discord.User, embed: Discord.MessageEmbed) => ({ destination, embed }))
 export const NewState = Case('new-state', (newState: GameState) => ({ newState }))
 export const CompositeAction = Case('composite-action', (actions: Action[]) => ({ actions }))
 export const DelayedAction = Case('delayed-action', (delayMs: number, action: Action) => ({ delayMs, action }))

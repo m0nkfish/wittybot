@@ -55,7 +55,7 @@ export class Engine {
       if (role) {
         return CompositeAction([
           AddUserToRole(command.member, role),
-          Message(command.member.user.dmChannel, `Wittybot will alert you when a new game is begun`)
+          Message(command.member.user, `Wittybot will alert you when a new game is begun`)
         ])
       }
     }
@@ -64,7 +64,7 @@ export class Engine {
       if (role) {
         return CompositeAction([
           RemoveUserFromRole(command.member, role),
-          Message(command.member.user.dmChannel, `Wittybot will no longer alert you when a new game is begun`)
+          Message(command.member.user, `Wittybot will no longer alert you when a new game is begun`)
         ])
       }
     }
@@ -115,9 +115,9 @@ export class Engine {
     } else if (action.type === 'new-state') {
       this.state = action.newState
     } else if (action.type === 'post-message') {
-      action.channel.send(action.message)
+      action.destination.send(action.message)
     } else if (action.type === 'embed-message') {
-      action.channel.send({ embed: action.embed.setColor('#A4218A') })
+      action.destination.send({ embed: action.embed.setColor('#A4218A') })
     } else if (action.type === 'add-user-to-role') {
       action.member.roles.add(action.role)
     } else if (action.type === 'remove-user-from-role') {
