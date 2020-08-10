@@ -18,7 +18,7 @@ client.on('messageDelete', msg => {
   }
 })
 
-const engine = new Engine({ client, config: { submitDurationSec: 60, voteDurationSec: 60, autoRun: true } })
+const engine = new Engine({ client, config: { submitDurationSec: 60, autoRun: true } })
 engine.run()
 
 client.login(process.env.BOT_TOKEN);

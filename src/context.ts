@@ -4,7 +4,6 @@ export type Context = {
   client: Discord.Client
   config: {
     submitDurationSec: number
-    voteDurationSec: number
     testMode?: boolean
     autoRun?: boolean
   }

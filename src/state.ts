@@ -84,8 +84,7 @@ export class SubmissionState implements GameState {
         ...messages,
         UpdateState(state => state instanceof SubmissionState ? state.withSubmission(command.user, command.submission) : state),
       ])
-    }
-    if (command.type === 'skip') {
+    } else if (command.type === 'skip') {
       if (this.submissions.size === 0) {
         return CompositeAction([
           Message(command.channel, `Skipping this prompt`),
@@ -110,10 +109,12 @@ export class SubmissionState implements GameState {
 
     const shuffled = shuffle(mt, Array.from(this.submissions).map(([user, submission]) => ({ user, submission })))
 
+    const voteDurationSec = this.submissions.size * 10
+
     const embed = new Discord.MessageEmbed()
       .setTitle(`Time's up!`)
       .setDescription([
-        `Vote for your favourite by DMing <@${this.context.client.user?.id}> with the entry number.`,
+        `Vote for your favourite by DMing <@${this.context.client.user?.id}> with the entry number. You have ${voteDurationSec} seconds`,
         ``,
         `Complete the following sentence:`,
         `**${this.prompt}**`,
@@ -123,7 +124,7 @@ export class SubmissionState implements GameState {
 
     return CompositeAction([
       NewState(VotingState.begin(this.context, this.channel, this.prompt, shuffled)),
-      DelayedAction(this.context.config.voteDurationSec * 1000, FromStateAction(state => state instanceof VotingState && state.context.gameId === this.context.gameId ? state.finish() : NullAction())),
+      DelayedAction(voteDurationSec * 1000, FromStateAction(state => state instanceof VotingState && state.context.gameId === this.context.gameId ? state.finish() : NullAction())),
       EmbedMessage(this.channel, embed)
     ])
   }
