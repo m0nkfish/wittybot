@@ -217,10 +217,18 @@ export class VotingState implements GameState {
         `Complete the following sentence:`,
         `**${this.prompt}**`,
       ])
-      .addFields(withVotes.map(x =>
-        x.voted
-          ? { name: `${x.user.username} with ${x.votes.length} votes (${x.votes.map(v => v.username).join(', ')})`, value: x.submission }
-          : { name: `${x.user.username} (who didn't vote) (${x.votes.map(v => v.username).join(', ')})`, value: x.submission }))
+      .addFields(withVotes.map(x => {
+        let name = x.user.username
+        if (x.voted) {
+          name = name + ` with ${x.votes.length} votes`
+        } else {
+          name = name + ` (who didn't vote)`
+        }
+        if (x.votes.length > 0) {
+          name = name + ` (${x.votes.map(v => v.username).join(', ')})`
+        }
+        return { name, value: x.submission }
+      }))
 
     return CompositeAction([
       EmbedMessage(this.channel, embed),
