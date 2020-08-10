@@ -35,7 +35,11 @@ export function choosePrompt(users: string[]) {
     return str
       .replace(regex, str => {
         const type = str.substring(1, str.length - 1) as keyof typeof replace
-        return pick(mt, replace[type])
+        const choices = replace[type]
+        const choice = pick(mt, choices)
+        const remaining = choices.length > 1 ? choices.filter(x => x != choice) : choices
+        replace[type] = remaining
+        return choice
       })
       .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))
   }
