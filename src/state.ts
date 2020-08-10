@@ -220,7 +220,7 @@ export class VotingState implements GameState {
       .addFields(withVotes.map(x =>
         x.voted
           ? { name: `${x.user.username} with ${x.votes.length} votes (${x.votes.map(v => v.username).join(', ')})`, value: x.submission }
-          : { name: `${x.user.username} who didn't vote`, value: x.submission }))
+          : { name: `${x.user.username} (who didn't vote) (${x.votes.map(v => v.username).join(', ')})`, value: x.submission }))
 
     return CompositeAction([
       EmbedMessage(this.channel, embed),
