@@ -12,8 +12,8 @@ function resource(name: string) {
 }
 
 const misc = resource('MiscPrompts.txt')
-const quotes = resource('Quotes.txt').map(line => `A wise person once said, “${line}”`)
-const proverbs = resource('Proverbs.txt').map(line => `Confucius say: ${line}`)
+const quotes = resource('Quotes.txt').map(line => `:speech_balloon: “${line}”`)
+const proverbs = resource('Proverbs.txt').map(line => `:older_man: Confucius say: ${line}`)
 const lyrics = resource('Lyrics.txt').map(line => `:notes: ${line} :notes:`)
 
 export const prompts = [
