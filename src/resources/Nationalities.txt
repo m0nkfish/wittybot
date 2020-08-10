@@ -1,0 +1,9 @@
+American
+Australian
+British
+Canadian
+Chinese
+French
+Jamaican
+Mexican
+Russian
