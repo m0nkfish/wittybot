@@ -83,7 +83,7 @@ export class Engine {
           `**!unnotify** - stop being notified when a new game starts`,
           `**!scores** - view the scoreboard`
         ])
-        .setFooter(`This version has ${prompts.length} miscellaneous prompts, quotes lyrics and proverbs`))
+        .setFooter(`This version has ${prompts.length} miscellaneous prompts, quotes, lyrics and proverbs`))
         
     }
   }
