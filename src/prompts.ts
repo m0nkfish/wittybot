@@ -8,6 +8,7 @@ function resource(name: string) {
     .replace(/_____/g, '\\_\\_\\_\\_\\_')
     .split('\n')
     .map(s => s.replace(/\n|\r/g, '')) // some of the resources originated in windows...
+    .filter(s => s !== '')
 }
 
 const all = [
