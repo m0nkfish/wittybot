@@ -1,0 +1,12 @@
+American English
+British English
+Dutch
+French
+German
+Italian
+Japanese
+Mandarin
+Polish
+Portuguese
+Russian
+Spanish

@@ -31,12 +31,12 @@ export class IdleState implements GameState {
 
   receive(command: Command): Action | undefined {
     if (command.type === 'begin') {
-      return this.startRound(command.channel)
+      return this.startRound(command.channel, [command.user])
     }
   }
 
-  startRound = (channel: Discord.TextChannel) => {
-    const prompt = choosePrompt()
+  startRound = (channel: Discord.TextChannel, users: Discord.User[]) => {
+    const prompt = choosePrompt(users.map(u => u.username))
     const embed = new Discord.MessageEmbed()
       .setTitle('A new round begins!')
       .setDescription([
@@ -48,7 +48,7 @@ export class IdleState implements GameState {
     const gameId = uuid4(mt)
 
     return CompositeAction([
-      NewState(SubmissionState.begin({ ...this.context, gameId }, channel, prompt)),
+      NewState(SubmissionState.begin({ ...this.context, gameId, users }, channel, prompt)),
       DelayedAction(this.context.config.submitDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState && state.context.gameId === gameId ? state.finish() : NullAction())),
       EmbedMessage(channel, embed)
     ])
@@ -236,7 +236,8 @@ export class VotingState implements GameState {
 
     const newContext = {
       ...this.context,
-      scores: this.context.scores.add(new Scores(new Map(withVotes.map(x => [x.user, x.voted ? x.votes.length : 0]))))
+      scores: this.context.scores.add(new Scores(new Map(withVotes.map(x => [x.user, x.voted ? x.votes.length : 0])))),
+      users: deduplicate([...this.context.users, ...withVotes.map(x => x.user)])
     }
 
     return CompositeAction([
@@ -249,12 +250,12 @@ export class VotingState implements GameState {
     new VotingState(context, channel, prompt, submissions, new Map())
 }
 
-function endGame(context: Context, channel: Discord.TextChannel) {
+function endGame(context: GameContext, channel: Discord.TextChannel) {
   return !context.config.autoRun
     ? NewState(new IdleState(context))
     : CompositeAction([
       NewState(new IdleState(context)),
-      DelayedAction(1000, FromStateAction(state => state instanceof IdleState ? state.startRound(channel) : NullAction()))
+      DelayedAction(1000, FromStateAction(state => state instanceof IdleState ? state.startRound(channel, context.users) : NullAction()))
     ])
 }
 
@@ -267,4 +268,8 @@ const tryParseInt = (str: string) => {
   } catch {
   }
   return null
+}
+
+function deduplicate<A>(array: A[]) {
+  return [...new Set(array)]
 }
