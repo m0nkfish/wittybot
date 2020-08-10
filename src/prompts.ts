@@ -32,10 +32,12 @@ export function choosePrompt(users: string[]) {
     }
 
     const regex = new RegExp(`{(${Object.keys(replace).join('|')})}`, "g")
-    return str.replace(regex, str => {
-      const type = str.substring(1, str.length - 1) as keyof typeof replace
-      return pick(mt, replace[type])
-    })
+    return str
+      .replace(regex, str => {
+        const type = str.substring(1, str.length - 1) as keyof typeof replace
+        return pick(mt, replace[type])
+      })
+      .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))
   }
   
   return template(pick(mt, all))
