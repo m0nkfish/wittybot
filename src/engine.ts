@@ -37,7 +37,7 @@ export class Engine {
           `The scores (since the bot was last restarted!) are:\n` +
           this.state.context.scores.inOrder()
             .map(([user, score]) => `${score} points: ${user.username}`)
-            .join('; ')))
+            .join('\n')))
     }
   }
 
@@ -51,7 +51,7 @@ export class Engine {
       if (!command) {
         return
       }
-      
+
       const action = this.getAction(command)
       if (!action) {
         return

@@ -102,7 +102,7 @@ export class SubmissionState implements GameState {
     new SubmissionState(this.context, this.channel, this.prompt, new Map(this.submissions).set(user, submission))
 
   finish = (): Action => {
-    if (!this.context.config.testMode && this.submissions.size < 3) {
+    if ((!this.context.config.testMode && this.submissions.size < 3) || this.submissions.size < 1) {
       return CompositeAction([
         Message(this.channel, `Not enough submissions to continue`),
         NewState(new IdleState(this.context))
