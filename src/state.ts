@@ -5,7 +5,6 @@ import { choosePrompt } from './prompts';
 import { shuffle, uuid4 } from 'random-js';
 import { mt } from './random';
 import { Context } from './context';
-import { DH_NOT_SUITABLE_GENERATOR } from 'constants';
 
 type Prompt = string
 type Submission = { user: Discord.User, submission: string }
@@ -205,7 +204,7 @@ export class VotingState implements GameState {
       ])
       .addFields(withVotes.map(x =>
         x.voted
-          ? { name: `${x.user.username} with ${x.votes.length} votes`, value: x.submission }
+          ? { name: `${x.user.username} with ${x.votes.length} votes (${x.votes.map(v => v.username).join(', ')})`, value: x.submission }
           : { name: `${x.user.username} who didn't vote`, value: x.submission }))
 
     const nextState = this.context.config.autoRun
