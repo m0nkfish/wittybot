@@ -7,6 +7,7 @@ function resource(name: string) {
   return readFileSync(path.resolve(process.cwd(), 'resources', name), 'utf8')
     .replace(/_____/g, '\\_\\_\\_\\_\\_')
     .split('\n')
+    .map(s => s.replace(/\n/g, ''))
 }
 
 const all = [
