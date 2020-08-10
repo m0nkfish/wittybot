@@ -7,7 +7,6 @@ function resource(name: string) {
   return readFileSync(path.resolve(process.cwd(), 'resources', name), 'utf8')
     .replace(/_____/g, '\\_\\_\\_\\_\\_')
     .split('\n')
-    .map(s => s.replace(/\n/g, ''))
 }
 
 const all = [
@@ -36,4 +35,5 @@ export function choosePrompt(users: string[]) {
   }
   
   return template(pick(mt, resource('TestPrompts.txt')))
+    .replace(/\n/g, '')
 }
