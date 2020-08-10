@@ -50,6 +50,7 @@ export class IdleState implements GameState {
       .setDescription([
         `Complete the following sentence:`,
         `**${prompt}**`,
+        ``,
         `You have ${this.context.config.submitDurationSec} seconds to come up with an answer; submit by DMing <@${this.context.client.user?.id}>`
       ].join('\n'))
 
