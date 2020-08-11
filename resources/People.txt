@@ -1,4 +1,6 @@
+Abraham Lincoln
 Arnold Schwarzenegger
+Barack Obama
 Batman
 Beyoncé
 Bill Clinton
@@ -9,27 +11,34 @@ Celine Dion
 Che Guevera
 Chewbacca
 Darth Vader
+David Beckham
 Donald Trump
+Dwayne 'The Rock' Johnson
 Eleanor Roosevelt
 Elmo
+Elon Musk
 Freddy Mercury
 Gandalf
+George Floyd
 George W. Bush
 Harry Potter
 Hillary Clinton
 Hitler
 Homer Simpson
 James Bond
+Jeff Bezos
 Jeffrey Epstein
+Jesus H. Christ
 Joseph Stalin
 Justin Bieber
 Justin Timberlake
 Kermit the Frog
+Kim Kardashian
 Liam Gallagher
-Lisa Simpson
+Madonna
 Maggie Simpson
 Mahatma Gandhi
-Marge Simpson
+Mark Zuckerberg
 Michael Jackson
 Michael Schumacher
 Mickey Mouse
@@ -37,8 +46,10 @@ Monica Lewinski
 Morgan Freeman
 Oprah
 Osama Bin Laden
+Princess Diana
 Rambo
 Robocop
+Saddam Hussein
 Santa Claus
 Sarah Michelle Gellar
 Spiderman
@@ -49,7 +60,9 @@ Terminator
 The Fonz
 The Joker
 The Pope
+The Prophet Muhammad (praise be unto him)
 The Queen
+The Real Slim Shady
 The Smurfs
 Tony Blair
 Trinity
