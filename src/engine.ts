@@ -50,7 +50,7 @@ export class Engine {
       if (role) {
         return CompositeAction([
           AddUserToRole(command.member, role),
-          Message(command.member.user, `Wittybot will alert you when a new game is begun`)
+          Message(command.member.user, `Wittybot will alert you when a new game is begun. **!unnotify** to remove`)
         ])
       }
     }
@@ -64,7 +64,7 @@ export class Engine {
         ])
       }
     }
-    
+
     if (command.type === 'help') {
       return EmbedMessage(command.channel, new Discord.MessageEmbed()
         .setTitle('Wittybot help')

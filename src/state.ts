@@ -36,7 +36,7 @@ export class IdleState implements GameState {
       const start = this.startRound(command.channel, [command.user])
       return notifyRole
         ? CompositeAction([
-          Message(command.channel, `Calling all <@&${notifyRole.id}>! A new game has begun`),
+          Message(command.channel, `Calling all <@&${notifyRole.id}>! (:point_left: type !notify if you want to be in this group) A new game was started by <@${command.user.id}>`),
           start
         ])
         : start
