@@ -39,14 +39,18 @@ export class Scores {
   }
 
   show(channel: Discord.TextChannel | Discord.DMChannel) {
+    const description = 
+      this.map.size === 0
+        ? `Nobody has scored yet (start a game with the **!witty** command)`
+        : `The scores (since the bot was last restarted!) are:\n` +
+          this.inOrder()
+            .filter(([, score]) => score.points > 0)
+            .map(([user, score]) => `${score.points}/${score.ofPossible} points: ${user.username}`)
+            .join('\n')
+
     return EmbedMessage(channel, new Discord.MessageEmbed()
       .setTitle(`Scores on the doors...`)
-      .setDescription(
-        `The scores (since the bot was last restarted!) are:\n` +
-        this.inOrder()
-          .filter(([, score]) => score.points > 0)
-          .map(([user, score]) => `${score.points}/${score.ofPossible} points: ${user.username}`)
-          .join('\n')))
+      .setDescription(description))
   }
 
   static fromRound(arr: Array<[Discord.User, number]>): Scores {
