@@ -230,7 +230,7 @@ export class VotingState implements GameState {
         `**${this.prompt}**`,
         ``,
         ...withVotes.map(x => {
-          let name = x.user.username
+          let name = `**${x.user.username}**`
           if (x.voted) {
             name = name + `, with ${x.votes.length} votes`
             if (x.votes.length > 0) {
