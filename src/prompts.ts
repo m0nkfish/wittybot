@@ -39,6 +39,7 @@ export function choosePrompt(users: string[]) {
 
     const regex = new RegExp(`{(${Object.keys(replace).join('|')})}`, "g")
     return str
+      .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))
       .replace(regex, str => {
         const type = str.substring(1, str.length - 1) as keyof typeof replace
         const choices = replace[type]
@@ -47,7 +48,6 @@ export function choosePrompt(users: string[]) {
         replace[type] = remaining
         return choice
       })
-      .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))
   }
   
   return template(pick(mt, prompts))
