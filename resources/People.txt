@@ -1,7 +1,10 @@
+50 Cent
 Abraham Lincoln
+Albert Einstein
 Arnold Schwarzenegger
 Barack Obama
 Batman
+Ben Shapiro
 Beyoncé
 Bill Clinton
 Bill Gates
@@ -17,47 +20,59 @@ Dwayne 'The Rock' Johnson
 Eleanor Roosevelt
 Elmo
 Elon Musk
+Elvis Presley
 Freddy Mercury
 Gandalf
+Genghis Khan
 George Floyd
 George W. Bush
 Harry Potter
 Hillary Clinton
 Hitler
 Homer Simpson
+Hulk Hogan
 James Bond
 Jeff Bezos
 Jeffrey Epstein
 Jesus H. Christ
+Jimi Hendrix
 Joseph Stalin
 Justin Bieber
 Justin Timberlake
 Kermit the Frog
 Kim Kardashian
-Liam Gallagher
+Kurt Cobain
+Lance Armstrong
 Madonna
 Maggie Simpson
 Mahatma Gandhi
 Mark Zuckerberg
+Martin Luther King Jr
 Michael Jackson
 Michael Schumacher
 Mickey Mouse
 Monica Lewinski
 Morgan Freeman
+Neil Armstrong
 Oprah
 Osama Bin Laden
+Paul McCartney
 Princess Diana
 Rambo
 Robocop
+Roger Federer
 Saddam Hussein
 Santa Claus
 Sarah Michelle Gellar
+Snoop Dogg
 Spiderman
+Steve Jobs
 Superman
 Sylvester Stallone
 Taylor Swift
 Terminator
 The Fonz
+The Gallagher brothers of the hit 90s Britpop band Oasis
 The Joker
 The Pope
 The Prophet Muhammad (praise be unto him)
@@ -67,4 +82,6 @@ The Smurfs
 Tony Blair
 Trinity
 Uncle Sam
+Vladimir Putin
+William Shakespeare
 Yoda
