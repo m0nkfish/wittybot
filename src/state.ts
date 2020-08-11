@@ -246,7 +246,7 @@ export class VotingState implements GameState {
 
     const newContext = {
       ...this.context,
-      scores: this.context.scores.add(new Scores(new Map(withVotes.map(x => [x.user, x.voted ? x.votes.length : 0])))),
+      scores: this.context.scores.add(Scores.fromRound(withVotes.map(x => [x.user, x.voted ? x.votes.length : 0]))),
       users: deduplicate([...this.context.users, ...withVotes.map(x => x.user)])
     }
 
