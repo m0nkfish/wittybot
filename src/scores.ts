@@ -12,6 +12,10 @@ export class Score {
     return this.games * this.points / this.ofPossible
   }
 
+  get ratio() {
+    return (100 * this.points / this.ofPossible).toFixed(0) + '%'
+  }
+
   static empty(): Score {
     return new Score(0, 0, 0)
   }
@@ -45,7 +49,11 @@ export class Scores {
     const description = 
       positiveScoresInOrder.length === 0
         ? `Nobody has scored since the bot was last restarted (start a game with the **!witty** command)`
-        : `The scores are:\n` + renderTable(positiveScoresInOrder)
+        : [`The scores are:`,
+          '```',
+          renderTable(positiveScoresInOrder.slice(0, 10)),
+          '```'
+        ]
 
     return EmbedMessage(channel, new Discord.MessageEmbed()
       .setTitle(`Scores on the doors...`)
@@ -60,8 +68,8 @@ export class Scores {
 
 function renderTable(scores: [Discord.User, Score][]): string {
   return asciiTable([
-    ["User", "Games played", "Points scored", "Points possible", "Ratio"],
-    ...scores.map(([user, score]) => [user.username, score.games.toString(), score.points.toString(), score.ofPossible.toString()])
+    ["User", "Games played", "Points scored", "Ratio"],
+    ...scores.map(([user, score]) => [user.username, score.games.toString(), score.points.toString(), score.ratio])
   ], true)
 }
 
