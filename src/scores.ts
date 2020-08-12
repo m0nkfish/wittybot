@@ -75,21 +75,18 @@ function renderTable(scores: [Discord.User, Score][]): string {
 
 function asciiTable(rows: string[][], firstRowHeader: boolean): string {
   const columnWidths = rows.reduce((acc, row) => acc.map((n, i) => Math.max(n, row[i].length)), rows[0].map(_ => 0))
-  console.log('Column widths: ', columnWidths.join(','))
 
-  const res = [
-    `╔${columnWidths.map(w => '═'.repeat(w + 2)).join('╦')}╗`,
+  return [
+    `┏${columnWidths.map(w => '━'.repeat(w + 2)).join('┳')}┓`,
     ...rows.map((r, i) => {
-      const row = `║${r.map((v, j) => ` ${v.padEnd(columnWidths[j], ' ')} `).join('╬')}║`
+      const row = `┃${r.map((v, j) => ` ${v.padEnd(columnWidths[j], ' ')} `).join('┃')}┃`
       if (i === 0 && firstRowHeader) {
-        const border = `╠${columnWidths.map(w => '═'.repeat(w + 2)).join('╬')}╣`
+        const border = `┣${columnWidths.map(w => '━'.repeat(w + 2)).join('╋')}┫`
         return row + '\n' + border
       }
       return row
     }),
-    `╚${columnWidths.map(w => '═'.repeat(w + 2)).join('╩')}╝`
+    `┗${columnWidths.map(w => '━'.repeat(w + 2)).join('┻')}┛`
     ]
     .join('\n')
-  console.log(res)
-  return res
 }
