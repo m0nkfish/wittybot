@@ -22,9 +22,32 @@ client.on('ready', () => {
     .setFooter(`This version has ${prompts.length} miscellaneous prompts, quotes, lyrics and proverbs`) })
 });
 
-client.on('messageDelete', msg => {
-  if (msg.author === client.user && msg.channel instanceof Discord.TextChannel) {
-    msg.channel.send('Someone deleted a wittybot message from this channel...!')
+client.on('messageDelete', async message => {
+  if (message.author && message.author === client.user && message.guild && message.channel instanceof Discord.TextChannel) {
+    const fetchedLogs = await message.guild.fetchAuditLogs({
+      limit: 1,
+      type: 'MESSAGE_DELETE',
+    });
+    // Since we only have 1 audit log entry in this collection, we can simply grab the first one
+    const deletionLog = fetchedLogs.entries.first();
+
+    // Let's perform a coherence check here and make sure we got *something*
+    if (!deletionLog) {
+      console.log(`A ${message.author.tag} message was deleted by a mystery user.`);
+      return
+    }
+
+    // We now grab the user object of the person who deleted the message
+    // Let us also grab the target of this action to double check things
+    const { executor, target } = deletionLog;
+
+    // And now we can update our output with a bit more information
+    // We will also run a check to make sure the log we got was for the same author's message
+    if (target instanceof Discord.User && target === message.author) {
+      console.log(`A ${message.author.tag} message was deleted by <@${executor.id}>.`);
+    } else {
+      console.log(`A ${message.author.tag} message was deleted by a mystery user.`);
+    }
   }
 })
 
