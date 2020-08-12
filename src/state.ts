@@ -84,11 +84,15 @@ export class SubmissionState implements GameState {
 
   receive(command: Command): Action | undefined {
     if (command.type === 'submit') {
+      if (command.submission.length > 280) {
+        return Message(command.user, 'Submissions cannot be more than 280 characters long')
+      }
+
       const messages: Action[] = []
       if (this.submissions.has(command.user)) {
-        messages.push(Message(command.user.dmChannel, `Replacement submission accepted`))
+        messages.push(Message(command.user, `Replacement submission accepted`))
       } else {
-        messages.push(Message(command.user.dmChannel, `Submission accepted`))
+        messages.push(Message(command.user, `Submission accepted`))
         messages.push(Message(this.channel, `Submission received from <@${command.user.id}>`))
       }
       return CompositeAction([
