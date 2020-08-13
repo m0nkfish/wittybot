@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, readdir } from 'fs'
+import { readFileSync, readdirSync } from 'fs'
 import path from 'path'
 import { pick } from 'random-js';
 import { mt } from './random';
@@ -39,26 +39,24 @@ const globalReplace = new Map(
     .map(f => [path.basename(f, '.txt'), lines(f)]))
 
 export function choosePrompt(users: string[]) {
-  function template(str: string) {
-    const replace = new Map(globalReplace)
-      .set('user', users)
-
-    const regex = new RegExp(`{(${Array.from(replace.keys()).join('|')})}`, "g")
-    return str
-      .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))
-      .replace(regex, str => {
-        const type = str.substring(1, str.length - 1)
-        const choices = replace.get(type)
-        if (!choices) {
-          return str
-        }
-        const choice = pick(mt, choices)
-        if (choices.length > 1) { // don't use the same choice twice in the same prompt if we can help it
-          replace.set(type, choices.filter(x => x != choice))
-        }
-        return choice
-      })
-  }
+  const prompt = pick(mt, prompts)
   
-  return template(pick(mt, prompts))
+  const replacements = new Map(globalReplace)
+    .set('user', users)
+
+  const regex = new RegExp(`{(${Array.from(replacements.keys()).join('|')})}`, "g")
+  return prompt
+    .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))
+    .replace(regex, str => {
+      const type = str.substring(1, str.length - 1)
+      const choices = replacements.get(type)
+      if (!choices) { // this should never happen given the regex construction!
+        return str
+      }
+      const choice = pick(mt, choices)
+      if (choices.length > 1) { // don't use the same choice twice in the same prompt if we can help it
+        replacements.set(type, choices.filter(x => x != choice))
+      }
+      return choice
+    })
 }
