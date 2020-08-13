@@ -9,7 +9,8 @@ export class Score {
   }
 
   get rating() {
-    return this.games * this.points / this.ofPossible
+    // games played modifier caps at 20
+    return Math.min(20, this.games) * this.points / this.ofPossible
   }
 
   get ratio() {
@@ -49,15 +50,15 @@ export class Scores {
     const description = 
       positiveScoresInOrder.length === 0
         ? `Nobody has scored since the bot was last restarted (start a game with the **!witty** command)`
-        : [`The scores are:`,
-          '```',
-          renderTable(positiveScoresInOrder.slice(0, 10)),
-          '```'
-        ]
+        : [`Current rating formula: \`min(20, games played) * total points scored / total points available\``]
 
     return EmbedMessage(channel, new Discord.MessageEmbed()
       .setTitle(`Scores on the doors...`)
-      .setDescription(description))
+      .setDescription(description)
+      .addFields(positiveScoresInOrder.slice(0, 25).map(([user, score], i) => ({
+        name: `${i+1}. ${user.username} with a rating of ${score.rating}`,
+        value: `${score.points} points of a possible ${score.ofPossible} (${score.ratio}), over ${score.games}`
+      }))))
   }
 
   static fromRound(arr: Array<[Discord.User, number]>): Scores {
