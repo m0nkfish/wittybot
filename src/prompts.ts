@@ -1,21 +1,30 @@
-import { readFileSync } from 'fs'
+import { readFileSync, readdirSync, readdir } from 'fs'
 import path from 'path'
 import { pick } from 'random-js';
 import { mt } from './random';
 
-function resource(name: string) {
-  return readFileSync(path.resolve(process.cwd(), 'resources', name), 'utf8')
+function resourcePath(...name: string[]) {
+  return path.resolve(process.cwd(), 'resources', ...name)
+}
+
+function resourceLines(...name: string[]) {
+  return lines(resourcePath(...name))
+}
+
+function lines(path: string) {
+  return readFileSync(path, 'utf8')
     .replace(/_____/g, '\\_\\_\\_\\_\\_')
     .split('\n')
     .map(s => s.replace(/\n|\r/g, '')) // some of the resources originated in windows...
     .filter(s => s !== '')
+
 }
 
-const misc = resource('MiscPrompts.txt').map(line => `:arrow_forward: ${line}`)
-const quotes = resource('Quotes.txt').map(line => `:speech_balloon: “${line}”`)
-const proverbs = resource('Proverbs.txt').map(line => `:older_man: As the proverb goes, “${line}”`)
-const lyrics = resource('Lyrics.txt').map(line => `:notes: ${line} :notes:`)
-const headlines = resource('Headlines.txt').map(line => `:newspaper2: Breaking News: ${line}`)
+const misc = resourceLines('MiscPrompts.txt').map(line => `:arrow_forward: ${line}`)
+const quotes = resourceLines('Quotes.txt').map(line => `:speech_balloon: “${line}”`)
+const proverbs = resourceLines('Proverbs.txt').map(line => `:older_man: As the proverb goes, “${line}”`)
+const lyrics = resourceLines('Lyrics.txt').map(line => `:notes: ${line} :notes:`)
+const headlines = resourceLines('Headlines.txt').map(line => `:newspaper2: Breaking News: ${line}`)
 
 export const prompts = [
   ...misc,
@@ -25,29 +34,28 @@ export const prompts = [
   ...headlines
 ]
 
-const globalReplace = {
-  celeb: resource('People.txt'),
-  language: resource('Languages.txt'),
-  country: resource('Countries.txt'),
-  nationality: resource('Nationalities.txt')
-}
+const globalReplace = new Map(
+  readdirSync(resourcePath('replace'))
+    .map(f => [path.basename(f, '.txt'), lines(f)]))
 
 export function choosePrompt(users: string[]) {
   function template(str: string) {
-    const replace = {
-      ...globalReplace,
-      user: users
-    }
+    const replace = new Map(globalReplace)
+      .set('user', users)
 
-    const regex = new RegExp(`{(${Object.keys(replace).join('|')})}`, "g")
+    const regex = new RegExp(`{(${Array.from(replace.keys()).join('|')})}`, "g")
     return str
       .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))
       .replace(regex, str => {
-        const type = str.substring(1, str.length - 1) as keyof typeof replace
-        const choices = replace[type]
+        const type = str.substring(1, str.length - 1)
+        const choices = replace.get(type)
+        if (!choices) {
+          return str
+        }
         const choice = pick(mt, choices)
-        const remaining = choices.length > 1 ? choices.filter(x => x != choice) : choices
-        replace[type] = remaining
+        if (choices.length > 1) { // don't use the same choice twice in the same prompt if we can help it
+          replace.set(type, choices.filter(x => x != choice))
+        }
         return choice
       })
   }
