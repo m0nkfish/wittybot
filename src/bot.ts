@@ -19,7 +19,7 @@ client.on('ready', () => {
   }
   channel.send({ embed: new Discord.MessageEmbed()
     .setTitle('Bot restarted/redeployed')
-    .setFooter(`This version has ${prompts.length} miscellaneous prompts, quotes, lyrics and proverbs`) })
+    .setFooter(`This version has ${prompts.length} miscellaneous prompts, quotes, lyrics, headlines and proverbs`) })
 });
 
 client.on('messageDelete', async message => {

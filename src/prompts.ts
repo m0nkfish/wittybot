@@ -15,12 +15,14 @@ const misc = resource('MiscPrompts.txt').map(line => `:arrow_forward: ${line}`)
 const quotes = resource('Quotes.txt').map(line => `:speech_balloon: “${line}”`)
 const proverbs = resource('Proverbs.txt').map(line => `:older_man: As the proverb goes, “${line}”`)
 const lyrics = resource('Lyrics.txt').map(line => `:notes: ${line} :notes:`)
+const headlines = resource('Headlines.txt').map(line => `:newspaper2: Breaking News: ${line}`)
 
 export const prompts = [
   ...misc,
   ...quotes,
   ...proverbs,
-  ...lyrics
+  ...lyrics,
+  ...headlines
 ]
 
 const globalReplace = {
