@@ -226,11 +226,18 @@ export class VotingState implements GameState {
       }
       return b.votes.length - a.votes.length
     })
+
+    let title = `The votes are in!`
+    const sweep = withVotes.find(x => x.voted && x.votes.length === withVotes.length - 1)
+    if (sweep) {
+      title = title + ` ${sweep.user.username} sweeps the board!`
+    } else if (withVotes.every(v => v.voted && v.votes.length === 1)) {
+      title = title + ` It's a ${withVotes.length}-way split!`
+    }
     
     const resultsMessage = new Discord.MessageEmbed()
-      .setTitle(`The votes are in!`)
+      .setTitle(title)
       .setDescription([
-        `Complete the following sentence:`,
         `**${this.prompt}**`,
         ``,
         ...withVotes.map(x => {
