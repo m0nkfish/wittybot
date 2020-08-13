@@ -35,7 +35,7 @@ export const prompts = [
 
 const globalReplace = new Map(
   readdirSync(resourcePath('replace'))
-    .map(f => [path.basename(f, '.txt'), resourceLines('resources', f)]))
+    .map(f => [path.basename(f, '.txt'), resourceLines('replace', f)]))
 
 export function choosePrompt(users: string[]) {
   const prompt = pick(mt, prompts)
