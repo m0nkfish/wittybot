@@ -42,6 +42,9 @@ export class Engine {
     }
 
     if (command.type === 'get-scores') {
+      if (command.channel instanceof Discord.TextChannel && !(this.state instanceof IdleState)) {
+        return Message(command.channel, 'Scores not shown in channels mid-game to avoid flooding. Try DM!')
+      }
       return this.state.context.scores.show(command.channel)
     }
 
