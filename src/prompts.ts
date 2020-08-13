@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from 'fs'
 import path from 'path'
-import { pick } from 'random-js';
+import { pick, integer } from 'random-js';
 import { mt } from './random';
 
 function resourcePath(...name: string[]) {
@@ -19,32 +19,56 @@ function lines(path: string) {
     .filter(s => s !== '')
 }
 
-const misc = resourceLines('prompts', 'Misc.txt').map(line => `:arrow_forward: ${line}`)
-const quotes = resourceLines('prompts', 'Quotes.txt').map(line => `:speech_balloon: “${line}”`)
-const proverbs = resourceLines('prompts', 'Proverbs.txt').map(line => `:older_man: As the proverb goes, “${line}”`)
-const lyrics = resourceLines('prompts', 'Lyrics.txt').map(line => `:notes: ${line} :notes:`)
-const headlines = resourceLines('prompts', 'Headlines.txt').map(line => `:newspaper2: Breaking News: ${line}`)
+function loadPrompts(file: string, format: (base: string) => string) {
+  return {
+    prompts: resourceLines('prompts', file),
+    format
+  }
+}
 
-export const prompts = [
-  ...misc,
-  ...quotes,
-  ...proverbs,
-  ...lyrics,
-  ...headlines
+const misc = loadPrompts('Misc.txt', line => `:arrow_forward: ${line}`)
+const quotes = loadPrompts('Quotes.txt', line => `:speech_balloon: “${line}”`)
+const proverbs = loadPrompts('Proverbs.txt', line => `:older_man: As the proverb goes, “${line}”`)
+const lyrics = loadPrompts('Lyrics.txt', line => `:notes: ${line} :notes:`)
+const headlines = loadPrompts('Headlines.txt', line => `:newspaper2: Breaking News: ${line}`)
+
+const allPrompts = [
+  misc,
+  quotes,
+  proverbs,
+  lyrics,
+  headlines
 ]
+
+export const promptsCount = allPrompts.reduce((acc, p) => acc + p.prompts.length, 0)
 
 const globalReplace = new Map(
   readdirSync(resourcePath('replace'))
     .map(f => [path.basename(f, '.txt'), resourceLines('replace', f)]))
 
+function pickWeighted<T>(list: Array<[T, number]>): T {
+  const total = list.map(x => x[1]).reduce((a, b) => a + b, 0)
+  let n = integer(1, total)(mt)
+  for (const [x,w] of list) {
+    if (n <= w) {
+      return x
+    } else {
+      n -= w
+    }
+  }
+  throw new Error('Weighted random went wrong!')
+}
+
 export function choosePrompt(users: string[]) {
+  const {prompts, format} = pickWeighted(allPrompts.map(item => [item, item.prompts.length]))
+
   const prompt = pick(mt, prompts)
   
   const replacements = new Map(globalReplace)
     .set('user', users)
 
   const regex = new RegExp(`{(${Array.from(replacements.keys()).join('|')})}`, "g")
-  return prompt
+  const replaced = prompt
     .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))
     .replace(regex, str => {
       const type = str.substring(1, str.length - 1)
@@ -58,4 +82,6 @@ export function choosePrompt(users: string[]) {
       }
       return choice
     })
+
+    return format(replaced)
 }

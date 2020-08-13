@@ -4,7 +4,7 @@ import { Action, EmbedMessage, AddUserToRole, RemoveUserFromRole, CompositeActio
 import * as Discord from 'discord.js';
 import { Command, GetScores, Help, NotifyMe, UnnotifyMe } from './commands';
 import { getNotifyRole } from './notify';
-import { prompts } from './prompts';
+import { promptsCount } from './prompts';
 
 export class Engine {
   state: GameState
@@ -79,7 +79,7 @@ export class Engine {
           `**!unnotify** - stop being notified when a new game starts`,
           `**!scores** - view the scoreboard`
         ])
-        .setFooter(`This version has ${prompts.length} miscellaneous prompts, quotes, lyrics, headlines and proverbs`))
+        .setFooter(`This version has ${promptsCount} miscellaneous prompts, quotes, lyrics, headlines and proverbs`))
         
     }
   }
