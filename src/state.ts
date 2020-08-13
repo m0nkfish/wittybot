@@ -47,8 +47,11 @@ export class IdleState implements GameState {
     const prompt = choosePrompt(users.map(u => u.username))
     const embed = new Discord.MessageEmbed()
       .setTitle('A new round begins! Complete the prompt')
-      .setDescription(prompt)
-      .setFooter(`You have ${this.context.config.submitDurationSec} seconds to come up with an answer; submit by DMing <@${this.context.client.user?.id}> (:point_left: on desktop just click here)`)
+      .setDescription([
+        prompt,
+        ``,
+        `Submit by DMing <@${this.context.client.user?.id}> (:point_left: on desktop just click here)`])
+      .setFooter(`You have ${this.context.config.submitDurationSec} seconds to come up with an answer`)
 
     const gameId = uuid4(mt)
 
@@ -126,12 +129,13 @@ export class SubmissionState implements GameState {
     const embed = new Discord.MessageEmbed()
       .setTitle(`Time's up!`)
       .setDescription([
-        `Complete the following sentence:`,
-        `${this.prompt}`,
+        `**${this.prompt}**`,
         ``,
-        ...shuffled.map((x, i) => `${i + 1}. ${x.submission}`)
+        ...shuffled.map((x, i) => `${i + 1}. ${x.submission}`),
+        ``,
+        `Vote for your favourite by DMing <@${this.context.client.user?.id}> with the entry number`
       ])
-      .setFooter(`Vote for your favourite by DMing <@${this.context.client.user?.id}> with the entry number. You have ${voteDurationSec} seconds`)
+      .setFooter(`You have ${voteDurationSec} seconds`)
 
     return CompositeAction([
       NewState(VotingState.begin(this.context, this.channel, this.prompt, shuffled)),
