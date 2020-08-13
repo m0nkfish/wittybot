@@ -17,14 +17,13 @@ function lines(path: string) {
     .split('\n')
     .map(s => s.replace(/\n|\r/g, '')) // some of the resources originated in windows...
     .filter(s => s !== '')
-
 }
 
-const misc = resourceLines('MiscPrompts.txt').map(line => `:arrow_forward: ${line}`)
-const quotes = resourceLines('Quotes.txt').map(line => `:speech_balloon: “${line}”`)
-const proverbs = resourceLines('Proverbs.txt').map(line => `:older_man: As the proverb goes, “${line}”`)
-const lyrics = resourceLines('Lyrics.txt').map(line => `:notes: ${line} :notes:`)
-const headlines = resourceLines('Headlines.txt').map(line => `:newspaper2: Breaking News: ${line}`)
+const misc = resourceLines('prompts', 'Misc.txt').map(line => `:arrow_forward: ${line}`)
+const quotes = resourceLines('prompts', 'Quotes.txt').map(line => `:speech_balloon: “${line}”`)
+const proverbs = resourceLines('prompts', 'Proverbs.txt').map(line => `:older_man: As the proverb goes, “${line}”`)
+const lyrics = resourceLines('prompts', 'Lyrics.txt').map(line => `:notes: ${line} :notes:`)
+const headlines = resourceLines('prompts', 'Headlines.txt').map(line => `:newspaper2: Breaking News: ${line}`)
 
 export const prompts = [
   ...misc,
