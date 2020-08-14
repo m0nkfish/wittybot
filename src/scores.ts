@@ -62,7 +62,7 @@ export class Scores {
       .setTitle(`Scores on the doors...`)
       .setDescription(description)
       .addFields(positiveScoresInOrder.slice(0, 25).map(([user, score], i) => ({
-        name: `${i+1}. ${emoji(i)}${user.username} with a rating of ${score.rating}`,
+        name: `${i+1}. ${emoji(i)}${user.username} with a rating of ${score.rating.toFixed(2)}`,
         value: `${score.points} points of a possible ${score.ofPossible} (${score.ratio}), over ${score.games} games`
       }))))
   }
