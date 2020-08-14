@@ -14,16 +14,13 @@ export class Engine {
   }
 
   getCommand(message: Discord.Message): Command | undefined {
-    const command = this.state.interpreter(message)
-    if (command) {
-      return command
+    if (message.channel instanceof Discord.NewsChannel) {
+      return
     }
-
     if (message.content === '!scores') {
-      const channel = message.channel instanceof Discord.TextChannel ? message.channel : message.author.dmChannel
-      return GetScores(message.author, channel)
+      return GetScores(message.author, message.channel)
     }
-    if (message.content === '!help' && (message.channel instanceof Discord.TextChannel || message.channel instanceof Discord.DMChannel)) {
+    if (message.content === '!help') {
       return Help(message.author, message.channel)
     }
     if (message.content === '!notify' && message.member) {
@@ -31,6 +28,11 @@ export class Engine {
     }
     if (message.content === '!unnotify' && message.member) {
       return UnnotifyMe(message.member)
+    }
+
+    const command = this.state.interpreter(message)
+    if (command) {
+      return command
     }
   }
 
