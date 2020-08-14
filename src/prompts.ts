@@ -15,7 +15,8 @@ function lines(path: string) {
   return readFileSync(path, 'utf8')
     .replace(/_____/g, '\\_\\_\\_\\_\\_')
     .split('\n')
-    .map(s => s.replace(/\n|\r/g, '')) // some of the resources originated in windows...
+    .map(s => s.replace(/\r/g, '')) // some of the resources originated in windows...
+    .map(s => s.replace(/\\n/g, '\n')) // allow multiline prompts
     .filter(s => s !== '')
 }
 
