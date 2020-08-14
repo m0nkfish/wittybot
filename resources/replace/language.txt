@@ -6,6 +6,7 @@ German
 Hindi
 Italian
 Japanese
+Klingon
 Mandarin
 Polish
 Portuguese
