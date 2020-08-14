@@ -91,7 +91,7 @@ export class SubmissionState implements GameState {
       if (this.submissions.has(command.user)) {
         messages.push(Message(command.user, `Replacement submission accepted`))
       } else {
-        messages.push(Message(command.user, `Submission accepted`))
+        messages.push(Message(command.user, `Submission accepted, DM again to replace it`))
         messages.push(Message(this.channel, `Submission received from <@${command.user.id}>`))
       }
       return CompositeAction([
@@ -187,7 +187,7 @@ export class VotingState implements GameState {
       }
 
       return CompositeAction([
-        Message(user.dmChannel, `Vote recorded for entry ${entry}: '${submission.submission}'`),
+        Message(user.dmChannel, `Vote recorded for entry ${entry}: '${submission.submission}', DM again to replace it`),
         FromStateAction(state => {
           if (state instanceof VotingState && state.context.gameId === this.context.gameId) {
             const newState = state.withVote(user, entry)
@@ -237,7 +237,7 @@ export class VotingState implements GameState {
     const resultsMessage = new Discord.MessageEmbed()
       .setTitle(title)
       .setDescription([
-        `**${this.prompt}**`,
+        this.prompt,
         ``,
         ...withVotes.map(x => {
           let name = `**${x.user.username}**`
