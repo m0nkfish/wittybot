@@ -1,13 +1,13 @@
 import * as Discord from 'discord.js'
 import { Command, Begin, Submit, Vote, Skip } from './commands';
-import { Action, CompositeAction, NewState, DelayedAction, EmbedMessage, FromStateAction, NullAction, Message, UpdateState, Send } from './actions';
+import { Action, CompositeAction, NewState, DelayedAction, EmbedMessage, FromStateAction, NullAction, UpdateState, Send } from './actions';
 import { choosePrompt } from './prompts';
 import { shuffle, uuid4 } from 'random-js';
 import { mt } from './random';
 import { Context } from './context';
 import { Scores } from './scores';
 import { getNotifyRole } from './notify';
-import { NewRoundMessage, GameStartedMessage } from './messages';
+import { NewRoundMessage, GameStartedMessage, BasicMessage } from './messages';
 
 type Prompt = string
 type Submission = { user: Discord.User, submission: string }
@@ -76,16 +76,17 @@ export class SubmissionState implements GameState {
   receive(command: Command): Action | undefined {
     if (command.type === 'submit') {
       if (command.submission.length > 280) {
-        return Message(command.user, 'Submissions cannot be more than 280 characters long')
+        return Send(command.user, new BasicMessage('Submissions cannot be more than 280 characters long'))
       }
 
-      const messages: Action[] = []
-      if (this.submissions.has(command.user)) {
-        messages.push(Message(command.user, `Replacement submission accepted`))
-      } else {
-        messages.push(Message(command.user, `Submission accepted, DM again to replace it`))
-        messages.push(Message(this.channel, `Submission received from <@${command.user.id}>`))
-      }
+      const messages =
+        this.submissions.has(command.user)
+          ? [Send(command.user, new BasicMessage(`Replacement submission accepted`))]
+          : [
+            Send(command.user, new BasicMessage(`Submission accepted, DM again to replace it`)),
+            Send(this.channel, new BasicMessage(`Submission received from <@${command.user.id}>`))
+          ]
+
       return CompositeAction([
         ...messages,
         UpdateState(state => state instanceof SubmissionState ? state.withSubmission(command.user, command.submission) : state),
@@ -93,11 +94,11 @@ export class SubmissionState implements GameState {
     } else if (command.type === 'skip') {
       if (this.submissions.size === 0) {
         return CompositeAction([
-          Message(command.channel, `Skipping this prompt`),
+          Send(command.channel, new BasicMessage(`Skipping this prompt`)),
           endGame(this.context, this.channel)
         ])
       } else {
-        return Message(command.channel, `Prompt already has submissions; won't skip`)
+        return Send(command.channel, new BasicMessage(`Prompt already has submissions; won't skip`))
       }
     }
   }
@@ -108,7 +109,7 @@ export class SubmissionState implements GameState {
   finish = (): Action => {
     if ((!this.context.config.testMode && this.submissions.size < 3) || this.submissions.size < 1) {
       return CompositeAction([
-        Message(this.channel, `Not enough submissions to continue`),
+        Send(this.channel, new BasicMessage(`Not enough submissions to continue`)),
         this.context.scores.show(this.channel),
         NewState(new IdleState(this.context))
       ])
@@ -162,11 +163,11 @@ export class VotingState implements GameState {
     if (command.type === 'vote') {
       const { entry, user } = command
       if (entry < 1 || this.submissions.length < entry) {
-        return Message(user.dmChannel, `You must vote between 1 and ${this.submissions.length}`)
+        return Send(user, new BasicMessage(`You must vote between 1 and ${this.submissions.length}`))
       }
 
       if (!this.submissions.some(x => x.user === user)) {
-        return Message(user.dmChannel, `You must have submitted an entry in order to vote`)
+        return Send(user, new BasicMessage(`You must have submitted an entry in order to vote`))
       }
 
       const submission = this.submissions[entry - 1]
@@ -174,11 +175,11 @@ export class VotingState implements GameState {
         return
       }
       if (!this.context.config.testMode && submission.user === user) {
-        return Message(user.dmChannel, `You cannot vote for your own entry`)
+        return Send(user, new BasicMessage(`You cannot vote for your own entry`))
       }
 
       return CompositeAction([
-        Message(user.dmChannel, `Vote recorded for entry ${entry}: '${submission.submission}', DM again to replace it`),
+        Send(user, new BasicMessage(`Vote recorded for entry ${entry}: '${submission.submission}', DM again to replace it`)),
         FromStateAction(state => {
           if (state instanceof VotingState && state.context.gameId === this.context.gameId) {
             const newState = state.withVote(user, entry)
