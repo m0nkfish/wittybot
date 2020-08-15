@@ -78,3 +78,24 @@ export class GameStartedMessage extends BasicMessage {
     super(`Calling all <@&${notifyRole.id}>! (:point_left: type !notify if you want to be in this group) A new game was started by <@${startedBy.id}>`)
   }
 }
+
+export class VoteMessage implements Message {
+  constructor(
+    readonly prompt: string,
+    readonly submissions: Array<{ user: Discord.User, submission: string }>,
+    readonly botUser: Discord.User,
+    readonly voteDurationSec: number) {}
+
+  get content() {
+    return new Discord.MessageEmbed()
+      .setTitle(`Time's up!`)
+      .setDescription([
+        `**${this.prompt}**`,
+        ``,
+        ...this.submissions.map((x, i) => `${i + 1}. ${x.submission}`),
+        ``,
+        `Vote for your favourite by DMing <@${this.botUser.id}> with the entry number`
+      ])
+      .setFooter(`You have ${this.voteDurationSec} seconds`)
+  }
+}

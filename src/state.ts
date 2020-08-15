@@ -7,7 +7,7 @@ import { mt } from './random';
 import { Context } from './context';
 import { Scores } from './scores';
 import { getNotifyRole } from './notify';
-import { NewRoundMessage, GameStartedMessage, BasicMessage } from './messages';
+import { NewRoundMessage, GameStartedMessage, BasicMessage, VoteMessage } from './messages';
 
 type Prompt = string
 type Submission = { user: Discord.User, submission: string }
@@ -119,21 +119,10 @@ export class SubmissionState implements GameState {
 
     const voteDurationSec = this.submissions.size * 10
 
-    const embed = new Discord.MessageEmbed()
-      .setTitle(`Time's up!`)
-      .setDescription([
-        `**${this.prompt}**`,
-        ``,
-        ...shuffled.map((x, i) => `${i + 1}. ${x.submission}`),
-        ``,
-        `Vote for your favourite by DMing <@${this.context.client.user?.id}> with the entry number`
-      ])
-      .setFooter(`You have ${voteDurationSec} seconds`)
-
     return CompositeAction([
       NewState(VotingState.begin(this.context, this.channel, this.prompt, shuffled)),
       DelayedAction(voteDurationSec * 1000, FromStateAction(state => state instanceof VotingState && state.context.gameId === this.context.gameId ? state.finish() : NullAction())),
-      EmbedMessage(this.channel, embed)
+      Send(this.channel, new VoteMessage(this.prompt, shuffled, this.context.client.user!, voteDurationSec))
     ])
   }
 
