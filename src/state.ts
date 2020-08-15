@@ -1,13 +1,13 @@
 import * as Discord from 'discord.js'
 import { Command, Begin, Submit, Vote, Skip } from './commands';
-import { Action, CompositeAction, NewState, DelayedAction, EmbedMessage, FromStateAction, NullAction, UpdateState, Send } from './actions';
+import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, NullAction, UpdateState, Send } from './actions';
 import { choosePrompt } from './prompts';
 import { shuffle, uuid4 } from 'random-js';
 import { mt } from './random';
 import { Context } from './context';
 import { Scores } from './scores';
 import { getNotifyRole } from './notify';
-import { NewRoundMessage, GameStartedMessage, BasicMessage, VoteMessage } from './messages';
+import { NewRoundMessage, GameStartedMessage, BasicMessage, VoteMessage, VotingFinishedMessage } from './messages';
 
 type Prompt = string
 type Submission = { user: Discord.User, submission: string }
@@ -207,33 +207,6 @@ export class VotingState implements GameState {
       return b.votes.length - a.votes.length
     })
 
-    let title = `The votes are in!`
-    const sweep = withVotes.find(x => x.voted && x.votes.length === withVotes.length - 1)
-    if (sweep) {
-      title = title + ` ${sweep.user.username} sweeps the board!`
-    } else if (withVotes.every(v => v.voted && v.votes.length === 1)) {
-      title = title + ` It's a ${withVotes.length}-way split!`
-    }
-    
-    const resultsMessage = new Discord.MessageEmbed()
-      .setTitle(title)
-      .setDescription([
-        this.prompt,
-        ``,
-        ...withVotes.map(x => {
-          let name = `**${x.user.username}**`
-          if (x.voted) {
-            name = name + `, with ${x.votes.length} votes`
-            if (x.votes.length > 0) {
-              name = name + `: ${x.votes.map(v => v.username).join(', ')}`
-            }
-          } else {
-            name = name + `, who didn't vote`
-          }
-          return `• ${x.submission} (${name})`
-        })
-      ])
-
 
     const newContext = {
       ...this.context,
@@ -242,7 +215,7 @@ export class VotingState implements GameState {
     }
 
     return CompositeAction([
-      EmbedMessage(this.channel, resultsMessage),
+      Send(this.channel, new VotingFinishedMessage(this.prompt, withVotes)),
       endGame(newContext, this.channel)
     ])
   }

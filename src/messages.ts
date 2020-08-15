@@ -99,3 +99,39 @@ export class VoteMessage implements Message {
       .setFooter(`You have ${this.voteDurationSec} seconds`)
   }
 }
+
+export class VotingFinishedMessage implements Message {
+  constructor(
+    readonly prompt: string,
+    readonly withVotes: Array<{ user: Discord.User, votes: Discord.User[], voted: boolean, submission: string }>) {}
+
+  get content() {
+    let title = `The votes are in!`
+    const sweep = this.withVotes.find(x => x.voted && x.votes.length === this.withVotes.length - 1)
+    if (sweep) {
+      title = title + ` ${sweep.user.username} sweeps the board!`
+    } else if (this.withVotes.every(v => v.voted && v.votes.length === 1)) {
+      title = title + ` It's a ${this.withVotes.length}-way split!`
+    }
+
+    return new Discord.MessageEmbed()
+      .setTitle(title)
+      .setDescription([
+        this.prompt,
+        ``,
+        ...this.withVotes.map(x => {
+          let name = `**${x.user.username}**`
+          if (x.voted) {
+            name = name + `, with ${x.votes.length} votes`
+            if (x.votes.length > 0) {
+              name = name + `: ${x.votes.map(v => v.username).join(', ')}`
+            }
+          } else {
+            name = name + `, who didn't vote`
+          }
+          return `• ${x.submission} (${name})`
+        })
+      ])
+
+  }
+}
