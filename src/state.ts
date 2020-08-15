@@ -38,7 +38,7 @@ export class IdleState implements GameState {
       const notifyRole = getNotifyRole(command.channel.guild)
       const initiator = command.user
       const start = IdleState.startRound({ ...this.context, channel: command.channel, gameId: uuid4(mt), initiator })
-      return notifyRole
+      return notifyRole && !this.context.config.testMode
         ? CompositeAction([
           Send(command.channel, new GameStartedMessage(notifyRole, command.user)),
           start
