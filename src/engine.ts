@@ -101,6 +101,7 @@ export class Engine {
   }
 
   interpret = (action: Action) => {
+    this.log(action)
     if (action.type === 'composite-action') {
       action.actions.forEach(this.interpret);
     } else if (action.type === 'delayed-action') {
@@ -121,4 +122,16 @@ export class Engine {
       action.member.roles.remove(action.role)
     }
   }
+
+  log = (action: Action) => {
+    if (action.type === 'delayed-action') {
+      console.log('begin_delayed_action', `delay_ms=${action.delayMs}`)
+    } else if (action.type === 'new-state') {
+      console.log('new_state_action', `state=${name(action.newState)}`)
+    } else if (action.type === 'send-message') {
+      console.log('send_message', `message=${name(action.message)}`)
+    }
+  }
 }
+
+const name = (obj: any) => obj?.constructor?.name
