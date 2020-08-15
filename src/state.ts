@@ -1,12 +1,13 @@
 import * as Discord from 'discord.js'
 import { Command, Begin, Submit, Vote, Skip } from './commands';
-import { Action, CompositeAction, NewState, DelayedAction, EmbedMessage, FromStateAction, NullAction, Message, UpdateState } from './actions';
+import { Action, CompositeAction, NewState, DelayedAction, EmbedMessage, FromStateAction, NullAction, Message, UpdateState, Send } from './actions';
 import { choosePrompt } from './prompts';
 import { shuffle, uuid4 } from 'random-js';
 import { mt } from './random';
 import { Context } from './context';
 import { Scores } from './scores';
 import { getNotifyRole } from './notify';
+import { NewRoundMessage, GameStartedMessage } from './messages';
 
 type Prompt = string
 type Submission = { user: Discord.User, submission: string }
@@ -36,7 +37,7 @@ export class IdleState implements GameState {
       const start = this.startRound(command.channel, [command.user])
       return notifyRole
         ? CompositeAction([
-          Message(command.channel, `Calling all <@&${notifyRole.id}>! (:point_left: type !notify if you want to be in this group) A new game was started by <@${command.user.id}>`),
+          Send(command.channel, new GameStartedMessage(notifyRole, command.user)),
           start
         ])
         : start
@@ -45,20 +46,12 @@ export class IdleState implements GameState {
 
   startRound = (channel: Discord.TextChannel, users: Discord.User[]) => {
     const prompt = choosePrompt(users.map(u => u.username))
-    const embed = new Discord.MessageEmbed()
-      .setTitle('A new round begins! Complete the prompt')
-      .setDescription([
-        prompt,
-        ``,
-        `Submit by DMing <@${this.context.client.user?.id}> (:point_left: on desktop just click here)`])
-      .setFooter(`You have ${this.context.config.submitDurationSec} seconds to come up with an answer`)
-
     const gameId = uuid4(mt)
 
     return CompositeAction([
       NewState(SubmissionState.begin({ ...this.context, gameId, users }, channel, prompt)),
       DelayedAction(this.context.config.submitDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState && state.context.gameId === gameId ? state.finish() : NullAction())),
-      EmbedMessage(channel, embed)
+      Send(channel, new NewRoundMessage(this.context.client.user!, this.context.config.submitDurationSec))
     ])
   }
 }

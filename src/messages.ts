@@ -58,3 +58,23 @@ export class HelpMessage implements Message {
       .setFooter(`This version has ${this.promptsCount} miscellaneous prompts, quotes, lyrics, headlines and proverbs`)
   }
 }
+
+export class NewRoundMessage implements Message {
+  constructor(readonly botUser: Discord.User, readonly submitDurationSec: number) { }
+
+  get content() {
+    return new Discord.MessageEmbed()
+      .setTitle('A new round begins! Complete the prompt')
+      .setDescription([
+        prompt,
+        ``,
+        `Submit by DMing <@${this.botUser.id}> (:point_left: on desktop just click here)`])
+      .setFooter(`You have ${this.submitDurationSec} seconds to come up with an answer`)
+  }
+}
+
+export class GameStartedMessage extends BasicMessage {
+  constructor(notifyRole: Discord.Role, startedBy: Discord.User) {
+    super(`Calling all <@&${notifyRole.id}>! (:point_left: type !notify if you want to be in this group) A new game was started by <@${startedBy.id}>`)
+  }
+}
