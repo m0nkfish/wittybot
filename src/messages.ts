@@ -12,11 +12,16 @@ export class BasicMessage implements Message {
 }
 
 export class ReleaseMessage implements Message {
-  constructor(readonly promptsCount: number) { }
+  constructor(readonly promptsCount: number, readonly testMode: boolean) { }
 
   get content() {
+    let title = 'Bot restarted/redeployed'
+    if (this.testMode) {
+      title += ' (test mode)'
+    }
+
     return new Discord.MessageEmbed()
-      .setTitle('Bot restarted/redeployed')
+      .setTitle(title)
       .setFooter(`This version has ${this.promptsCount} miscellaneous prompts, quotes, lyrics, headlines and proverbs`)
   }
 }

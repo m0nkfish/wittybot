@@ -19,7 +19,7 @@ client.on('ready', () => {
   if (!channel) {
     return
   }
-  engine.interpret(Send(channel, new ReleaseMessage(promptsCount)))
+  engine.interpret(Send(channel, new ReleaseMessage(promptsCount, testMode)))
 });
 
 client.on('messageDelete', async message => {
