@@ -20,18 +20,18 @@ function lines(path: string) {
     .filter(s => s !== '')
 }
 
-function loadPrompts(file: string, format: (base: string) => string) {
+function loadPrompts(file: string, type: string) {
   return {
     prompts: resourceLines('prompts', file),
-    format
+    type
   }
 }
 
-const misc = loadPrompts('Misc.txt', line => `:arrow_forward: ${line}`)
-const quotes = loadPrompts('Quotes.txt', line => `:speech_balloon: “${line}”`)
-const proverbs = loadPrompts('Proverbs.txt', line => `:older_man: As the proverb goes, “${line}”`)
-const lyrics = loadPrompts('Lyrics.txt', line => `:notes: ${line} :notes:`)
-const headlines = loadPrompts('Headlines.txt', line => `:newspaper2: Breaking News: ${line}`)
+const misc = loadPrompts('Misc.txt', 'misc')
+const quotes = loadPrompts('Quotes.txt', 'quote')
+const proverbs = loadPrompts('Proverbs.txt', 'proverb')
+const lyrics = loadPrompts('Lyrics.txt', 'lyric')
+const headlines = loadPrompts('Headlines.txt', 'headline')
 
 const allPrompts = [
   misc,
@@ -60,16 +60,33 @@ function pickWeighted<T>(list: Array<[T, number]>): T {
   throw new Error('Weighted random went wrong!')
 }
 
-export function choosePrompt(users: string[]) {
-  const {prompts, format} = pickWeighted(allPrompts.map(item => [item, item.prompts.length]))
+const format: Record<string, (line: string) => string> = {
+  misc: line => `:arrow_forward: ${line}`,
+  quote: line => `:speech_balloon: “${line}”`,
+  proverb: line => `:older_man: As the proverb goes, “${line}”`,
+  lyric: line => `:notes: ${line} :notes:`,
+  headline: line => `:newspaper2: Breaking News: ${line}`
+}
 
-  const prompt = pick(mt, prompts)
+export class Prompt {
+  constructor(readonly type: string, readonly baseText: string, readonly prompt: string) { }
+
+  get formatted() {
+    const formatter = format[this.type] ?? (x => x)
+    return formatter(this.prompt)
+  }
+}
+
+export function choosePrompt(users: string[]) {
+  const {prompts, type} = pickWeighted(allPrompts.map(item => [item, item.prompts.length]))
+
+  const baseText = pick(mt, prompts)
   
   const replacements = new Map(globalReplace)
     .set('user', users)
 
   const regex = new RegExp(`{(${Array.from(replacements.keys()).join('|')})}`, "g")
-  const replaced = prompt
+  const replaced = baseText
     .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))
     .replace(regex, str => {
       const type = str.substring(1, str.length - 1)
@@ -84,5 +101,5 @@ export function choosePrompt(users: string[]) {
       return choice
     })
 
-    return format(replaced)
+    return new Prompt(type, baseText, replaced)
 }

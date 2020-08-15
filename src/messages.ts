@@ -1,5 +1,6 @@
 import * as Discord from 'discord.js'
 import { Score } from './scores';
+import { Prompt } from './prompts';
 
 export type Destination = Discord.TextChannel | Discord.User
 
@@ -54,13 +55,13 @@ export class HelpMessage implements Message {
 }
 
 export class NewRoundMessage implements Message {
-  constructor(readonly prompt: string, readonly botUser: Discord.User, readonly submitDurationSec: number) { }
+  constructor(readonly prompt: Prompt, readonly botUser: Discord.User, readonly submitDurationSec: number) { }
 
   get content() {
     return new Discord.MessageEmbed()
       .setTitle('A new round begins! Complete the prompt')
       .setDescription([
-        this.prompt,
+        this.prompt.formatted,
         ``,
         `Submit by DMing <@${this.botUser.id}> (:point_left: on desktop just click here)`])
       .setFooter(`You have ${this.submitDurationSec} seconds to come up with an answer`)
@@ -75,7 +76,7 @@ export class GameStartedMessage extends BasicMessage {
 
 export class VoteMessage implements Message {
   constructor(
-    readonly prompt: string,
+    readonly prompt: Prompt,
     readonly submissions: Array<{ user: Discord.User, submission: string }>,
     readonly botUser: Discord.User,
     readonly voteDurationSec: number) {}
@@ -84,7 +85,7 @@ export class VoteMessage implements Message {
     return new Discord.MessageEmbed()
       .setTitle(`Time's up!`)
       .setDescription([
-        `**${this.prompt}**`,
+        `**${this.prompt.formatted}**`,
         ``,
         ...this.submissions.map((x, i) => `${i + 1}. ${x.submission}`),
         ``,
@@ -96,7 +97,7 @@ export class VoteMessage implements Message {
 
 export class VotingFinishedMessage implements Message {
   constructor(
-    readonly prompt: string,
+    readonly prompt: Prompt,
     readonly withVotes: Array<{ user: Discord.User, votes: Discord.User[], voted: boolean, submission: string }>) {}
 
   get content() {
@@ -111,7 +112,7 @@ export class VotingFinishedMessage implements Message {
     return new Discord.MessageEmbed()
       .setTitle(title)
       .setDescription([
-        this.prompt,
+        this.prompt.formatted,
         ``,
         ...this.withVotes.map(x => {
           let name = `**${x.user.username}**`

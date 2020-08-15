@@ -1,7 +1,8 @@
 import * as Discord from 'discord.js';
+import { Prompt } from './prompts';
 
 export type Round = {
-  prompt: string
+  prompt: Prompt
   submissions: Map<Discord.User, {
     submission: string
     votes: Discord.User[]

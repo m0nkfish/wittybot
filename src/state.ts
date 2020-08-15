@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js'
 import { Command, Begin, Submit, Vote, Skip } from './commands';
 import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, NullAction, UpdateState, Send } from './actions';
-import { choosePrompt } from './prompts';
+import { choosePrompt, Prompt } from './prompts';
 import { shuffle, uuid4 } from 'random-js';
 import { mt } from './random';
 import { Context, Round } from './context';
@@ -9,7 +9,6 @@ import { Scores } from './scores';
 import { getNotifyRole } from './notify';
 import { NewRoundMessage, GameStartedMessage, BasicMessage, VoteMessage, VotingFinishedMessage } from './messages';
 
-type Prompt = string
 type Submission = { user: Discord.User, submission: string }
 
 export type GameState = {
