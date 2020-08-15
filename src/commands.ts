@@ -8,7 +8,8 @@ export const Skip = Case('skip', (user: Discord.User, channel: Discord.TextChann
 export const GetScores = Case('get-scores', (user: Discord.User, channel: Discord.TextChannel | Discord.DMChannel) => ({ channel, user }))
 export const NotifyMe = Case('notify-me', (member: Discord.GuildMember) => ({ member }))
 export const UnnotifyMe = Case('unnotify-me', (member: Discord.GuildMember) => ({ member }))
-export const Help = Case('help', (user: Discord.User, channel: Discord.TextChannel | Discord.DMChannel) => ({ user, channel }))
+export const Help = Case('help', (source: Discord.User | Discord.TextChannel) => ({ source }))
+
 export type Command =
   | ReturnType<typeof Begin>
   | ReturnType<typeof Submit>
