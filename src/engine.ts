@@ -122,6 +122,12 @@ export class Engine {
       action.destination.send(action.message)
     } else if (action.type === 'embed-message') {
       action.destination.send({ embed: action.embed.setColor('#A4218A') })
+    } else if (action.type === 'send-message') {
+      const content = action.message.content
+      if (content instanceof Discord.MessageEmbed) {
+        content.setColor('#A4218A')
+      }
+      action.destination.send(content)
     } else if (action.type === 'add-user-to-role') {
       action.member.roles.add(action.role)
     } else if (action.type === 'remove-user-from-role') {
