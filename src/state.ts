@@ -14,7 +14,7 @@ type Submission = { user: Discord.User, submission: string }
 
 export type GameState = {
   readonly context: Context
-  interpreter(message: Discord.Message): Command | null
+  interpreter(message: Discord.Message): Command | undefined
   receive(command: Command): Action | undefined
 }
 
@@ -29,7 +29,7 @@ export class IdleState implements GameState {
   readonly interpreter = (message: Discord.Message) =>
     message.channel instanceof Discord.TextChannel && message.content === "!witty"
       ? Begin(message.author, message.channel)
-      : null
+      : undefined
 
   receive(command: Command): Action | undefined {
     if (command.type === 'begin') {
@@ -71,7 +71,6 @@ export class SubmissionState implements GameState {
     } else if (message.channel === this.channel && message.content === '!skip') {
       return Skip(message.author, message.channel)
     }
-    return null
   }
 
   receive(command: Command): Action | undefined {
@@ -157,7 +156,6 @@ export class VotingState implements GameState {
         return Vote(message.author, entry)
       }
     }
-    return null
   }
 
   receive(command: Command): Action | undefined {
