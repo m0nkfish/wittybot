@@ -51,7 +51,9 @@ client.on('messageDelete', async message => {
   }
 })
 
-const engine = new Engine({ client, config: { submitDurationSec: 60, testMode: false }, rounds: [] })
+const testMode = process.env.TEST_MODE === "true"
+
+const engine = new Engine({ client, config: { submitDurationSec: 60, testMode }, rounds: [] })
 engine.run()
 
 client.login(process.env.BOT_TOKEN);
