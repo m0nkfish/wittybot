@@ -20,26 +20,12 @@ function lines(path: string) {
     .filter(s => s !== '')
 }
 
-function loadPrompts(file: string, type: string) {
-  return {
-    prompts: resourceLines('prompts', file),
-    type
-  }
-}
-
-const misc = loadPrompts('Misc.txt', 'misc')
-const quotes = loadPrompts('Quotes.txt', 'quote')
-const proverbs = loadPrompts('Proverbs.txt', 'proverb')
-const lyrics = loadPrompts('Lyrics.txt', 'lyric')
-const headlines = loadPrompts('Headlines.txt', 'headline')
-
-const allPrompts = [
-  misc,
-  quotes,
-  proverbs,
-  lyrics,
-  headlines
-]
+const allPrompts =
+  readdirSync(resourcePath('prompts'))
+    .map(f => ({
+      type: path.basename(f, '.txt'),
+      prompts: resourceLines('prompts', f)
+    }))
 
 export const promptsCount = allPrompts.reduce((acc, p) => acc + p.prompts.length, 0)
 
