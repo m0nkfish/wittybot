@@ -271,12 +271,10 @@ export class VotingState implements GameState {
 }
 
 function endGame(context: GameContext, channel: Discord.TextChannel) {
-  return !context.config.autoRun
-    ? NewState(new IdleState(context))
-    : CompositeAction([
-      NewState(new IdleState(context)),
-      DelayedAction(1000, FromStateAction(state => state instanceof IdleState ? state.startRound(channel, context.users) : NullAction()))
-    ])
+  return CompositeAction([
+    NewState(new IdleState(context)),
+    DelayedAction(5000, FromStateAction(state => state instanceof IdleState ? state.startRound(channel, context.users) : NullAction()))
+  ])
 }
 
 const tryParseInt = (str: string) => {

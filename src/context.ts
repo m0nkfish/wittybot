@@ -8,6 +8,5 @@ export type Context = {
   config: {
     submitDurationSec: number
     testMode?: boolean
-    autoRun?: boolean
   }
 }
