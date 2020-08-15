@@ -18,11 +18,12 @@ export class Engine {
     if (message.channel instanceof Discord.NewsChannel) {
       return
     }
+    const source = message.channel instanceof Discord.TextChannel ? message.channel : message.author
     if (message.content === '!scores') {
-      return GetScores(message.author, message.channel)
+      return GetScores(source)
     }
     if (message.content === '!help') {
-      return Help(message.channel instanceof Discord.TextChannel ? message.channel : message.author)
+      return Help(source)
     }
     if (message.content === '!notify' && message.member) {
       return NotifyMe(message.member)
@@ -45,10 +46,10 @@ export class Engine {
     }
 
     if (command.type === 'get-scores') {
-      if (command.channel instanceof Discord.TextChannel && !(this.state instanceof IdleState)) {
-        return Send(command.channel, new BasicMessage(`Scores not shown in channels mid-game to avoid flooding. Try DM!`))
+      if (command.source instanceof Discord.TextChannel && !(this.state instanceof IdleState)) {
+        return Send(command.source, new BasicMessage(`Scores not shown in channels mid-game to avoid flooding. Try DM!`))
       }
-      return this.state.context.scores.show(command.channel)
+      return this.state.context.scores.show(command.source)
     }
 
     if (command.type === 'notify-me') {
@@ -106,10 +107,6 @@ export class Engine {
       this.interpret(action.getAction(this.state))
     } else if (action.type === 'new-state') {
       this.state = action.newState
-    } else if (action.type === 'post-message') {
-      action.destination.send(action.message)
-    } else if (action.type === 'embed-message') {
-      action.destination.send({ embed: action.embed.setColor('#A4218A') })
     } else if (action.type === 'send-message') {
       const content = action.message.content
       if (content instanceof Discord.MessageEmbed) {
