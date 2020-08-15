@@ -48,7 +48,10 @@ export class IdleState implements GameState {
   }
 
   static startRound = (context: GameContext) => {
-    let users = Array.from(context.rounds[context.rounds.length - 1].submissions.keys())
+    let users: Discord.User[] = []
+    if (context.rounds.length > 0) {
+      users = Array.from(context.rounds[context.rounds.length - 1].submissions.keys())
+    }
     if (users.length === 0) {
       users = [context.initiator]
     }
