@@ -57,11 +57,10 @@ export class IdleState implements GameState {
     }
 
     const prompt = choosePrompt(users.map(u => u.username))
-    const gameId = uuid4(mt)
 
     return CompositeAction([
       NewState(SubmissionState.begin(context, prompt)),
-      DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState && state.context.gameId === gameId ? state.finish() : NullAction())),
+      DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState && state.context.gameId === context.gameId ? state.finish() : NullAction())),
       Send(context.channel, new NewRoundMessage(prompt, context.client.user!, context.config.submitDurationSec))
     ])
   }
