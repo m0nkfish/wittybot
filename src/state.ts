@@ -62,7 +62,7 @@ export class IdleState implements GameState {
     return CompositeAction([
       NewState(SubmissionState.begin(context, prompt)),
       DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState && state.context.gameId === gameId ? state.finish() : NullAction())),
-      Send(context.channel, new NewRoundMessage(context.client.user!, context.config.submitDurationSec))
+      Send(context.channel, new NewRoundMessage(prompt, context.client.user!, context.config.submitDurationSec))
     ])
   }
 }

@@ -54,13 +54,13 @@ export class HelpMessage implements Message {
 }
 
 export class NewRoundMessage implements Message {
-  constructor(readonly botUser: Discord.User, readonly submitDurationSec: number) { }
+  constructor(readonly prompt: string, readonly botUser: Discord.User, readonly submitDurationSec: number) { }
 
   get content() {
     return new Discord.MessageEmbed()
       .setTitle('A new round begins! Complete the prompt')
       .setDescription([
-        prompt,
+        this.prompt,
         ``,
         `Submit by DMing <@${this.botUser.id}> (:point_left: on desktop just click here)`])
       .setFooter(`You have ${this.submitDurationSec} seconds to come up with an answer`)
