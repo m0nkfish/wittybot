@@ -1,6 +1,7 @@
 import * as Discord from 'discord.js';
 import { Send } from './actions';
 import { ScoresMessage } from './messages';
+import { Round } from './context';
 
 export class Score {
   constructor(readonly points: number, readonly ofPossible: number, readonly games: number) {}
@@ -42,6 +43,12 @@ export class Scores {
 
   static empty(): Scores {
     return new Scores(new Map())
+  }
+
+  static fromRounds(rounds: Round[]): Scores {
+    return rounds
+      .map(round => Scores.fromRound(Array.from(round.submissions.entries()).map(([user, x]) => [user, x.voted ? x.votes.length : 0])))
+      .reduce((a, b) => a.add(b), Scores.empty())
   }
 
   show(channel: Discord.TextChannel | Discord.User) {

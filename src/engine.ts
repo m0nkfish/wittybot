@@ -6,6 +6,7 @@ import { Command, GetScores, Help, NotifyMe, UnnotifyMe } from './commands';
 import { getNotifyRole } from './notify';
 import { promptsCount } from './prompts';
 import { BasicMessage, HelpMessage } from './messages';
+import { Scores } from './scores';
 
 export class Engine {
   state: GameState
@@ -49,7 +50,8 @@ export class Engine {
       if (command.source instanceof Discord.TextChannel && !(this.state instanceof IdleState)) {
         return Send(command.source, new BasicMessage(`Scores not shown in channels mid-game to avoid flooding. Try DM!`))
       }
-      return this.state.context.scores.show(command.source)
+      const scores = Scores.fromRounds(this.state.context.rounds)
+      return scores.show(command.source)
     }
 
     if (command.type === 'notify-me') {

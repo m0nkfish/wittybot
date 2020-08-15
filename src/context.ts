@@ -1,12 +1,19 @@
 import * as Discord from 'discord.js';
-import { Scores } from './scores';
+
+export type Round = {
+  prompt: string
+  submissions: Map<Discord.User, {
+    submission: string
+    votes: Discord.User[]
+    voted: boolean
+  }>
+}
 
 export type Context = {
   client: Discord.Client
-  scores: Scores
-  users: Discord.User[]
   config: {
     submitDurationSec: number
     testMode?: boolean
   }
+  rounds: Round[]
 }

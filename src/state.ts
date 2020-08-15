@@ -4,7 +4,7 @@ import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, Null
 import { choosePrompt } from './prompts';
 import { shuffle, uuid4 } from 'random-js';
 import { mt } from './random';
-import { Context } from './context';
+import { Context, Round } from './context';
 import { Scores } from './scores';
 import { getNotifyRole } from './notify';
 import { NewRoundMessage, GameStartedMessage, BasicMessage, VoteMessage, VotingFinishedMessage } from './messages';
@@ -19,7 +19,9 @@ export type GameState = {
 }
 
 type GameContext = Context & {
+  channel: Discord.TextChannel
   gameId: string
+  initiator: Discord.User
 }
 
 /** Default state, no active game */
@@ -34,7 +36,8 @@ export class IdleState implements GameState {
   receive(command: Command): Action | undefined {
     if (command.type === 'begin') {
       const notifyRole = getNotifyRole(command.channel.guild)
-      const start = this.startRound(command.channel, [command.user])
+      const initiator = command.user
+      const start = IdleState.startRound({ ...this.context, channel: command.channel, gameId: uuid4(mt), initiator })
       return notifyRole
         ? CompositeAction([
           Send(command.channel, new GameStartedMessage(notifyRole, command.user)),
@@ -44,14 +47,19 @@ export class IdleState implements GameState {
     }
   }
 
-  startRound = (channel: Discord.TextChannel, users: Discord.User[]) => {
+  static startRound = (context: GameContext) => {
+    let users = Array.from(context.rounds[context.rounds.length - 1].submissions.keys())
+    if (users.length === 0) {
+      users = [context.initiator]
+    }
+
     const prompt = choosePrompt(users.map(u => u.username))
     const gameId = uuid4(mt)
 
     return CompositeAction([
-      NewState(SubmissionState.begin({ ...this.context, gameId, users }, channel, prompt)),
-      DelayedAction(this.context.config.submitDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState && state.context.gameId === gameId ? state.finish() : NullAction())),
-      Send(channel, new NewRoundMessage(this.context.client.user!, this.context.config.submitDurationSec))
+      NewState(SubmissionState.begin(context, prompt)),
+      DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState && state.context.gameId === gameId ? state.finish() : NullAction())),
+      Send(context.channel, new NewRoundMessage(context.client.user!, context.config.submitDurationSec))
     ])
   }
 }
@@ -61,14 +69,13 @@ export class SubmissionState implements GameState {
 
   constructor(
     readonly context: GameContext,
-    readonly channel: Discord.TextChannel,
     readonly prompt: Prompt,
     readonly submissions: Map<Discord.User, string>) { }
 
   interpreter = (message: Discord.Message) => {
     if (message.channel instanceof Discord.DMChannel) {
       return Submit(message.author, message.content)
-    } else if (message.channel === this.channel && message.content === '!skip') {
+    } else if (message.channel === this.context.channel && message.content === '!skip') {
       return Skip(message.author, message.channel)
     }
   }
@@ -84,7 +91,7 @@ export class SubmissionState implements GameState {
           ? [Send(command.user, new BasicMessage(`Replacement submission accepted`))]
           : [
             Send(command.user, new BasicMessage(`Submission accepted, DM again to replace it`)),
-            Send(this.channel, new BasicMessage(`Submission received from <@${command.user.id}>`))
+            Send(this.context.channel, new BasicMessage(`Submission received from <@${command.user.id}>`))
           ]
 
       return CompositeAction([
@@ -95,7 +102,7 @@ export class SubmissionState implements GameState {
       if (this.submissions.size === 0) {
         return CompositeAction([
           Send(command.channel, new BasicMessage(`Skipping this prompt`)),
-          endGame(this.context, this.channel)
+          endGame(this.context)
         ])
       } else {
         return Send(command.channel, new BasicMessage(`Prompt already has submissions; won't skip`))
@@ -104,13 +111,13 @@ export class SubmissionState implements GameState {
   }
 
   withSubmission = (user: Discord.User, submission: string) =>
-    new SubmissionState(this.context, this.channel, this.prompt, new Map(this.submissions).set(user, submission))
+    new SubmissionState(this.context, this.prompt, new Map(this.submissions).set(user, submission))
 
   finish = (): Action => {
     if ((!this.context.config.testMode && this.submissions.size < 3) || this.submissions.size < 1) {
       return CompositeAction([
-        Send(this.channel, new BasicMessage(`Not enough submissions to continue`)),
-        this.context.scores.show(this.channel),
+        Send(this.context.channel, new BasicMessage(`Not enough submissions to continue`)),
+        Scores.fromRounds(this.context.rounds).show(this.context.channel),
         NewState(new IdleState(this.context))
       ])
     }
@@ -120,13 +127,13 @@ export class SubmissionState implements GameState {
     const voteDurationSec = this.submissions.size * 10
 
     return CompositeAction([
-      NewState(VotingState.begin(this.context, this.channel, this.prompt, shuffled)),
+      NewState(VotingState.begin(this.context, this.prompt, shuffled)),
       DelayedAction(voteDurationSec * 1000, FromStateAction(state => state instanceof VotingState && state.context.gameId === this.context.gameId ? state.finish() : NullAction())),
-      Send(this.channel, new VoteMessage(this.prompt, shuffled, this.context.client.user!, voteDurationSec))
+      Send(this.context.channel, new VoteMessage(this.prompt, shuffled, this.context.client.user!, voteDurationSec))
     ])
   }
 
-  static begin = (context: GameContext, channel: Discord.TextChannel, prompt: Prompt) => new SubmissionState(context, channel, prompt, new Map())
+  static begin = (context: GameContext, prompt: Prompt) => new SubmissionState(context, prompt, new Map())
 }
 
 /** Submission phase complete; voting stage */
@@ -134,7 +141,6 @@ export class VotingState implements GameState {
 
   constructor(
     readonly context: GameContext,
-    readonly channel: Discord.TextChannel,
     readonly prompt: Prompt,
     readonly submissions: Submission[],
     readonly votes: Map<Discord.User, number>) { }
@@ -186,7 +192,7 @@ export class VotingState implements GameState {
   allVotesIn = () => this.votes.size === this.submissions.length
 
   withVote = (user: Discord.User, entry: number) =>
-    new VotingState(this.context, this.channel, this.prompt, this.submissions, new Map(this.votes).set(user, entry))
+    new VotingState(this.context, this.prompt, this.submissions, new Map(this.votes).set(user, entry))
 
   finish = () => {
     const withVotes = [...this.submissions.map(x => ({ ...x, votes: [] as Discord.User[], voted: false }))]
@@ -207,27 +213,30 @@ export class VotingState implements GameState {
       return b.votes.length - a.votes.length
     })
 
+    const round: Round = {
+      prompt: this.prompt,
+      submissions: new Map(withVotes.map(x => [x.user, x]))
+    }
 
     const newContext = {
       ...this.context,
-      scores: this.context.scores.add(Scores.fromRound(withVotes.map(x => [x.user, x.voted ? x.votes.length : 0]))),
-      users: deduplicate([...this.context.users, ...withVotes.map(x => x.user)])
+      rounds: [...this.context.rounds, round]
     }
 
     return CompositeAction([
-      Send(this.channel, new VotingFinishedMessage(this.prompt, withVotes)),
-      endGame(newContext, this.channel)
+      Send(this.context.channel, new VotingFinishedMessage(this.prompt, withVotes)),
+      endGame(newContext)
     ])
   }
 
-  static begin = (context: GameContext, channel: Discord.TextChannel, prompt: Prompt, submissions: Submission[]) =>
-    new VotingState(context, channel, prompt, submissions, new Map())
+  static begin = (context: GameContext, prompt: Prompt, submissions: Submission[]) =>
+    new VotingState(context, prompt, submissions, new Map())
 }
 
-function endGame(context: GameContext, channel: Discord.TextChannel) {
+function endGame(context: GameContext) {
   return CompositeAction([
     NewState(new IdleState(context)),
-    DelayedAction(5000, FromStateAction(state => state instanceof IdleState ? state.startRound(channel, context.users) : NullAction()))
+    DelayedAction(5000, FromStateAction(state => state instanceof IdleState ? IdleState.startRound(context) : NullAction()))
   ])
 }
 
