@@ -85,7 +85,7 @@ export class VoteMessage implements Message {
     return new Discord.MessageEmbed()
       .setTitle(`Time's up!`)
       .setDescription([
-        `**${this.prompt.formatted}**`,
+        this.prompt.formatted,
         ``,
         ...this.submissions.map((x, i) => `${i + 1}. ${x.submission}`),
         ``,
