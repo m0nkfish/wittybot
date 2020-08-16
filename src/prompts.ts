@@ -63,7 +63,7 @@ export class Prompt {
   }
 }
 
-export function choosePrompt(users: string[]) {
+export async function choosePrompt(users: string[]) {
   const {prompts, type} = pickWeighted(allPrompts.map(item => [item, item.prompts.length]))
 
   const baseText = pick(mt, prompts)

@@ -5,8 +5,8 @@ import { Destination, Message } from './messages'
 
 export const Send = Case('send-message', (destination: Destination, message: Message) => ({ destination, message }))
 export const NewState = Case('new-state', (newState: GameState) => ({ newState }))
-export const CompositeAction = Case('composite-action', (actions: Action[]) => ({ actions }))
-export const DelayedAction = Case('delayed-action', (delayMs: number, action: Action) => ({ delayMs, action }))
+export const CompositeAction = Case('composite-action', (...actions: Action[]) => ({ actions }))
+export const PromiseAction = Case('promise-action', (promise: Promise<Action>) => ({ promise }))
 export const FromStateAction = Case('from-state-action', (getAction: (state: GameState) => Action) => ({ getAction }))
 export const AddUserToRole = Case('add-user-to-role', (member: Discord.GuildMember, role: Discord.Role) => ({ member, role }))
 export const RemoveUserFromRole = Case('remove-user-from-role', (member: Discord.GuildMember, role: Discord.Role) => ({ member, role }))
@@ -19,7 +19,8 @@ export type Action =
   | ReturnType<typeof RemoveUserFromRole>
   | ReturnType<typeof Send>
   | Case<'composite-action', { actions: Action[] }>
-  | Case<'delayed-action', { delayMs: number, action: Action }>
   | Case<'from-state-action', { getAction: (state: GameState) => Action }>
+  | Case<'promise-action', { promise: Promise<Action> }>
 
 export const UpdateState = (update: (state: GameState) => GameState) => FromStateAction(state => NewState(update(state)))
+export const DelayedAction = (delayMs: number, action: Action) => PromiseAction(new Promise<Action>(resolve => setTimeout(() => resolve(action), delayMs)))

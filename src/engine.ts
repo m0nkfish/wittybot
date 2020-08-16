@@ -57,26 +57,25 @@ export class Engine {
     if (command.type === 'notify-me') {
       const role = getNotifyRole(command.member.guild)
       if (role) {
-        return CompositeAction([
+        return CompositeAction(
           AddUserToRole(command.member, role),
           Send(command.member.user, new BasicMessage(`Wittybot will alert you when a new game is begun. **!unnotify** to remove`))
-        ])
+        )
       }
     }
 
     if (command.type === 'unnotify-me') {
       const role = getNotifyRole(command.member.guild)
       if (role) {
-        return CompositeAction([
+        return CompositeAction(
           RemoveUserFromRole(command.member, role),
           Send(command.member.user, new BasicMessage(`Wittybot will no longer alert you when a new game is begun`))
-        ])
+        )
       }
     }
 
     if (command.type === 'help') {
       return Send(command.source, new HelpMessage(promptsCount))
-        
     }
   }
 
@@ -104,8 +103,8 @@ export class Engine {
     this.log(action)
     if (action.type === 'composite-action') {
       action.actions.forEach(this.interpret);
-    } else if (action.type === 'delayed-action') {
-      setTimeout(() => this.interpret(action.action), action.delayMs)
+    } else if (action.type === 'promise-action') {
+      action.promise.then(action => this.interpret(action))
     } else if (action.type === 'from-state-action') {
       this.interpret(action.getAction(this.state))
     } else if (action.type === 'new-state') {
@@ -124,8 +123,8 @@ export class Engine {
   }
 
   log = (action: Action) => {
-    if (action.type === 'delayed-action') {
-      console.log('begin_delayed_action', `delay_ms=${action.delayMs}`)
+    if (action.type === 'promise-action') {
+      console.log('promise_action')
     } else if (action.type === 'new-state') {
       console.log('new_state_action', `state=${name(action.newState)}`)
     } else if (action.type === 'send-message') {

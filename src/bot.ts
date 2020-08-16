@@ -1,6 +1,5 @@
 import * as Discord from 'discord.js'
 import { Engine } from './engine';
-import { Scores } from './scores';
 import { promptsCount } from './prompts';
 import { Send } from './actions';
 import { ReleaseMessage } from './messages';
