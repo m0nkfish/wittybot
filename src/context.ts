@@ -51,5 +51,5 @@ export class RoundContext {
 
   nextRound = () => new RoundContext(this.baseContext, this.channel, this.gameId, Id.create(), this.initiator)
 
-  sameRound = (other: RoundContext) => this.roundId.value === other.roundId.value
+  sameRound = (other: RoundContext) => this.roundId.eq(other.roundId)
 }
