@@ -1,6 +1,5 @@
 import * as Postgres from 'pg'
 import * as io from 'io-ts'
-import { Either, either } from 'fp-ts/lib/Either'
 import { failure } from 'io-ts/lib/PathReporter'
 
 const client = new Postgres.Client()
@@ -8,12 +7,9 @@ const client = new Postgres.Client()
 async function query<T>(validator: io.Type<T>, queryString: string, params: string[] = []): Promise<T[]> {
   await client.connect()
   try {
-    const res = await client.query(queryString, params)
-    function produce(row: unknown[]): T {
-      const obj: Record<string, any> = {}
-      res.fields.forEach((f, i) => obj[f.name] = row[i])
-
-      const decoded = validator.decode(obj)
+    const res = await client.query({ text: queryString, values: params })
+    function produce(row: unknown): T {
+      const decoded = validator.decode(row)
       if (decoded._tag === "Left") {
         throw new Error(failure(decoded.left).join(','))
       }
