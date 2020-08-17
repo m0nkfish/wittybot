@@ -42,15 +42,9 @@ export class IdleState implements GameState<Context> {
 
   static newRound = (context: RoundContext) => {
     context = context.nextRound()
-    let users: Discord.User[] = []
-    if (context.rounds.length > 0) {
-      users = Array.from(context.rounds[context.rounds.length - 1].submissions.keys())
-    }
-    if (users.length === 0) {
-      users = [context.initiator]
-    }
 
-    const prompt = choosePrompt(users.map(u => u.username))
+
+    const prompt = choosePrompt(context)
 
     return CompositeAction(
       NewState(new WaitingState(context)),

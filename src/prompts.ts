@@ -1,6 +1,8 @@
 import { pick } from 'random-js';
 import { mt } from './random';
 import * as db from './db'
+import { RoundContext } from './context';
+import * as Discord from 'discord.js';
 
 const format: Record<string, (line: string) => string> = {
   misc: line => `:arrow_forward: ${line}`,
@@ -31,14 +33,22 @@ const cachedReplacements = db.allReplacements()
     return map
   })
 
-export async function choosePrompt(users: string[]) {
+export async function choosePrompt(context: RoundContext) {
+  let users: Discord.User[] = []
+  if (context.rounds.length > 0) {
+    users = Array.from(context.rounds[context.rounds.length - 1].submissions.keys())
+  }
+  if (users.length === 0) {
+    users = [context.initiator]
+  }
+
   const prompts = await cachedPrompts
 
   const {id, text, type} = pick(mt, prompts)
 
   const globalReplace = await cachedReplacements
   const replacements = new Map(globalReplace)
-    .set('user', users)
+    .set('user', users.map(x => x.username))
 
   const regex = new RegExp(`{(${Array.from(replacements.keys()).join('|')})}`, "g")
   const replaced = text
