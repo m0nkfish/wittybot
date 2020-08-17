@@ -16,6 +16,7 @@ export class Prompt {
   get formatted() {
     const formatter = format[this.type] ?? (x => x)
     return formatter(this.prompt)
+      .replace(/_____/g, '\\_\\_\\_\\_\\_')
   }
 }
 
@@ -41,7 +42,6 @@ export async function choosePrompt(users: string[]) {
 
   const regex = new RegExp(`{(${Array.from(replacements.keys()).join('|')})}`, "g")
   const replaced = text
-    .replace(/_____/g, '\\_\\_\\_\\_\\_')
     .replace(/\r/g, '') // some of the resources originated in windows...
     .replace(/\\n/g, '\n') // allow multiline prompts
     .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))

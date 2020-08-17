@@ -36,8 +36,11 @@ function inserter<T extends io.Props>(table: string, validator: io.TypeC<T>) {
     const fieldNames = fields.join(', ')
     const fieldVars = fields.map((_, i) => `$${i+1}`).join(', ')
     const fieldValues = fields.map(f => obj[f])
+    const text = `INSERT INTO ${table}(${fieldNames}) VALUES (${fieldVars})`
+
+    console.log(text, fieldValues)
     return {
-      text: `INSERT INTO ${table}(${fieldNames}) VALUES (${fieldVars})`,
+      text: text,
       values: fieldValues
     }
   }
