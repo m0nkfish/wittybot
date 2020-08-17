@@ -77,8 +77,16 @@ export class SubmissionState implements GameState<RoundContext> {
   interpreter = (message: Discord.Message) => {
     if (message.channel instanceof Discord.DMChannel) {
       return Submit(message.author, message.content)
-    } else if (message.channel === this.context.channel && message.content === '!skip') {
-      return Skip(message.author, message.channel)
+    } else if (message.channel === this.context.channel) {
+      if (message.content === '!skip') {
+        return Skip(message.author, message.channel)
+      }
+
+      const spoilered = message.content.match(/^\|\|(.*)\|\|$/)
+      if (spoilered && spoilered[1]) {
+        message.delete({ reason: 'Message recognised as wittybot submission' })
+        return Submit(message.author, spoilered[1])
+      }
     }
   }
 
@@ -161,6 +169,17 @@ export class VotingState implements GameState<RoundContext> {
         return Vote(message.author, entry)
       }
     }
+    if (message.channel === this.context.channel) {
+      const spoilered = message.content.match(/^\|\|(\d+)\|\|$/)
+      if (spoilered && spoilered[1]) {
+        const entry = tryParseInt(spoilered[1])
+        if (entry !== null) {
+          message.delete({ reason: 'Message recognised as wittybot submission' })
+          return Vote(message.author, entry)
+        }
+      }
+    }
+
   }
 
   receive(command: Command): Action | undefined {
