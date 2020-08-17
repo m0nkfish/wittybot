@@ -33,7 +33,7 @@ async function query<T>(validator: io.Type<T>, queryString: string, params: any[
 function inserter<T extends io.Props>(table: string, validator: io.TypeC<T>) {
   return function(obj: io.OutputOf<typeof validator>) {
     const fields = Object.getOwnPropertyNames(validator.props)
-    const fieldNames = fields.join(', ')
+    const fieldNames = fields.map(f => `"${f}"`).join(', ')
     const fieldVars = fields.map((_, i) => `$${i+1}`).join(', ')
     const fieldValues = fields.map(f => obj[f])
     const text = `INSERT INTO ${table}(${fieldNames}) VALUES (${fieldVars})`
