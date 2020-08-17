@@ -79,14 +79,13 @@ export async function saveRound(round: Round) {
   return execute(commands)
 }
 
-/** fetches prompts that have not been seen in the last 400 rounds */
+/** fetches prompts that have not been seen in the last (total/2) rounds */
 export async function fetchUnseenPrompts() {
   const tPrompt = io.type({
     id: io.number,
     text: io.string,
     type: io.string
   })
-  const limit = 400
   const sql = `
     select id, text, type from prompts p
     left join (
@@ -94,7 +93,7 @@ export async function fetchUnseenPrompts() {
       from rounds
       group by (prompt_id)
       order by max(finished) desc
-      limit ${limit}
+      limit (select count(*) / 2 from prompts where active = true)
     ) seen on seen.prompt_id = p.id
     where seen.prompt_id is null and p.active = true
   `
