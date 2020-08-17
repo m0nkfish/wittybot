@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
 import { Command, Begin, Submit, Vote, Skip } from './commands';
-import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, NullAction, UpdateState, Send, PromiseAction } from './actions';
+import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, NullAction, UpdateState, Send, PromiseAction, SaveRound } from './actions';
 import { choosePrompt, Prompt } from './prompts';
 import { shuffle } from 'random-js';
 import { mt } from './random';
@@ -33,12 +33,10 @@ export class IdleState implements GameState<Context> {
       const notifyRole = getNotifyRole(command.channel.guild)
       const initiator = command.user
       const start = IdleState.newRound(this.context.start(command.channel, initiator))
-      return notifyRole && !this.context.config.testMode
-        ? CompositeAction(
-          Send(command.channel, new GameStartedMessage(notifyRole, command.user)),
-          start
-        )
-        : start
+      return CompositeAction(
+        notifyRole && !this.context.inTestMode ? Send(command.channel, new GameStartedMessage(notifyRole, command.user)) : NullAction(),
+        start
+      )
     }
   }
 
@@ -179,7 +177,7 @@ export class VotingState implements GameState<RoundContext> {
       if (!submission) {
         return
       }
-      if (!this.context.config.testMode && submission.user === user) {
+      if (!this.context.inTestMode && submission.user === user) {
         return Send(user, new BasicMessage(`You cannot vote for your own entry`))
       }
 
@@ -224,6 +222,7 @@ export class VotingState implements GameState<RoundContext> {
     })
 
     const round: Round = {
+      id: this.context.roundId,
       prompt: this.prompt,
       submissions: new Map(withVotes.map(x => [x.user, x]))
     }
@@ -232,6 +231,7 @@ export class VotingState implements GameState<RoundContext> {
 
     return CompositeAction(
       Send(this.context.channel, new VotingFinishedMessage(this.prompt, withVotes)),
+      this.context.inTestMode ? NullAction() : SaveRound(round),
       endRound(newContext)
     )
   }

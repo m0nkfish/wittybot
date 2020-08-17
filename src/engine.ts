@@ -6,6 +6,7 @@ import { Command, GetScores, Help, NotifyMe, UnnotifyMe } from './commands';
 import { getNotifyRole } from './notify';
 import { BasicMessage, HelpMessage } from './messages';
 import { Scores } from './scores';
+import * as db from './db'
 
 export class Engine {
   state: AnyGameState
@@ -98,26 +99,40 @@ export class Engine {
     });
   }
 
-  interpret = (action: Action) => {
+  interpret = (action: Action): typeof handled => {
     this.log(action)
-    if (action.type === 'composite-action') {
-      action.actions.forEach(this.interpret);
-    } else if (action.type === 'promise-action') {
-      action.promise.then(action => this.interpret(action))
-    } else if (action.type === 'from-state-action') {
-      this.interpret(action.getAction(this.state))
-    } else if (action.type === 'new-state') {
-      this.state = action.newState
-    } else if (action.type === 'send-message') {
-      const content = action.message.content
-      if (content instanceof Discord.MessageEmbed) {
-        content.setColor('#A4218A')
-      }
-      action.destination.send(content)
-    } else if (action.type === 'add-user-to-role') {
-      action.member.roles.add(action.role)
-    } else if (action.type === 'remove-user-from-role') {
-      action.member.roles.remove(action.role)
+    const type = action.type
+    switch (action.type) {
+      case 'composite-action':
+        action.actions.forEach(this.interpret)
+        return handled
+      case 'promise-action':
+        action.promise.then(action => this.interpret(action))
+        return handled
+      case 'from-state-action':
+        this.interpret(action.getAction(this.state))
+        return handled
+      case 'new-state':
+        this.state = action.newState
+        return handled
+      case 'send-message':
+        const content = action.message.content
+        if (content instanceof Discord.MessageEmbed) {
+          content.setColor('#A4218A')
+        }
+        action.destination.send(content)
+        return handled
+      case 'add-user-to-role':
+        action.member.roles.add(action.role)
+        return handled
+      case 'remove-user-from-role':
+        action.member.roles.remove(action.role)
+        return handled
+      case 'save-round':
+        db.saveRound(action.round)
+        return handled
+      case 'null-action':
+        return handled
     }
   }
 
@@ -133,3 +148,5 @@ export class Engine {
 }
 
 const name = (obj: any) => obj?.constructor?.name
+
+const handled = Symbol()

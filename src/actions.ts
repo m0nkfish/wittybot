@@ -2,6 +2,7 @@ import * as Discord from 'discord.js'
 import { Case } from './case'
 import { AnyGameState } from './state';
 import { Destination, Message } from './messages'
+import { Round } from './context';
 
 export const Send = Case('send-message', (destination: Destination, message: Message) => ({ destination, message }))
 export const NewState = Case('new-state', (newState: AnyGameState) => ({ newState }))
@@ -11,6 +12,7 @@ export const FromStateAction = Case('from-state-action', (getAction: (state: Any
 export const AddUserToRole = Case('add-user-to-role', (member: Discord.GuildMember, role: Discord.Role) => ({ member, role }))
 export const RemoveUserFromRole = Case('remove-user-from-role', (member: Discord.GuildMember, role: Discord.Role) => ({ member, role }))
 export const NullAction = Case('null-action', () => ({}))
+export const SaveRound = Case('save-round', (round: Round) => ({ round }))
 
 export type Action =
   | ReturnType<typeof NewState>
@@ -18,6 +20,7 @@ export type Action =
   | ReturnType<typeof AddUserToRole>
   | ReturnType<typeof RemoveUserFromRole>
   | ReturnType<typeof Send>
+  | ReturnType<typeof SaveRound>
   | Case<'composite-action', { actions: Action[] }>
   | Case<'from-state-action', { getAction: (state: AnyGameState) => Action }>
   | Case<'promise-action', { promise: Promise<Action> }>

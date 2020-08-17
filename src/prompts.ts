@@ -11,7 +11,7 @@ const format: Record<string, (line: string) => string> = {
 }
 
 export class Prompt {
-  constructor(readonly type: string, readonly baseText: string, readonly prompt: string) { }
+  constructor(readonly id: number, readonly type: string, readonly prompt: string) { }
 
   get formatted() {
     const formatter = format[this.type] ?? (x => x)
@@ -33,7 +33,7 @@ const cachedReplacements = db.allReplacements()
 export async function choosePrompt(users: string[]) {
   const prompts = await cachedPrompts
 
-  const {text, type} = pick(mt, prompts)
+  const {id, text, type} = pick(mt, prompts)
 
   const globalReplace = await cachedReplacements
   const replacements = new Map(globalReplace)
@@ -58,5 +58,5 @@ export async function choosePrompt(users: string[]) {
       return choice
     })
 
-    return new Prompt(type, text, replaced)
+    return new Prompt(id, type, replaced)
 }

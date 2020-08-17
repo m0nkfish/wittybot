@@ -3,6 +3,7 @@ import { Prompt } from './prompts';
 import { Id } from './id';
 
 export type Round = {
+  id: Id,
   prompt: Prompt
   submissions: Map<Discord.User, {
     submission: string
