@@ -44,7 +44,6 @@ export async function choosePrompt(users: string[]) {
   const replaced = text
     .replace(/\r/g, '') // some of the resources originated in windows...
     .replace(/\\n/g, '\n') // allow multiline prompts
-    .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))
     .replace(regex, str => {
       const type = str.substring(1, str.length - 1)
       const choices = replacements.get(type)
@@ -57,6 +56,7 @@ export async function choosePrompt(users: string[]) {
       }
       return choice
     })
+    .replace(/{choose:(.+?)}/g, (_, options) => pick(mt, options.split('|')))
 
     return new Prompt(id, type, replaced)
 }
