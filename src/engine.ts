@@ -101,7 +101,6 @@ export class Engine {
 
   interpret = (action: Action): typeof handled => {
     this.log(action)
-    const type = action.type
     switch (action.type) {
       case 'composite-action':
         action.actions.forEach(this.interpret)
@@ -121,6 +120,7 @@ export class Engine {
           content.setColor('#A4218A')
         }
         action.destination.send(content)
+          .then(msg => action.message.onSent?.(msg, () => this.state))
         return handled
       case 'add-user-to-role':
         action.member.roles.add(action.role)

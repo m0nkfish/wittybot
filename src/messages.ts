@@ -1,11 +1,13 @@
 import * as Discord from 'discord.js'
 import { Score } from './scores';
 import { Prompt } from './prompts';
+import { AnyGameState } from './state';
 
 export type Destination = Discord.TextChannel | Discord.User
 
 export interface Message {
   content: string | Discord.MessageAdditions
+  onSent?: (msg: Discord.Message, getState: () => AnyGameState) => void
 }
 
 export class BasicMessage implements Message {
@@ -25,7 +27,6 @@ export class ReleaseMessage implements Message {
       .setTitle(title)
   }
 }
-
 
 export class HelpMessage implements Message {
   constructor() { }
@@ -53,16 +54,38 @@ export class HelpMessage implements Message {
 }
 
 export class NewRoundMessage implements Message {
-  constructor(readonly prompt: Prompt, readonly botUser: Discord.User, readonly submitDurationSec: number) { }
+  constructor(
+    readonly prompt: Prompt,
+    readonly botUser: Discord.User,
+    readonly submitDurationSec: number
+  ) { }
+
+  private readonly baseContent = new Discord.MessageEmbed()
+    .setTitle('A new round begins! Complete the prompt')
+    .setDescription([
+      this.prompt.formatted,
+      ``,
+      `Submit by DMing <@${this.botUser.id}> (:point_left: on desktop just click here)`])
+  
+  private message = (remainingSec: number) =>
+    this.baseContent
+      .setFooter(`You have ${remainingSec} seconds to come up with an answer`)
 
   get content() {
-    return new Discord.MessageEmbed()
-      .setTitle('A new round begins! Complete the prompt')
-      .setDescription([
-        this.prompt.formatted,
-        ``,
-        `Submit by DMing <@${this.botUser.id}> (:point_left: on desktop just click here)`])
-      .setFooter(`You have ${this.submitDurationSec} seconds to come up with an answer`)
+    return this.message(this.submitDurationSec)
+  }
+
+  onSent = (msg: Discord.Message, getState: () => AnyGameState) => {
+    let remainingSec = this.submitDurationSec
+    const interval = setInterval(() => {
+      remainingSec -= 1
+      if (remainingSec <= 0) {
+        clearInterval(interval)
+        msg.edit(this.baseContent.setFooter(`Time's up!`))
+      } else {
+        msg.edit(this.message(remainingSec))
+      }
+    }, 1000)
   }
 }
 
