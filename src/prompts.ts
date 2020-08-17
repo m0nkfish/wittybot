@@ -55,6 +55,9 @@ export async function choosePrompt(users: string[]) {
   const prompt = pick(mt, prompts)
   const baseText = prompt.text as string
   const type = prompt.type as string
+  if (!baseText) {
+    throw new Error(`No text property found on ${JSON.stringify(prompt)}`)
+  }
   
   const replacements = new Map(globalReplace)
     .set('user', users)
