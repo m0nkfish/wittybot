@@ -10,6 +10,7 @@ export type Round = {
     votes: Discord.User[]
     voted: boolean
   }>
+  skipped: boolean
 }
 
 export class Context {

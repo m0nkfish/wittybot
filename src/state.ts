@@ -102,7 +102,14 @@ export class SubmissionState implements GameState<RoundContext> {
       )
     } else if (command.type === 'skip') {
       if (this.submissions.size === 0) {
+        const skippedRound = {
+          id: this.context.roundId,
+          prompt: this.prompt,
+          skipped: true,
+          submissions: new Map()
+        }
         return CompositeAction(
+          SaveRound(skippedRound),
           Send(command.channel, new BasicMessage(`Skipping this prompt`)),
           endRound(this.context)
         )
@@ -218,7 +225,8 @@ export class VotingState implements GameState<RoundContext> {
     const round: Round = {
       id: this.context.roundId,
       prompt: this.prompt,
-      submissions: new Map(withVotes.map(x => [x.user, x]))
+      submissions: new Map(withVotes.map(x => [x.user, x])),
+      skipped: false
     }
 
     const newContext = this.context.addRound(round)
