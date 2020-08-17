@@ -2,6 +2,7 @@ import * as Discord from 'discord.js'
 import { Score } from './scores';
 import { Prompt } from './prompts';
 import { AnyGameState, SubmissionState, VotingState } from './state';
+import { Id } from './id';
 
 export type Destination = Discord.TextChannel | Discord.User
 
@@ -55,6 +56,7 @@ export class HelpMessage implements Message {
 
 export class NewRoundMessage implements Message {
   constructor(
+    readonly roundId: Id,
     readonly prompt: Prompt,
     readonly botUser: Discord.User,
     readonly submitDurationSec: number
@@ -79,11 +81,12 @@ export class NewRoundMessage implements Message {
     let remainingSec = this.submitDurationSec
     const interval = setInterval(() => {
       remainingSec -= 5
-      if (remainingSec <= 0 || !(getState() instanceof SubmissionState)) {
+      const state = getState()
+      if (remainingSec > 0 && state instanceof SubmissionState && state.context.roundId.eq(this.roundId)) {
+        msg.edit(this.message(remainingSec))
+      } else {
         clearInterval(interval)
         msg.edit(this.baseContent.setFooter(`Time's up!`))
-      } else {
-        msg.edit(this.message(remainingSec))
       }
     }, 5000)
   }
@@ -97,6 +100,7 @@ export class GameStartedMessage extends BasicMessage {
 
 export class VoteMessage implements Message {
   constructor(
+    readonly roundId: Id,
     readonly prompt: Prompt,
     readonly submissions: Array<{ user: Discord.User, submission: string }>,
     readonly botUser: Discord.User,
@@ -124,11 +128,12 @@ export class VoteMessage implements Message {
     let remainingSec = this.voteDurationSec
     const interval = setInterval(() => {
       remainingSec -= 5
-      if (remainingSec <= 0 || !(getState() instanceof VotingState)) {
+      const state = getState()
+      if (remainingSec > 0 && state instanceof VotingState && state.context.roundId.eq(this.roundId)) {
+        msg.edit(this.message(remainingSec))
+      } else {
         clearInterval(interval)
         msg.edit(this.baseContent.setFooter(`Voting over!`))
-      } else {
-        msg.edit(this.message(remainingSec))
       }
     }, 5000)
   }

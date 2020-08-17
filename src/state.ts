@@ -58,7 +58,7 @@ export class IdleState implements GameState<Context> {
         CompositeAction(
           NewState(SubmissionState.begin(context, prompt)),
           DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(state => OptionalAction(state instanceof SubmissionState && state.context.sameRound(context) && state.finish()))),
-          Send(context.channel, new NewRoundMessage(prompt, context.botUser, context.config.submitDurationSec))
+          Send(context.channel, new NewRoundMessage(context.roundId, prompt, context.botUser, context.config.submitDurationSec))
         )))
     )
   }
@@ -137,7 +137,7 @@ export class SubmissionState implements GameState<RoundContext> {
     return CompositeAction(
       NewState(VotingState.begin(this.context, this.prompt, shuffled)),
       DelayedAction(voteDurationSec * 1000, FromStateAction(state => OptionalAction(state instanceof VotingState && state.context.sameRound(this.context) && state.finish()))),
-      Send(this.context.channel, new VoteMessage(this.prompt, shuffled, this.context.botUser, voteDurationSec))
+      Send(this.context.channel, new VoteMessage(this.context.roundId, this.prompt, shuffled, this.context.botUser, voteDurationSec))
     )
   }
 
