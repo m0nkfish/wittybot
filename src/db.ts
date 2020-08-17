@@ -15,6 +15,15 @@ async function withClient<T>(f: (client: Postgres.PoolClient) => T) {
   }
 }
 
+type Command = {
+  text: string
+  values: any[]
+}
+
+async function execute(commands: Command[]) {
+  return withClient(c => Promise.all(commands.map(cmd => c.query(cmd))))
+}
+
 async function query<T>(validator: io.Type<T>, queryString: string, params: any[] = []): Promise<T[]> {
   function validate(row: unknown): T {
     const decoded = validator.decode(row)
@@ -51,23 +60,22 @@ const insertSubmission = inserter('submissions', io.type({ 'id': io.string, 'rou
 const insertVote = inserter('votes', io.type({ 'submission_id': io.string, 'user': io.string }))
 
 export async function saveRound(round: Round) {
-  await withClient(async client => {
-    await client.query(insertRound({
-      id: round.id.value,
-      prompt_id: round.prompt.id,
-      prompt_filled: round.prompt.prompt
-    }))
+  const commands: Command[] = []
+  commands.push(insertRound({
+    id: round.id.value,
+    prompt_id: round.prompt.id,
+    prompt_filled: round.prompt.prompt
+  }))
+  
+  for (const [user, {submission, votes}] of round.submissions) {
+    const subId = Id.create()
+    commands.push(insertSubmission({ id: subId.value, round_id: round.id.value, submission, user: user.username }))
+    for (const voter of votes) {
+      commands.push(insertVote({ submission_id: subId.value, user: voter.username }))
+    }
+  }
 
-    const submissions = Array.from(round.submissions)
-      .map(([user, {submission, votes}]) => ({ id: Id.create(), submission, voters: votes, user }))
-
-    await Promise.all(submissions.map(async sub => {
-      await client.query(insertSubmission({ id: sub.id.value, round_id: round.id.value, submission: sub.submission, user: sub.user.username }))
-      await Promise.all(sub.voters.map(async voter => {
-        await client.query(insertVote({ submission_id: sub.id.value, user: voter.username }))
-      }))
-    }))
-  })
+  return execute(commands)
 }
 
 export async function allPrompts() {
