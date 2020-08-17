@@ -78,14 +78,14 @@ export class NewRoundMessage implements Message {
   onSent = (msg: Discord.Message, getState: () => AnyGameState) => {
     let remainingSec = this.submitDurationSec
     const interval = setInterval(() => {
-      remainingSec -= 1
+      remainingSec -= 5
       if (remainingSec <= 0) {
         clearInterval(interval)
         msg.edit(this.baseContent.setFooter(`Time's up!`))
       } else {
         msg.edit(this.message(remainingSec))
       }
-    }, 1000)
+    }, 5000)
   }
 }
 
