@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js'
 import { Score } from './scores';
 import { Prompt } from './prompts';
-import { AnyGameState } from './state';
+import { AnyGameState, SubmissionState, VotingState } from './state';
 
 export type Destination = Discord.TextChannel | Discord.User
 
@@ -79,7 +79,7 @@ export class NewRoundMessage implements Message {
     let remainingSec = this.submitDurationSec
     const interval = setInterval(() => {
       remainingSec -= 5
-      if (remainingSec <= 0) {
+      if (remainingSec <= 0 || !(getState() instanceof SubmissionState)) {
         clearInterval(interval)
         msg.edit(this.baseContent.setFooter(`Time's up!`))
       } else {
@@ -102,17 +102,35 @@ export class VoteMessage implements Message {
     readonly botUser: Discord.User,
     readonly voteDurationSec: number) {}
 
+  private readonly baseContent = new Discord.MessageEmbed()
+    .setTitle(`Time's up!`)
+    .setDescription([
+      this.prompt.formatted,
+      ``,
+      ...this.submissions.map((x, i) => `${i + 1}. ${x.submission}`),
+      ``,
+      `Vote for your favourite by DMing <@${this.botUser.id}> with the entry number`
+    ])
+
+  private message = (remainingSec: number) => 
+    this.baseContent
+      .setFooter(`You have ${remainingSec} seconds`)
+
   get content() {
-    return new Discord.MessageEmbed()
-      .setTitle(`Time's up!`)
-      .setDescription([
-        this.prompt.formatted,
-        ``,
-        ...this.submissions.map((x, i) => `${i + 1}. ${x.submission}`),
-        ``,
-        `Vote for your favourite by DMing <@${this.botUser.id}> with the entry number`
-      ])
-      .setFooter(`You have ${this.voteDurationSec} seconds`)
+    return this.message(this.voteDurationSec)
+  }
+
+  onSent = (msg: Discord.Message, getState: () => AnyGameState) => {
+    let remainingSec = this.voteDurationSec
+    const interval = setInterval(() => {
+      remainingSec -= 5
+      if (remainingSec <= 0 || !(getState() instanceof VotingState)) {
+        clearInterval(interval)
+        msg.edit(this.baseContent.setFooter(`Voting over!`))
+      } else {
+        msg.edit(this.message(remainingSec))
+      }
+    }, 5000)
   }
 }
 
