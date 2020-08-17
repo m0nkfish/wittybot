@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
 import { Command, Begin, Submit, Vote, Skip } from './commands';
-import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, NullAction, UpdateState, Send, PromiseAction, SaveRound } from './actions';
+import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, NullAction, UpdateState, Send, PromiseAction, SaveRound, OptionalAction } from './actions';
 import { choosePrompt, Prompt } from './prompts';
 import { shuffle } from 'random-js';
 import { mt } from './random';
@@ -34,7 +34,7 @@ export class IdleState implements GameState<Context> {
       const initiator = command.user
       const start = IdleState.newRound(this.context.start(command.channel, initiator))
       return CompositeAction(
-        notifyRole && !this.context.inTestMode ? Send(command.channel, new GameStartedMessage(notifyRole, command.user)) : NullAction(),
+        OptionalAction(notifyRole && !this.context.inTestMode && Send(command.channel, new GameStartedMessage(notifyRole, command.user))),
         start
       )
     }
@@ -57,7 +57,7 @@ export class IdleState implements GameState<Context> {
       PromiseAction(prompt.then(prompt =>
         CompositeAction(
           NewState(SubmissionState.begin(context, prompt)),
-          DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(state => state instanceof SubmissionState && state.context.sameRound(context) ? state.finish() : NullAction())),
+          DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(state => OptionalAction(state instanceof SubmissionState && state.context.sameRound(context) && state.finish()))),
           Send(context.channel, new NewRoundMessage(prompt, context.botUser, context.config.submitDurationSec))
         )))
     )
@@ -136,7 +136,7 @@ export class SubmissionState implements GameState<RoundContext> {
 
     return CompositeAction(
       NewState(VotingState.begin(this.context, this.prompt, shuffled)),
-      DelayedAction(voteDurationSec * 1000, FromStateAction(state => state instanceof VotingState && state.context.sameRound(this.context) ? state.finish() : NullAction())),
+      DelayedAction(voteDurationSec * 1000, FromStateAction(state => OptionalAction(state instanceof VotingState && state.context.sameRound(this.context) && state.finish()))),
       Send(this.context.channel, new VoteMessage(this.prompt, shuffled, this.context.botUser, voteDurationSec))
     )
   }
@@ -231,7 +231,7 @@ export class VotingState implements GameState<RoundContext> {
 
     return CompositeAction(
       Send(this.context.channel, new VotingFinishedMessage(this.prompt, withVotes)),
-      /*this.context.inTestMode ? NullAction() :*/ SaveRound(round),
+      OptionalAction(!this.context.inTestMode && SaveRound(round)),
       endRound(newContext)
     )
   }
@@ -243,7 +243,7 @@ export class VotingState implements GameState<RoundContext> {
 function endRound(context: RoundContext) {
   return CompositeAction(
     NewState(new WaitingState(context)),
-    DelayedAction(5000, FromStateAction(state => state instanceof WaitingState && state.context.sameRound(context) ? IdleState.newRound(context) : NullAction()))
+    DelayedAction(5000, FromStateAction(state => OptionalAction(state instanceof WaitingState && state.context.sameRound(context) && IdleState.newRound(context))))
   )
 }
 

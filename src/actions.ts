@@ -27,3 +27,4 @@ export type Action =
 
 export const UpdateState = (update: (state: AnyGameState) => AnyGameState) => FromStateAction(state => NewState(update(state)))
 export const DelayedAction = (delayMs: number, action: Action) => PromiseAction(new Promise<Action>(resolve => setTimeout(() => resolve(action), delayMs)))
+export const OptionalAction = (action: Action | undefined | null | false): Action => action || NullAction()
