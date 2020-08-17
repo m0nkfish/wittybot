@@ -52,18 +52,13 @@ export class Prompt {
 export async function choosePrompt(users: string[]) {
   const prompts = await db.allPrompts()
 
-  const prompt = pick(mt, prompts)
-  const baseText = prompt.text as string
-  const type = prompt.type as string
-  if (!baseText) {
-    throw new Error(`No text property found on ${JSON.stringify(prompt)}`)
-  }
+  const {text, type} = pick(mt, prompts)
   
   const replacements = new Map(globalReplace)
     .set('user', users)
 
   const regex = new RegExp(`{(${Array.from(replacements.keys()).join('|')})}`, "g")
-  const replaced = baseText
+  const replaced = text
     .replace(/\r/g, '') // some of the resources originated in windows...
     .replace(/\\n/g, '\n') // allow multiline prompts
     .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))
@@ -80,5 +75,5 @@ export async function choosePrompt(users: string[]) {
       return choice
     })
 
-    return new Prompt(type, baseText, replaced)
+    return new Prompt(type, text, replaced)
 }
