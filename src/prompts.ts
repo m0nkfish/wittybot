@@ -16,8 +16,6 @@ function lines(path: string) {
   return readFileSync(path, 'utf8')
     .replace(/_____/g, '\\_\\_\\_\\_\\_')
     .split('\n')
-    .map(s => s.replace(/\r/g, '')) // some of the resources originated in windows...
-    .map(s => s.replace(/\\n/g, '\n')) // allow multiline prompts
     .filter(s => s !== '')
 }
 
@@ -33,19 +31,6 @@ export const promptsCount = allPrompts.reduce((acc, p) => acc + p.prompts.length
 const globalReplace = new Map(
   readdirSync(resourcePath('replace'))
     .map(f => [path.basename(f, '.txt'), resourceLines('replace', f)]))
-
-function pickWeighted<T>(list: Array<[T, number]>): T {
-  const total = list.map(x => x[1]).reduce((a, b) => a + b, 0)
-  let n = integer(1, total)(mt)
-  for (const [x,w] of list) {
-    if (n <= w) {
-      return x
-    } else {
-      n -= w
-    }
-  }
-  throw new Error('Weighted random went wrong!')
-}
 
 const format: Record<string, (line: string) => string> = {
   misc: line => `:arrow_forward: ${line}`,
@@ -68,7 +53,7 @@ export async function choosePrompt(users: string[]) {
   const prompts = await db.allPrompts()
 
   const prompt = pick(mt, prompts)
-  const baseText = prompt.baseText as string
+  const baseText = prompt.text as string
   const type = prompt.type as string
   
   const replacements = new Map(globalReplace)
@@ -76,6 +61,8 @@ export async function choosePrompt(users: string[]) {
 
   const regex = new RegExp(`{(${Array.from(replacements.keys()).join('|')})}`, "g")
   const replaced = baseText
+    .replace(/\r/g, '') // some of the resources originated in windows...
+    .replace(/\\n/g, '\n') // allow multiline prompts
     .replace(/{choose:(.+)}/g, (_, options) => pick(mt, options.split('|')))
     .replace(regex, str => {
       const type = str.substring(1, str.length - 1)
