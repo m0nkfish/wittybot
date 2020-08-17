@@ -67,7 +67,7 @@ export class NewRoundMessage implements Message {
     .setDescription([
       this.prompt.formatted,
       ``,
-      `Submit by DMing <@${this.botUser.id}> (:point_left: on desktop just click here) **or** by using \`/spoiler <submission>\` in this channel (your message will be deleted)`])
+      `Submit by DMing <@${this.botUser.id}> (:point_left: on desktop just click here)\n**or** by using \`/spoiler <submission>\` in this channel (your message will be deleted)`])
   
   private message = (remainingSec: number) =>
     this.baseContent
@@ -113,7 +113,7 @@ export class VoteMessage implements Message {
       ``,
       ...this.submissions.map((x, i) => `${i + 1}. ${x.submission}`),
       ``,
-      `Vote for your favourite by DMing <@${this.botUser.id}> with the entry number **or** by using \`/spoiler <entry number>\` in this channel (your message will be deleted)`
+      `Vote for your favourite by DMing <@${this.botUser.id}> with the entry number\n**or** by using \`/spoiler <entry number>\` in this channel (your message will be deleted)`
     ])
 
   private message = (remainingSec: number) => 
