@@ -231,7 +231,7 @@ export class VotingState implements GameState<RoundContext> {
 
     return CompositeAction(
       Send(this.context.channel, new VotingFinishedMessage(this.prompt, withVotes)),
-      this.context.inTestMode ? NullAction() : SaveRound(round),
+      /*this.context.inTestMode ? NullAction() :*/ SaveRound(round),
       endRound(newContext)
     )
   }
