@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from 'fs'
 import path from 'path'
 import { pick, integer } from 'random-js';
 import { mt } from './random';
+import * as db from './db'
 
 function resourcePath(...name: string[]) {
   return path.resolve(process.cwd(), 'resources', ...name)
@@ -64,9 +65,11 @@ export class Prompt {
 }
 
 export async function choosePrompt(users: string[]) {
-  const {prompts, type} = pickWeighted(allPrompts.map(item => [item, item.prompts.length]))
+  const prompts = await db.allPrompts()
 
-  const baseText = pick(mt, prompts)
+  const prompt = pick(mt, prompts)
+  const baseText = prompt.baseText as string
+  const type = prompt.type as string
   
   const replacements = new Map(globalReplace)
     .set('user', users)
