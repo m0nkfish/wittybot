@@ -3,6 +3,7 @@ import { Engine } from './engine';
 import { promptsCount } from './prompts';
 import { Send } from './actions';
 import { ReleaseMessage } from './messages';
+import { Context } from './context';
 
 const client = new Discord.Client();
 
@@ -52,7 +53,7 @@ client.on('messageDelete', async message => {
 
 const testMode = process.env.TEST_MODE === "true"
 
-const engine = new Engine({ client, config: { submitDurationSec: 60, testMode }, rounds: [] })
+const engine = new Engine(new Context(client, { submitDurationSec: 60, testMode }, []))
 engine.run()
 
 client.login(process.env.BOT_TOKEN);

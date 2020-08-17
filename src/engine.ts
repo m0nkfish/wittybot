@@ -1,5 +1,5 @@
 import { Context } from './context';
-import { IdleState, GameState } from './state';
+import { IdleState, AnyGameState } from './state';
 import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from './actions';
 import * as Discord from 'discord.js';
 import { Command, GetScores, Help, NotifyMe, UnnotifyMe } from './commands';
@@ -9,7 +9,7 @@ import { BasicMessage, HelpMessage } from './messages';
 import { Scores } from './scores';
 
 export class Engine {
-  state: GameState
+  state: AnyGameState
 
   constructor(readonly context: Context) {
     this.state = new IdleState(context)
