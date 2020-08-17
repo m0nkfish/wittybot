@@ -2,9 +2,8 @@ import * as Postgres from 'pg'
 import * as io from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 
-const client = new Postgres.Client()
-
 async function query<T>(validator: io.Type<T>, queryString: string, params: string[] = []): Promise<T[]> {
+  const client = new Postgres.Client()
   await client.connect()
   try {
     const res = await client.query({ text: queryString, values: params })

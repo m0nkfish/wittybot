@@ -1,6 +1,5 @@
 import * as Discord from 'discord.js'
 import { Engine } from './engine';
-import { promptsCount } from './prompts';
 import { Send } from './actions';
 import { ReleaseMessage } from './messages';
 import { Context } from './context';
@@ -19,7 +18,7 @@ client.on('ready', () => {
   if (!channel) {
     return
   }
-  engine.interpret(Send(channel, new ReleaseMessage(promptsCount, testMode)))
+  engine.interpret(Send(channel, new ReleaseMessage(testMode)))
 });
 
 client.on('messageDelete', async message => {

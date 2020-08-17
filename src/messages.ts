@@ -13,7 +13,7 @@ export class BasicMessage implements Message {
 }
 
 export class ReleaseMessage implements Message {
-  constructor(readonly promptsCount: number, readonly testMode: boolean) { }
+  constructor(readonly testMode: boolean) { }
 
   get content() {
     let title = 'Bot restarted/redeployed'
@@ -23,13 +23,12 @@ export class ReleaseMessage implements Message {
 
     return new Discord.MessageEmbed()
       .setTitle(title)
-      .setFooter(`This version has ${this.promptsCount} miscellaneous prompts, quotes, lyrics, headlines and proverbs`)
   }
 }
 
 
 export class HelpMessage implements Message {
-  constructor(readonly promptsCount: number) { }
+  constructor() { }
 
   get content() {
     return new Discord.MessageEmbed()
@@ -50,7 +49,6 @@ export class HelpMessage implements Message {
         `\`!unnotify\` - stop being notified when a new game starts`,
         `\`!scores\` - view the scoreboard`
       ])
-      .setFooter(`This version has ${this.promptsCount} miscellaneous prompts, quotes, lyrics, headlines and proverbs`)
   }
 }
 

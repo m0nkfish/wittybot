@@ -4,7 +4,6 @@ import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from
 import * as Discord from 'discord.js';
 import { Command, GetScores, Help, NotifyMe, UnnotifyMe } from './commands';
 import { getNotifyRole } from './notify';
-import { promptsCount } from './prompts';
 import { BasicMessage, HelpMessage } from './messages';
 import { Scores } from './scores';
 
@@ -75,7 +74,7 @@ export class Engine {
     }
 
     if (command.type === 'help') {
-      return Send(command.source, new HelpMessage(promptsCount))
+      return Send(command.source, new HelpMessage())
     }
   }
 
