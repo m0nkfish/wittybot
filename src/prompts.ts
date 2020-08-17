@@ -22,7 +22,6 @@ export class Prompt {
   }
 }
 
-const cachedPrompts = db.allPrompts()
 const cachedReplacements = db.allReplacements()
   .then(rs => {
     const map = new Map<string, string[]>()
@@ -42,7 +41,7 @@ export async function choosePrompt(context: RoundContext) {
     users = [context.initiator]
   }
 
-  const prompts = await cachedPrompts
+  const prompts = await db.fetchUnseenPrompts()
 
   const {id, text, type} = pick(mt, prompts)
 

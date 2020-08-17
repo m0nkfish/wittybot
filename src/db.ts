@@ -24,7 +24,7 @@ async function execute(commands: Command[]) {
   return withClient(c => Promise.all(commands.map(cmd => c.query(cmd))))
 }
 
-async function query<T>(validator: io.Type<T>, queryString: string, params: any[] = []): Promise<T[]> {
+async function query<T>(validator: io.Type<T>, queryString: string, params: any[] = [], name?: string): Promise<T[]> {
   function validate(row: unknown): T {
     const decoded = validator.decode(row)
     if (decoded._tag === "Left") {
@@ -34,7 +34,7 @@ async function query<T>(validator: io.Type<T>, queryString: string, params: any[
   }
 
   return withClient(async client => {
-    const res = await client.query({ text: queryString, values: params })
+    const res = await client.query({ name, text: queryString, values: params })
     return res.rows.map(validate)
   })
 }
@@ -79,14 +79,28 @@ export async function saveRound(round: Round) {
   return execute(commands)
 }
 
-export async function allPrompts() {
+/** fetches prompts that have not been seen in the last 400 rounds */
+export async function fetchUnseenPrompts() {
   const tPrompt = io.type({
     id: io.number,
     text: io.string,
     type: io.string
   })
-  return query(tPrompt, `SELECT id, text, type FROM prompts WHERE active = true`)
+  const limit = 400
+  const sql = `
+    select id, text, type from prompts p
+    left join (
+      select prompt_id
+      from rounds
+      group by (prompt_id)
+      order by max(finished) desc
+      limit ${limit}
+    ) seen on seen.prompt_id = p.id
+    where seen.prompt_id is null and p.active = true
+  `
+  return query(tPrompt, sql, [], "fetch_prompts")
 }
+
 
 export async function allReplacements() {
   const tReplacement = io.type({
