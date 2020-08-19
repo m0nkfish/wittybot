@@ -74,7 +74,7 @@ export async function saveRound(round: Round) {
     const subId = Id.create()
     commands.push(insertSubmission({ id: subId.value, round_id: round.id.value, submission, user_id: user.id }))
     for (const voter of votes) {
-      commands.push(insertVote({ submission_id: subId.value, user_id: user.id }))
+      commands.push(insertVote({ submission_id: subId.value, user_id: voter.id }))
     }
   }
 
