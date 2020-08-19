@@ -2,12 +2,27 @@ import * as Discord from 'discord.js';
 import { Send } from './actions';
 import { ScoresMessage } from './messages';
 import { Round } from './context';
+import { fold, semigroupSum } from 'fp-ts/lib/Semigroup'
+const sum = fold(semigroupSum)
+
 
 export class Score {
-  constructor(readonly points: number, readonly ofPossible: number, readonly games: number) {}
+  constructor(readonly rounds: Array<{ points: number, available: number }>) {}
 
   add(other: Score): Score {
-    return new Score(this.points + other.points, this.ofPossible + other.ofPossible, this.games + other.games)
+    return new Score([...this.rounds, ...other.rounds])
+  }
+
+  get games() {
+    return this.rounds.length
+  }
+  
+  get points() {
+    return sum(0, this.rounds.map(x => x.points))
+  }
+
+  get ofPossible() {
+    return sum(0, this.rounds.map(x => x.available))
   }
 
   get rating() {
@@ -20,7 +35,7 @@ export class Score {
   }
 
   static empty(): Score {
-    return new Score(0, 0, 0)
+    return new Score([])
   }
 }
 
@@ -60,6 +75,6 @@ export class Scores {
 
   static fromRound(arr: Array<[Discord.User, number]>): Scores {
     const available = arr.length - 1 // can't self-vote
-    return new Scores(new Map(arr.map(([user, points]) => [user, new Score(points, available, 1)])))
+    return new Scores(new Map(arr.map(([user, points]) => [user, new Score([{ points, available }])])))
   }
 }
