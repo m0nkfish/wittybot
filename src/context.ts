@@ -3,8 +3,9 @@ import { Prompt } from './prompts';
 import { Id } from './id';
 
 export type Round = {
-  id: Id,
+  id: Id
   prompt: Prompt
+  channel: Discord.TextChannel
   submissions: Map<Discord.User, {
     submission: string
     votes: Discord.User[]

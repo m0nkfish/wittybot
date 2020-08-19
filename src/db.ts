@@ -55,7 +55,7 @@ function inserter<T extends io.Props>(table: string, validator: io.TypeC<T>) {
   }
 }
 
-const insertRound = inserter('rounds', io.type({ 'id': io.string, 'prompt_id': io.number, 'prompt_filled': io.string, 'skipped': io.boolean }))
+const insertRound = inserter('rounds', io.type({ 'id': io.string, 'prompt_id': io.number, 'prompt_filled': io.string, 'skipped': io.boolean, 'guild_id': io.string }))
 const insertSubmission = inserter('submissions', io.type({ 'id': io.string, 'round_id': io.string, 'submission': io.string, 'user': io.string }))
 const insertVote = inserter('votes', io.type({ 'submission_id': io.string, 'user': io.string }))
 
@@ -65,7 +65,8 @@ export async function saveRound(round: Round) {
     id: round.id.value,
     prompt_id: round.prompt.id,
     prompt_filled: round.prompt.prompt,
-    skipped: round.skipped
+    skipped: round.skipped,
+    guild_id: round.channel.guild.id
   }))
   
   for (const [user, {submission, votes}] of round.submissions) {

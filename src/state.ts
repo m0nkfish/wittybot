@@ -112,6 +112,7 @@ export class SubmissionState implements GameState<RoundContext> {
       if (this.submissions.size === 0) {
         const skippedRound = {
           id: this.context.roundId,
+          channel: this.context.channel,
           prompt: this.prompt,
           skipped: true,
           submissions: new Map()
@@ -243,6 +244,7 @@ export class VotingState implements GameState<RoundContext> {
 
     const round: Round = {
       id: this.context.roundId,
+      channel: this.context.channel,
       prompt: this.prompt,
       submissions: new Map(withVotes.map(x => [x.user, x])),
       skipped: false
