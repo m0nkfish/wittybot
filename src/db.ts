@@ -56,8 +56,8 @@ function inserter<T extends io.Props>(table: string, validator: io.TypeC<T>) {
 }
 
 const insertRound = inserter('rounds', io.type({ 'id': io.string, 'prompt_id': io.number, 'prompt_filled': io.string, 'skipped': io.boolean, 'guild_id': io.string }))
-const insertSubmission = inserter('submissions', io.type({ 'id': io.string, 'round_id': io.string, 'submission': io.string, 'user': io.string }))
-const insertVote = inserter('votes', io.type({ 'submission_id': io.string, 'user': io.string }))
+const insertSubmission = inserter('submissions', io.type({ 'id': io.string, 'round_id': io.string, 'submission': io.string, 'user': io.string, 'user_id': io.string }))
+const insertVote = inserter('votes', io.type({ 'submission_id': io.string, 'user': io.string, 'user_id': io.string }))
 
 export async function saveRound(round: Round) {
   const commands: Command[] = []
@@ -71,9 +71,9 @@ export async function saveRound(round: Round) {
   
   for (const [user, {submission, votes}] of round.submissions) {
     const subId = Id.create()
-    commands.push(insertSubmission({ id: subId.value, round_id: round.id.value, submission, user: user.username }))
+    commands.push(insertSubmission({ id: subId.value, round_id: round.id.value, submission, user: user.username, user_id: user.id }))
     for (const voter of votes) {
-      commands.push(insertVote({ submission_id: subId.value, user: voter.username }))
+      commands.push(insertVote({ submission_id: subId.value, user: voter.username, user_id: user.id }))
     }
   }
 
