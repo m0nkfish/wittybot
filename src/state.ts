@@ -32,7 +32,7 @@ export class IdleState implements GameState<GuildContext> {
     if (command.type === 'begin') {
       const notifyRole = getNotifyRole(command.channel.guild)
       const initiator = command.user
-      const start = IdleState.newRound(this.context.newGame(command.channel, initiator))
+      const start = IdleState.newRound(this.context.newGame(command.channel, initiator), true)
 
       return PromiseAction(notifyRole.then(role =>
         CompositeAction(
@@ -43,7 +43,7 @@ export class IdleState implements GameState<GuildContext> {
     }
   }
 
-  static newRound = (context: GameContext) => {
+  static newRound = (context: GameContext, firstRound = false) => {
     const roundCtx = context.newRound()
 
     const prompt = choosePrompt(roundCtx)
@@ -53,7 +53,7 @@ export class IdleState implements GameState<GuildContext> {
       PromiseAction(prompt.then(prompt =>
         CompositeAction(
           NewState(SubmissionState.begin(roundCtx, prompt)),
-          DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(context.guild, state => OptionalAction(state instanceof SubmissionState && state.context.sameRound(roundCtx) && state.finish()))),
+          DelayedAction(context.config.submitDurationSec * 1000 * (firstRound ? 2 : 1), FromStateAction(context.guild, state => OptionalAction(state instanceof SubmissionState && state.context.sameRound(roundCtx) && state.finish()))),
           Send(context.channel, new NewRoundMessage(roundCtx.roundId, prompt, roundCtx.botUser, context.config.submitDurationSec))
         )))
     )
