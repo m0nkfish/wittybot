@@ -7,7 +7,7 @@ import { mt } from './random';
 import { GlobalContext, Round, RoundContext, GuildContext, GameContext } from './context';
 import { Scores } from './scores';
 import { getNotifyRole } from './notify';
-import { NewRoundMessage, GameStartedMessage, BasicMessage, VoteMessage, VotingFinishedMessage } from './messages';
+import { NewRoundMessage, GameStartedMessage, BasicMessage, VoteMessage, VotingFinishedMessage, SubmissionAcceptedMessage, VoteAcceptedMessage } from './messages';
 
 type Submission = { user: Discord.User, submission: string }
 
@@ -97,9 +97,9 @@ export class SubmissionState implements GameState<RoundContext> {
 
       const messages =
         this.submissions.has(command.user)
-          ? [Send(command.user, new BasicMessage(`Replacement submission accepted`))]
+          ? [Send(command.user, new SubmissionAcceptedMessage(this.prompt, command.submission, true))]
           : [
-            Send(command.user, new BasicMessage(`Submission accepted, DM again to replace it`)),
+            Send(command.user, new SubmissionAcceptedMessage(this.prompt, command.submission, false)),
             Send(this.context.channel, new BasicMessage(`Submission received from <@${command.user.id}>`))
           ]
 
@@ -202,7 +202,7 @@ export class VotingState implements GameState<RoundContext> {
       }
 
       return CompositeAction(
-        Send(user, new BasicMessage(`Vote recorded for entry ${entry}: '${submission.submission}', DM again to replace it`)),
+        Send(user, new VoteAcceptedMessage(this.prompt, entry, submission.submission)),
         FromStateAction(this.context.guild, state => {
           if (state instanceof VotingState && state.context.sameRound(this.context)) {
             const newState = state.withVote(user, entry)

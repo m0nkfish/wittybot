@@ -202,3 +202,37 @@ export class ScoresMessage implements Message {
       })))
   }
 }
+
+export class SubmissionAcceptedMessage implements Message {
+  constructor(readonly prompt: Prompt, readonly submission: string, readonly isReplacement: boolean) { }
+
+  get content() {
+    const message = new Discord.MessageEmbed()
+      .setTitle(this.isReplacement ? `Replacement submission accepted` : `Submission accepted`)
+      .setDescription([
+        this.prompt.formatted,
+        ``,
+        this.submission
+      ])
+      .setFooter(`Submit again to replace this submission`)
+
+    return message
+  }
+}
+
+export class VoteAcceptedMessage implements Message {
+  constructor(readonly prompt: Prompt, readonly entry: number, readonly submission: string) { }
+
+  get content() {
+    const message = new Discord.MessageEmbed()
+      .setTitle(`Vote recorded for entry ${this.entry}`)
+      .setDescription([
+        this.prompt.formatted,
+        ``,
+        this.submission
+      ])
+      .setFooter(`Message again to replace your vote`)
+
+    return message
+  }
+}
