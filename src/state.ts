@@ -50,7 +50,7 @@ export class IdleState implements GameState<GuildContext> {
       PromiseAction(prompt.then(prompt =>
         CompositeAction(
           NewState(SubmissionState.begin(roundCtx, prompt)),
-          DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(state => OptionalAction(state instanceof SubmissionState && state.context.sameRound(roundCtx) && state.finish()))),
+          DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(context.guild, state => OptionalAction(state instanceof SubmissionState && state.context.sameRound(roundCtx) && state.finish()))),
           Send(context.channel, new NewRoundMessage(roundCtx.roundId, prompt, roundCtx.botUser, context.config.submitDurationSec))
         )))
     )
@@ -105,7 +105,7 @@ export class SubmissionState implements GameState<RoundContext> {
 
       return CompositeAction(
         ...messages,
-        UpdateState(state => state instanceof SubmissionState && state.context.sameRound(this.context) ? state.withSubmission(command.user, command.submission) : state),
+        UpdateState(this.context.guild, state => state instanceof SubmissionState && state.context.sameRound(this.context) ? state.withSubmission(command.user, command.submission) : state),
       )
     } else if (command.type === 'skip') {
       if (this.submissions.size === 0) {
@@ -145,7 +145,7 @@ export class SubmissionState implements GameState<RoundContext> {
 
     return CompositeAction(
       NewState(VotingState.begin(this.context, this.prompt, shuffled)),
-      DelayedAction(voteDurationSec * 1000, FromStateAction(state => OptionalAction(state instanceof VotingState && state.context.sameRound(this.context) && state.finish()))),
+      DelayedAction(voteDurationSec * 1000, FromStateAction(this.context.guild, state => OptionalAction(state instanceof VotingState && state.context.sameRound(this.context) && state.finish()))),
       Send(this.context.channel, new VoteMessage(this.context.roundId, this.prompt, shuffled, this.context.botUser, voteDurationSec))
     )
   }
@@ -203,7 +203,7 @@ export class VotingState implements GameState<RoundContext> {
 
       return CompositeAction(
         Send(user, new BasicMessage(`Vote recorded for entry ${entry}: '${submission.submission}', DM again to replace it`)),
-        FromStateAction(state => {
+        FromStateAction(this.context.guild, state => {
           if (state instanceof VotingState && state.context.sameRound(this.context)) {
             const newState = state.withVote(user, entry)
             return newState.allVotesIn()
@@ -265,7 +265,7 @@ export class VotingState implements GameState<RoundContext> {
 function endRound(context: GameContext) {
   return CompositeAction(
     NewState(new WaitingState(context)),
-    DelayedAction(5000, FromStateAction(state => OptionalAction(state instanceof WaitingState && IdleState.newRound(context))))
+    DelayedAction(5000, FromStateAction(context.guild, state => OptionalAction(state instanceof WaitingState && IdleState.newRound(context))))
   )
 }
 

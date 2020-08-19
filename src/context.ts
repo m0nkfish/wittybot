@@ -21,7 +21,6 @@ export class GlobalContext {
   ) {}
 
   get inTestMode() { return !!this.config.testMode }
-
   get botUser() { return this.client.user! }
 }
 
@@ -31,13 +30,8 @@ export class GuildContext {
     readonly guild: Discord.Guild
   ) { }
 
-  get config() {
-    return this.globalCtx.config
-  }
-
-  get inTestMode() {
-    return !!this.config.testMode
-  }
+  get config() { return this.globalCtx.config }
+  get inTestMode() { return this.globalCtx.inTestMode }
 
   newGame = (channel: Discord.TextChannel, initiator: Discord.User) =>
     new GameContext(this, channel, Id.create(), initiator, [])
@@ -52,13 +46,9 @@ export class GameContext {
     readonly rounds: Round[],
   ) { }
 
-  get globalCtx() {
-    return this.guildCtx.globalCtx
-  }
-
-  get config() {
-    return this.guildCtx.config
-  }
+  get globalCtx() { return this.guildCtx.globalCtx }
+  get config() { return this.guildCtx.config }
+  get guild() { return this.guildCtx.guild }
 
   addRound = (round: Round) =>
     new GameContext(this.guildCtx, this.channel, this.gameId, this.initiator, [...this.rounds, round])
@@ -75,20 +65,14 @@ export class RoundContext {
   }
 
   get globalCtx() { return this.gameCtx.globalCtx }
-
   get guildCtx() { return this.gameCtx.guildCtx }
-
   get rounds() { return this.gameCtx.rounds }
-
   get config() { return this.gameCtx.config }
-
   get inTestMode() { return !!this.config.testMode }
-
   get botUser() { return this.globalCtx.botUser }
-
   get channel() { return this.gameCtx.channel }
-
   get initiator() { return this.gameCtx.initiator }
+  get guild() { return this.gameCtx.guild }
 
   sameRound = (other: RoundContext) => this.roundId.eq(other.roundId)
 }

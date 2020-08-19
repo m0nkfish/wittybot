@@ -8,7 +8,7 @@ export const Send = Case('send-message', (destination: Destination, message: Mes
 export const NewState = Case('new-state', (newState: AnyGameState) => ({ newState }))
 export const CompositeAction = Case('composite-action', (...actions: Action[]) => ({ actions }))
 export const PromiseAction = Case('promise-action', (promise: Promise<Action>) => ({ promise }))
-export const FromStateAction = Case('from-state-action', (getAction: (state: AnyGameState) => Action) => ({ getAction }))
+export const FromStateAction = Case('from-state-action', (guild: Discord.Guild, getAction: (state: AnyGameState) => Action) => ({ guild, getAction }))
 export const AddUserToRole = Case('add-user-to-role', (member: Discord.GuildMember, role: Discord.Role) => ({ member, role }))
 export const RemoveUserFromRole = Case('remove-user-from-role', (member: Discord.GuildMember, role: Discord.Role) => ({ member, role }))
 export const NullAction = Case('null-action', () => ({}))
@@ -22,9 +22,9 @@ export type Action =
   | ReturnType<typeof Send>
   | ReturnType<typeof SaveRound>
   | Case<'composite-action', { actions: Action[] }>
-  | Case<'from-state-action', { getAction: (state: AnyGameState) => Action }>
+  | Case<'from-state-action', { guild: Discord.Guild, getAction: (state: AnyGameState) => Action }>
   | Case<'promise-action', { promise: Promise<Action> }>
 
-export const UpdateState = (update: (state: AnyGameState) => AnyGameState) => FromStateAction(state => NewState(update(state)))
+export const UpdateState = (guild: Discord.Guild, update: (state: AnyGameState) => AnyGameState) => FromStateAction(guild, state => NewState(update(state)))
 export const DelayedAction = (delayMs: number, action: Action) => PromiseAction(new Promise<Action>(resolve => setTimeout(() => resolve(action), delayMs)))
 export const OptionalAction = (action: Action | undefined | null | false): Action => action || NullAction()
