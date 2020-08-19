@@ -41,7 +41,7 @@ export async function choosePrompt(context: RoundContext) {
     users = [context.initiator]
   }
 
-  const prompts = await db.fetchUnseenPrompts()
+  const prompts = await db.fetchUnseenPrompts(context.guild)
 
   const {id, text, type} = pick(mt, prompts)
 

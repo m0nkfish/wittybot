@@ -2,7 +2,7 @@ import * as Discord from 'discord.js'
 import { Engine } from './engine';
 import { Send } from './actions';
 import { ReleaseMessage } from './messages';
-import { GlobalContext, GuildContext } from './context';
+import { GlobalContext } from './context';
 
 console.log('Loading...')
 
@@ -19,7 +19,7 @@ client.on('ready', () => {
   console.log('Ready')
 
   const testMode = process.env.TEST_MODE === "true"
-  
+
   const engine = new Engine(new GlobalContext(client, { submitDurationSec: 60, testMode }))
   engine.run()
 
