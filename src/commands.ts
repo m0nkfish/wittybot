@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js'
 import { Case } from './case'
 
-export const Begin = Case('begin', (user: Discord.User, channel: Discord.TextChannel) => ({ channel, user }))
+export const Begin = Case('begin', (user: Discord.User, channel: Discord.TextChannel, timeoutSec: number) => ({ channel, user, timeoutSec }))
 export const Submit = Case('submit', (user: Discord.User, submission: string) => ({ user, submission }))
 export const Vote = Case('vote', (user: Discord.User, entry: number) => ({ user, entry }))
 export const Skip = Case('skip', () => ({}))

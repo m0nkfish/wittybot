@@ -6,6 +6,7 @@ import { Round, RoundContext } from '../context';
 import { BasicMessage, VotingFinishedMessage, VoteAcceptedMessage } from '../messages';
 import { GameState } from './GameState';
 import { endRound } from './endRound';
+import { tryParseInt } from '../util';
 
 type Submission = { user: Discord.User, submission: string }
 
@@ -28,7 +29,7 @@ export class VotingState implements GameState<RoundContext> {
     if (message.channel === this.context.channel) {
       const spoilered = message.content.match(/^\|\|(\d+)\|\|$/)
       if (spoilered && spoilered[1]) {
-        const entry = tryParseInt(spoilered[1])
+        const entry = tryParseInt(spoilered[1].trim())
         if (entry !== null) {
           message.delete({ reason: 'Message recognised as wittybot submission' })
           return Vote(message.author, entry)
@@ -118,13 +119,3 @@ export class VotingState implements GameState<RoundContext> {
     new VotingState(context, prompt, submissions, new Map())
 }
 
-const tryParseInt = (str: string) => {
-  try {
-    const entry = Number.parseInt(str)
-    if (!isNaN(entry)) {
-      return entry
-    }
-  } catch {
-  }
-  return null
-}

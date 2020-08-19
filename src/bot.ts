@@ -20,7 +20,7 @@ client.on('ready', () => {
 
   const testMode = process.env.TEST_MODE === "true"
 
-  const engine = new Engine(new GlobalContext(client, { submitDurationSec: 60, testMode }))
+  const engine = new Engine(new GlobalContext(client, { defaultSubmitDurationSec: 60, testMode }))
   engine.run()
 
   for (const [_, guild] of client.guilds.cache) {

@@ -17,7 +17,7 @@ export type Round = {
 export class GlobalContext {
   constructor(
     readonly client: Discord.Client,
-    readonly config: { submitDurationSec: number, testMode?: boolean }
+    readonly config: { defaultSubmitDurationSec: number, testMode?: boolean }
   ) {}
 
   get inTestMode() { return !!this.config.testMode }
@@ -33,8 +33,8 @@ export class GuildContext {
   get config() { return this.globalCtx.config }
   get inTestMode() { return this.globalCtx.inTestMode }
 
-  newGame = (channel: Discord.TextChannel, initiator: Discord.User) =>
-    new GameContext(this, channel, Id.create(), initiator, [])
+  newGame = (channel: Discord.TextChannel, initiator: Discord.User, timeoutSec: number) =>
+    new GameContext(this, channel, Id.create(), initiator, [], timeoutSec)
 }
 
 export class GameContext {
@@ -44,6 +44,7 @@ export class GameContext {
     readonly gameId: Id,
     readonly initiator: Discord.User,
     readonly rounds: Round[],
+    readonly timeoutSec: number
   ) { }
 
   get globalCtx() { return this.guildCtx.globalCtx }
@@ -51,7 +52,7 @@ export class GameContext {
   get guild() { return this.guildCtx.guild }
 
   addRound = (round: Round) =>
-    new GameContext(this.guildCtx, this.channel, this.gameId, this.initiator, [...this.rounds, round])
+    new GameContext(this.guildCtx, this.channel, this.gameId, this.initiator, [...this.rounds, round], this.timeoutSec)
 
   newRound = () =>
     new RoundContext(this, Id.create())

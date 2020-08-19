@@ -8,21 +8,26 @@ import { NewRoundMessage, GameStartedMessage } from '../messages';
 import { GameState } from './GameState';
 import { WaitingState } from './WaitingState';
 import { SubmissionState } from './SubmissionState'
+import { tryParseInt } from '../util';
 
 /** Default state, no active game */
 export class IdleState implements GameState<GuildContext> {
   constructor(readonly context: GuildContext) { }
 
-  readonly interpreter = (message: Discord.Message) =>
-    message.channel instanceof Discord.TextChannel && message.content === "!witty"
-      ? Begin(message.author, message.channel)
-      : undefined
-
+  readonly interpreter = (message: Discord.Message) =>{
+    if (message.channel instanceof Discord.TextChannel) {
+      const parsed = /^!witty(?: (\d+))?$/.exec(message.content)
+      if (parsed) {
+        const timeout = tryParseInt(parsed[1]) ?? this.context.config.defaultSubmitDurationSec
+        return Begin(message.author, message.channel, timeout)
+      }
+    }
+}
   receive(command: Command): Action | undefined {
     if (command.type === 'begin') {
       const notifyRole = getNotifyRole(command.channel.guild)
       const initiator = command.user
-      const start = IdleState.newRound(this.context.newGame(command.channel, initiator), true)
+      const start = IdleState.newRound(this.context.newGame(command.channel, initiator, command.timeoutSec), true)
 
       return PromiseAction(notifyRole.then(role =>
         CompositeAction(
@@ -43,8 +48,8 @@ export class IdleState implements GameState<GuildContext> {
       PromiseAction(prompt.then(prompt =>
         CompositeAction(
           NewState(SubmissionState.begin(roundCtx, prompt)),
-          DelayedAction(context.config.submitDurationSec * 1000 * (firstRound ? 2 : 1), FromStateAction(context.guild, state => OptionalAction(state instanceof SubmissionState && state.context.sameRound(roundCtx) && state.finish()))),
-          Send(context.channel, new NewRoundMessage(roundCtx.roundId, prompt, roundCtx.botUser, context.config.submitDurationSec))
+          DelayedAction(context.timeoutSec * 1000 * (firstRound ? 2 : 1), FromStateAction(context.guild, state => OptionalAction(state instanceof SubmissionState && state.context.sameRound(roundCtx) && state.finish()))),
+          Send(context.channel, new NewRoundMessage(roundCtx.roundId, prompt, roundCtx.botUser, context.timeoutSec))
         )))
     )
   }
