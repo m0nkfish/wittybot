@@ -28,6 +28,15 @@ export class Engine {
     this.states = new Map()
   }
 
+  getState(guild: Discord.Guild): AnyGameState {
+    let state = this.states.get(guild)
+    if (!state) {
+      state = new IdleState(new GuildContext(this.context, guild))
+      this.states.set(guild, state)
+    }
+    return state
+  }
+
   getCommand(message: Discord.Message): Command | ScopedCommand | undefined {
     if (message.channel instanceof Discord.NewsChannel) {
       return 
@@ -44,7 +53,7 @@ export class Engine {
     }
 
     if (message.channel instanceof Discord.TextChannel) {
-      const state = this.states.get(message.channel.guild)
+      const state = this.getState(message.channel.guild)
       if (state) {
         const command = state.interpreter(message)
         if (command) {
@@ -55,7 +64,7 @@ export class Engine {
       const commands = this.context.client.guilds.cache
         .filter(g => g.member(message.author) !== null)
         .map(g => {
-          const state = this.states.get(g)
+          const state = this.getState(g)
           if (state) {
             const command = state.interpreter(message)
             if (command) {
@@ -82,12 +91,8 @@ export class Engine {
   getAction(command: Command | ScopedCommand): Action | undefined {
 
     if (command instanceof ScopedCommand) {
-      let state = this.states.get(command.guild)
-      if (!state) {
-        state = new IdleState(new GuildContext(this.context, command.guild))
-        this.states.set(command.guild, state)
-      }
-      return state.receive(command.command)
+      return this.getState(command.guild)
+        .receive(command.command)
     }
 
     if (command.type === 'notify-me') {
@@ -145,10 +150,7 @@ export class Engine {
         action.promise.then(action => this.interpret(action))
         return handled
       case 'from-state-action':
-        const state = this.states.get(action.guild)
-        if (state) {
-          this.interpret(action.getAction(state))
-        }
+        this.interpret(action.getAction(this.getState(action.guild)))
         return handled
       case 'new-state':
         this.states.set(action.newState.context.guild, action.newState)
