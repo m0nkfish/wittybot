@@ -126,7 +126,7 @@ export class VoteMessage implements Message {
 
   private message = (remainingSec: number, voters: Discord.User[]) => 
     this.baseContent
-      .setFooter(`You have ${remainingSec} seconds. Still left to vote: ${this.users.filter(u => !voters.some(v => v == u))}`)
+      .setFooter(`You have ${remainingSec} seconds. Still left to vote: ${this.users.filter(u => !voters.some(v => v == u)).map(u => u.username).join(', ')}`)
 
   get content() {
     return this.message(this.voteDurationSec, [])
