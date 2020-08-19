@@ -33,10 +33,13 @@ export class IdleState implements GameState<GuildContext> {
       const notifyRole = getNotifyRole(command.channel.guild)
       const initiator = command.user
       const start = IdleState.newRound(this.context.newGame(command.channel, initiator))
-      return CompositeAction(
-        OptionalAction(notifyRole && !this.context.inTestMode && Send(command.channel, new GameStartedMessage(notifyRole, command.user))),
-        start
-      )
+
+      return PromiseAction(notifyRole.then(role =>
+        CompositeAction(
+          OptionalAction(role && !this.context.inTestMode && Send(command.channel, new GameStartedMessage(role, command.user))),
+          start
+        )
+      ))
     }
   }
 

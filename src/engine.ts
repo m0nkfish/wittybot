@@ -2,23 +2,13 @@ import { GlobalContext, GuildContext } from './context';
 import { IdleState, AnyGameState } from './state';
 import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from './actions';
 import * as Discord from 'discord.js';
-import { Command, GetScores, Help, NotifyMe, UnnotifyMe } from './commands';
+import { Command, Help, NotifyMe, UnnotifyMe } from './commands';
 import { getNotifyRole } from './notify';
 import { BasicMessage, HelpMessage } from './messages';
 import * as db from './db'
 
-// general: !help
-
-// guild scoped: !notify, !unnotify, !witty, !scores
-
-// game scoped: submit, vote
-
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
-}
-
-class ScopedAction {
-  constructor(readonly action: Action, readonly guild: Discord.Guild) {}
 }
 
 export class Engine {
@@ -88,7 +78,7 @@ export class Engine {
 
   }
 
-  getAction(command: Command | ScopedCommand): Action | undefined {
+  async getAction(command: Command | ScopedCommand): Promise<Action | undefined> {
 
     if (command instanceof ScopedCommand) {
       return this.getState(command.guild)
@@ -96,7 +86,7 @@ export class Engine {
     }
 
     if (command.type === 'notify-me') {
-      const role = getNotifyRole(command.member.guild)
+      const role = await getNotifyRole(command.member.guild)
       if (role) {
         return CompositeAction(
           AddUserToRole(command.member, role),
@@ -106,7 +96,7 @@ export class Engine {
     }
 
     if (command.type === 'unnotify-me') {
-      const role = getNotifyRole(command.member.guild)
+      const role = await getNotifyRole(command.member.guild)
       if (role) {
         return CompositeAction(
           RemoveUserFromRole(command.member, role),
@@ -121,7 +111,7 @@ export class Engine {
   }
 
   run() {
-    this.context.client.on('message', message => {
+    this.context.client.on('message', async message => {
       if (message.author.bot) {
         return
       }
@@ -131,7 +121,7 @@ export class Engine {
         return
       }
 
-      const action = this.getAction(command)
+      const action = await this.getAction(command)
       if (!action) {
         return
       }
