@@ -1,11 +1,13 @@
 import { GlobalContext, GuildContext } from './context';
 import { IdleState, AnyGameState } from './state';
-import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from './actions';
+import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send, NewState } from './actions';
 import * as Discord from 'discord.js';
 import { Command, Help, NotifyMe, UnnotifyMe } from './commands';
 import { getNotifyRole } from './notify';
-import { BasicMessage, HelpMessage } from './messages';
+import { BasicMessage, HelpMessage, SubmissionAcceptedMessage } from './messages';
 import * as db from './db'
+import { SubmissionState } from './state/SubmissionState';
+import { VotingState } from './state/VotingState';
 
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -69,7 +71,7 @@ export class Engine {
       }
 
       if (commands.length > 1) {
-        message.reply(`Sorry, could not establish which server you meant to send this command to; `)
+        message.reply(`Sorry, could not establish which server you meant to send this command to`)
         return
       }
 
@@ -175,13 +177,28 @@ export class Engine {
   }
 
   log = (action: Action) => {
+    const usernames = (users: Iterable<Discord.User>) => Array.from(users).map(u => u.username).join(',')
+
     if (action.type === 'promise-action') {
       console.log('promise_action')
     } else if (action.type === 'new-state') {
-      const guild = action.newState.context.guild
-      console.log('new_state_action', `guild=${guild.name} state=${name(action.newState)} guild_id=${guild.id}`)
+      const {newState} = action
+      const guild = newState.context.guild
+      const params =
+        newState instanceof SubmissionState ? `submissions=${usernames(newState.submissions.keys())}`
+        : newState instanceof VotingState ? `submissions=${usernames(newState.submissions.map(x => x.user))} votes=${usernames(newState.votes.keys())}`
+        : ``
+
+      console.log('new_state_action', `guild=${guild.name} state=${name(newState)} guild_id=${guild.id} ${params}`)
     } else if (action.type === 'send-message') {
-      console.log('send_message', `message=${name(action.message)}`)
+      const {message, destination} = action
+      const content =
+        message instanceof BasicMessage ? `content=${message.content}`
+        : ``
+
+      const recipient =
+        destination instanceof Discord.User ? `@${destination.username}` : `#${destination.name}`
+      console.log('send_message', `message=${name(action.message)} recipient=${recipient} ${content}`)
     }
   }
 }
