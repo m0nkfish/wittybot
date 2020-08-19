@@ -3,6 +3,8 @@ import { Score, Scores } from './scores';
 import { Prompt } from './prompts';
 import { AnyGameState, SubmissionState, VotingState } from './state';
 import { Id } from './id';
+import { shuffle } from 'random-js';
+import { mt } from './random';
 
 export type Destination = Discord.TextChannel | Discord.User
 
@@ -104,7 +106,13 @@ export class VoteMessage implements Message {
     readonly prompt: Prompt,
     readonly submissions: Array<{ user: Discord.User, submission: string }>,
     readonly botUser: Discord.User,
-    readonly voteDurationSec: number) {}
+    readonly voteDurationSec: number) {
+      this.users = [...submissions.map(x => x.user)]
+      shuffle(mt, this.users)
+    }
+
+
+  private readonly users: Discord.User[]
 
   private readonly baseContent = new Discord.MessageEmbed()
     .setTitle(`Time's up!`)
@@ -116,12 +124,12 @@ export class VoteMessage implements Message {
       `Vote for your favourite by DMing the bot with the entry number\n**or** by using \`/spoiler <entry number>\` in this channel`
     ])
 
-  private message = (remainingSec: number) => 
+  private message = (remainingSec: number, voters: Discord.User[]) => 
     this.baseContent
-      .setFooter(`You have ${remainingSec} seconds`)
+      .setFooter(`You have ${remainingSec} seconds. Still left to vote: ${this.users.filter(u => !voters.some(v => v == u))}`)
 
   get content() {
-    return this.message(this.voteDurationSec)
+    return this.message(this.voteDurationSec, [])
   }
 
   onSent = (msg: Discord.Message, getState: () => AnyGameState) => {
@@ -130,7 +138,7 @@ export class VoteMessage implements Message {
       remainingSec -= 5
       const state = getState()
       if (remainingSec > 0 && state instanceof VotingState && state.context.roundId.eq(this.roundId)) {
-        msg.edit(this.message(remainingSec))
+        msg.edit(this.message(remainingSec, Array.from(state.votes.keys())))
       } else {
         clearInterval(interval)
         msg.edit(this.baseContent.setFooter(`Voting over!`))

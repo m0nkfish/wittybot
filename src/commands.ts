@@ -2,8 +2,8 @@ import * as Discord from 'discord.js'
 import { Case } from './case'
 
 export const Begin = Case('begin', (user: Discord.User, channel: Discord.TextChannel, timeoutSec: number) => ({ channel, user, timeoutSec }))
-export const Submit = Case('submit', (user: Discord.User, submission: string) => ({ user, submission }))
-export const Vote = Case('vote', (user: Discord.User, entry: number) => ({ user, entry }))
+export const Submit = Case('submit', (submission: string, message: Discord.Message) => ({ user: message.author, submission, message }))
+export const Vote = Case('vote', (entry: number, message: Discord.Message) => ({ user: message.author, entry, message }))
 export const Skip = Case('skip', () => ({}))
 export const GetScores = Case('get-scores', (source: Discord.User | Discord.TextChannel) => ({ source }))
 export const NotifyMe = Case('notify-me', (member: Discord.GuildMember) => ({ member }))

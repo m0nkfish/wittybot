@@ -22,7 +22,7 @@ export class SubmissionState implements GameState<RoundContext> {
 
   interpreter = (message: Discord.Message) => {
     if (message.channel instanceof Discord.DMChannel) {
-      return Submit(message.author, message.content)
+      return Submit(message.content, message)
     } else if (message.channel === this.context.channel) {
       if (message.content === '!skip') {
         return Skip()
@@ -31,7 +31,7 @@ export class SubmissionState implements GameState<RoundContext> {
       const spoilered = message.content.match(/^\|\|(.*)\|\|$/)
       if (spoilered && spoilered[1]) {
         message.delete({ reason: 'Message recognised as wittybot submission' })
-        return Submit(message.author, spoilered[1])
+        return Submit(spoilered[1], message)
       }
     }
   }
@@ -42,16 +42,11 @@ export class SubmissionState implements GameState<RoundContext> {
         return Send(command.user, new BasicMessage('Submissions cannot be more than 280 characters long'))
       }
 
-      const messages =
-        this.submissions.has(command.user)
-          ? [Send(command.user, new SubmissionAcceptedMessage(this.prompt, command.submission, true))]
-          : [
-            Send(command.user, new SubmissionAcceptedMessage(this.prompt, command.submission, false)),
-            Send(this.context.channel, new BasicMessage(`Submission received from <@${command.user.id}>`))
-          ]
-
+      const isReplacement = this.submissions.has(command.user)
+      
       return CompositeAction(
-        ...messages,
+        OptionalAction(command.message.channel instanceof Discord.DMChannel && Send(command.user, new SubmissionAcceptedMessage(this.prompt, command.submission, isReplacement))),
+        OptionalAction(!isReplacement && Send(this.context.channel, new BasicMessage(`Submission received from <@${command.user.id}>`))),
         UpdateState(this.context.guild, state => state instanceof SubmissionState && state.context.sameRound(this.context) ? state.withSubmission(command.user, command.submission) : state),
       )
     } else if (command.type === 'skip') {

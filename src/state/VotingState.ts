@@ -23,7 +23,7 @@ export class VotingState implements GameState<RoundContext> {
     if (message.channel instanceof Discord.DMChannel) {
       const entry = tryParseInt(message.content)
       if (entry !== null) {
-        return Vote(message.author, entry)
+        return Vote(entry, message)
       }
     }
     if (message.channel === this.context.channel) {
@@ -32,7 +32,7 @@ export class VotingState implements GameState<RoundContext> {
         const entry = tryParseInt(spoilered[1].trim())
         if (entry !== null) {
           message.delete({ reason: 'Message recognised as wittybot submission' })
-          return Vote(message.author, entry)
+          return Vote(entry, message)
         }
       }
     }
@@ -41,7 +41,7 @@ export class VotingState implements GameState<RoundContext> {
 
   receive(command: Command): Action | undefined {
     if (command.type === 'vote') {
-      const { entry, user } = command
+      const { entry, user, message } = command
       if (entry < 1 || this.submissions.length < entry) {
         return Send(user, new BasicMessage(`You must vote between 1 and ${this.submissions.length}`))
       }
@@ -59,7 +59,7 @@ export class VotingState implements GameState<RoundContext> {
       }
 
       return CompositeAction(
-        Send(user, new VoteAcceptedMessage(this.prompt, entry, submission.submission)),
+        OptionalAction(message.channel instanceof Discord.DMChannel && Send(user, new VoteAcceptedMessage(this.prompt, entry, submission.submission))),
         FromStateAction(this.context.guild, state => {
           if (state instanceof VotingState && state.context.sameRound(this.context)) {
             const newState = state.withVote(user, entry)
