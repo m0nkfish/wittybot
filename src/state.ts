@@ -43,7 +43,6 @@ export class IdleState implements GameState<Context> {
   static newRound = (context: RoundContext) => {
     context = context.nextRound()
 
-
     const prompt = choosePrompt(context)
 
     return CompositeAction(
@@ -79,7 +78,7 @@ export class SubmissionState implements GameState<RoundContext> {
       return Submit(message.author, message.content)
     } else if (message.channel === this.context.channel) {
       if (message.content === '!skip') {
-        return Skip(message.author, message.channel)
+        return Skip()
       }
 
       const spoilered = message.content.match(/^\|\|(.*)\|\|$/)
@@ -119,11 +118,11 @@ export class SubmissionState implements GameState<RoundContext> {
         }
         return CompositeAction(
           SaveRound(skippedRound),
-          Send(command.channel, new BasicMessage(`Skipping this prompt`)),
+          Send(this.context.channel, new BasicMessage(`Skipping this prompt`)),
           endRound(this.context)
         )
       } else {
-        return Send(command.channel, new BasicMessage(`Prompt already has submissions; won't skip`))
+        return Send(this.context.channel, new BasicMessage(`Prompt already has submissions; won't skip`))
       }
     }
   }

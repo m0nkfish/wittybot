@@ -4,6 +4,8 @@ import { Send } from './actions';
 import { ReleaseMessage } from './messages';
 import { Context } from './context';
 
+console.log('Loading...')
+
 const client = new Discord.Client();
 
 client.on('ready', () => {
@@ -13,7 +15,9 @@ client.on('ready', () => {
       name: '!help'
     }
   })
-  console.log('ready!')
+
+  console.log('Ready')
+
   for (const [_, guild] of client.guilds.cache) {
     for (const [_, channel] of guild.channels.cache) {
       if (channel instanceof Discord.TextChannel && channel.name === 'wittybot') {
