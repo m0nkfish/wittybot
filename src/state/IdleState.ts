@@ -48,7 +48,7 @@ export class IdleState implements GameState<GuildContext> {
       PromiseAction(prompt.then(prompt =>
         CompositeAction(
           NewState(SubmissionState.begin(roundCtx, prompt)),
-          DelayedAction(context.timeoutSec * 1000 * (firstRound ? 2 : 1), FromStateAction(context.guild, state => OptionalAction(state instanceof SubmissionState && state.context.sameRound(roundCtx) && state.finish()))),
+          DelayedAction(context.timeoutSec * 1000, FromStateAction(context.guild, state => OptionalAction(state instanceof SubmissionState && state.context.sameRound(roundCtx) && state.finish()))),
           Send(context.channel, new NewRoundMessage(roundCtx.roundId, prompt, roundCtx.botUser, context.timeoutSec))
         )))
     )
