@@ -14,44 +14,81 @@ export type Round = {
   skipped: boolean
 }
 
-export class Context {
+export class GlobalContext {
   constructor(
     readonly client: Discord.Client,
-    readonly config: { submitDurationSec: number, testMode?: boolean },
-    readonly rounds: Round[]
+    readonly config: { submitDurationSec: number, testMode?: boolean }
   ) {}
-
-  start = (channel: Discord.TextChannel, initiator: Discord.User) =>
-    new RoundContext(this, channel, Id.create(), Id.create(), initiator)
-
-  addRound = (round: Round) => new Context(this.client, this.config, [...this.rounds, round])
 
   get inTestMode() { return !!this.config.testMode }
 
   get botUser() { return this.client.user! }
 }
 
-export class RoundContext {
+export class GuildContext {
   constructor(
-    readonly baseContext: Context,
+    readonly globalCtx: GlobalContext,
+    readonly guild: Discord.Guild
+  ) { }
+
+  get config() {
+    return this.globalCtx.config
+  }
+
+  get inTestMode() {
+    return !!this.config.testMode
+  }
+
+  newGame = (channel: Discord.TextChannel, initiator: Discord.User) =>
+    new GameContext(this, channel, Id.create(), initiator, [])
+}
+
+export class GameContext {
+  constructor(
+    readonly guildCtx: GuildContext,
     readonly channel: Discord.TextChannel,
     readonly gameId: Id,
-    readonly roundId: Id,
-    readonly initiator: Discord.User
+    readonly initiator: Discord.User,
+    readonly rounds: Round[],
+  ) { }
+
+  get globalCtx() {
+    return this.guildCtx.globalCtx
+  }
+
+  get config() {
+    return this.guildCtx.config
+  }
+
+  addRound = (round: Round) =>
+    new GameContext(this.guildCtx, this.channel, this.gameId, this.initiator, [...this.rounds, round])
+
+  newRound = () =>
+    new RoundContext(this, Id.create())
+}
+
+export class RoundContext {
+  constructor(
+    readonly gameCtx: GameContext,
+    readonly roundId: Id
   ) {
   }
 
-  get rounds() { return this.baseContext.rounds }
+  get globalCtx() { return this.gameCtx.globalCtx }
 
-  get config() { return this.baseContext.config }
+  get guildCtx() { return this.gameCtx.guildCtx }
 
-  get inTestMode() { return this.baseContext.inTestMode }
+  get rounds() { return this.gameCtx.rounds }
 
-  get botUser() { return this.baseContext.botUser }
+  get config() { return this.gameCtx.config }
 
-  addRound = (round: Round) => new RoundContext(this.baseContext.addRound(round), this.channel, this.gameId, this.roundId, this.initiator)
+  get inTestMode() { return !!this.config.testMode }
 
-  nextRound = () => new RoundContext(this.baseContext, this.channel, this.gameId, Id.create(), this.initiator)
+  get botUser() { return this.globalCtx.botUser }
+
+  get channel() { return this.gameCtx.channel }
+
+  get initiator() { return this.gameCtx.initiator }
 
   sameRound = (other: RoundContext) => this.roundId.eq(other.roundId)
 }

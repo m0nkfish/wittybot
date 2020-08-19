@@ -4,14 +4,14 @@ import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, Null
 import { choosePrompt, Prompt } from './prompts';
 import { shuffle } from 'random-js';
 import { mt } from './random';
-import { Context, Round, RoundContext } from './context';
+import { GlobalContext, Round, RoundContext, GuildContext, GameContext } from './context';
 import { Scores } from './scores';
 import { getNotifyRole } from './notify';
 import { NewRoundMessage, GameStartedMessage, BasicMessage, VoteMessage, VotingFinishedMessage } from './messages';
 
 type Submission = { user: Discord.User, submission: string }
 
-export type AnyGameState = GameState<Context | RoundContext>
+export type AnyGameState = GameState<GuildContext | GameContext | RoundContext>
 
 export type GameState<Context> = {
   readonly context: Context
@@ -20,8 +20,8 @@ export type GameState<Context> = {
 }
 
 /** Default state, no active game */
-export class IdleState implements GameState<Context> {
-  constructor(readonly context: Context) { }
+export class IdleState implements GameState<GuildContext> {
+  constructor(readonly context: GuildContext) { }
 
   readonly interpreter = (message: Discord.Message) =>
     message.channel instanceof Discord.TextChannel && message.content === "!witty"
@@ -32,7 +32,7 @@ export class IdleState implements GameState<Context> {
     if (command.type === 'begin') {
       const notifyRole = getNotifyRole(command.channel.guild)
       const initiator = command.user
-      const start = IdleState.newRound(this.context.start(command.channel, initiator))
+      const start = IdleState.newRound(this.context.newGame(command.channel, initiator))
       return CompositeAction(
         OptionalAction(notifyRole && !this.context.inTestMode && Send(command.channel, new GameStartedMessage(notifyRole, command.user))),
         start
@@ -40,25 +40,25 @@ export class IdleState implements GameState<Context> {
     }
   }
 
-  static newRound = (context: RoundContext) => {
-    context = context.nextRound()
+  static newRound = (context: GameContext) => {
+    const roundCtx = context.newRound()
 
-    const prompt = choosePrompt(context)
+    const prompt = choosePrompt(roundCtx)
 
     return CompositeAction(
       NewState(new WaitingState(context)),
       PromiseAction(prompt.then(prompt =>
         CompositeAction(
-          NewState(SubmissionState.begin(context, prompt)),
-          DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(state => OptionalAction(state instanceof SubmissionState && state.context.sameRound(context) && state.finish()))),
-          Send(context.channel, new NewRoundMessage(context.roundId, prompt, context.botUser, context.config.submitDurationSec))
+          NewState(SubmissionState.begin(roundCtx, prompt)),
+          DelayedAction(context.config.submitDurationSec * 1000, FromStateAction(state => OptionalAction(state instanceof SubmissionState && state.context.sameRound(roundCtx) && state.finish()))),
+          Send(context.channel, new NewRoundMessage(roundCtx.roundId, prompt, roundCtx.botUser, context.config.submitDurationSec))
         )))
     )
   }
 }
 
-export class WaitingState implements GameState<RoundContext> {
-  constructor(readonly context: RoundContext) { }
+export class WaitingState implements GameState<GameContext> {
+  constructor(readonly context: GameContext) { }
 
   interpreter = () => undefined
 
@@ -119,7 +119,7 @@ export class SubmissionState implements GameState<RoundContext> {
         return CompositeAction(
           SaveRound(skippedRound),
           Send(this.context.channel, new BasicMessage(`Skipping this prompt`)),
-          endRound(this.context)
+          endRound(this.context.gameCtx)
         )
       } else {
         return Send(this.context.channel, new BasicMessage(`Prompt already has submissions; won't skip`))
@@ -135,7 +135,7 @@ export class SubmissionState implements GameState<RoundContext> {
       return CompositeAction(
         Send(this.context.channel, new BasicMessage(`Not enough submissions to continue`)),
         Scores.fromRounds(this.context.rounds).show(this.context.channel),
-        NewState(new IdleState(this.context.baseContext))
+        NewState(new IdleState(this.context.guildCtx))
       )
     }
 
@@ -249,7 +249,7 @@ export class VotingState implements GameState<RoundContext> {
       skipped: false
     }
 
-    const newContext = this.context.addRound(round)
+    const newContext = this.context.gameCtx.addRound(round)
 
     return CompositeAction(
       Send(this.context.channel, new VotingFinishedMessage(this.prompt, withVotes)),
@@ -262,10 +262,10 @@ export class VotingState implements GameState<RoundContext> {
     new VotingState(context, prompt, submissions, new Map())
 }
 
-function endRound(context: RoundContext) {
+function endRound(context: GameContext) {
   return CompositeAction(
     NewState(new WaitingState(context)),
-    DelayedAction(5000, FromStateAction(state => OptionalAction(state instanceof WaitingState && state.context.sameRound(context) && IdleState.newRound(context))))
+    DelayedAction(5000, FromStateAction(state => OptionalAction(state instanceof WaitingState && IdleState.newRound(context))))
   )
 }
 

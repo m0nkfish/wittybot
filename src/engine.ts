@@ -1,17 +1,16 @@
-import { Context } from './context';
+import { GlobalContext, GuildContext } from './context';
 import { IdleState, AnyGameState } from './state';
 import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from './actions';
 import * as Discord from 'discord.js';
 import { Command, GetScores, Help, NotifyMe, UnnotifyMe } from './commands';
 import { getNotifyRole } from './notify';
 import { BasicMessage, HelpMessage } from './messages';
-import { Scores } from './scores';
 import * as db from './db'
 
 export class Engine {
   state: AnyGameState
 
-  constructor(readonly context: Context) {
+  constructor(readonly context: GuildContext) {
     this.state = new IdleState(context)
   }
 
@@ -20,9 +19,6 @@ export class Engine {
       return
     }
     const source = message.channel instanceof Discord.TextChannel ? message.channel : message.author
-    if (message.content === '!scores') {
-      return GetScores(source)
-    }
     if (message.content === '!help') {
       return Help(source)
     }
@@ -44,14 +40,6 @@ export class Engine {
 
     if (action) {
       return action
-    }
-
-    if (command.type === 'get-scores') {
-      if (command.source instanceof Discord.TextChannel && !(this.state instanceof IdleState)) {
-        return Send(command.source, new BasicMessage(`Scores not shown in channels mid-game to avoid flooding. Try DM!`))
-      }
-      const scores = Scores.fromRounds(this.state.context.rounds)
-      return scores.show(command.source)
     }
 
     if (command.type === 'notify-me') {
@@ -80,7 +68,7 @@ export class Engine {
   }
 
   run() {
-    this.context.client.on('message', message => {
+    this.context.globalCtx.client.on('message', message => {
       if (message.author.bot) {
         return
       }
