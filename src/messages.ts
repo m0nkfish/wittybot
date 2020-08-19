@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { Score } from './scores';
+import { Score, Scores } from './scores';
 import { Prompt } from './prompts';
 import { AnyGameState, SubmissionState, VotingState } from './state';
 import { Id } from './id';
@@ -175,13 +175,17 @@ export class VotingFinishedMessage implements Message {
 }
 
 export class ScoresMessage implements Message {
-  constructor(readonly positiveScoresInOrder: Array<[Discord.User, Score]>) {}
+  constructor(readonly scores: Scores) {}
+
+  positiveScoresInOrder = Array.from(this.scores.map)
+    .sort(([, a], [, b]) => b.rating - a.rating)
+    .filter(([, score]) => score.totalPoints > 0)
 
   get content() {
     const description =
       this.positiveScoresInOrder.length === 0
         ? `Nobody has scored since the bot was last restarted (start a game with the **!witty** command)`
-        : [`Current rating formula: \`min(20, games played) * total points scored / total points available\``]
+        : [`Current rating formula: \`\`\`score_per_round = points_score * min(points_available / 4, 1)\ntotal_score = score_per_round / max(games_played, 20)\`\`\``]
 
     const emoji = (place: number) =>
       place === 0 ? ':first_place: '
@@ -194,7 +198,7 @@ export class ScoresMessage implements Message {
       .setDescription(description)
       .addFields(this.positiveScoresInOrder.slice(0, 25).map(([user, score], i) => ({
         name: `${i + 1}. ${emoji(i)}${user.username} with a rating of ${score.rating.toFixed(2)}`,
-        value: `${score.points} points of a possible ${score.ofPossible} (${score.ratio}), over ${score.games} games`
+        value: `${score.totalPoints} points of a possible ${score.totalPossible} (${score.ratio}), over ${score.games} games`
       })))
   }
 }

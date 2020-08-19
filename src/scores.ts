@@ -5,9 +5,16 @@ import { Round } from './context';
 import { fold, semigroupSum } from 'fp-ts/lib/Semigroup'
 const sum = fold(semigroupSum)
 
+export class RoundScore {
+  constructor(readonly points: number, readonly available: number) { }
+
+  get score() {
+    return this.points * Math.min(this.available/4, 1)
+  }
+}
 
 export class Score {
-  constructor(readonly rounds: Array<{ points: number, available: number }>) {}
+  constructor(readonly rounds: Array<RoundScore>) {}
 
   add(other: Score): Score {
     return new Score([...this.rounds, ...other.rounds])
@@ -17,21 +24,21 @@ export class Score {
     return this.rounds.length
   }
   
-  get points() {
+  get totalPoints() {
     return sum(0, this.rounds.map(x => x.points))
   }
 
-  get ofPossible() {
+  get totalPossible() {
     return sum(0, this.rounds.map(x => x.available))
   }
 
   get rating() {
-    // games played modifier caps at 20
-    return Math.min(20, this.games) * this.points / this.ofPossible
+    const totalPoints = sum(0, this.rounds.map(round => round.score))
+    return totalPoints / Math.max(this.games, 20)
   }
 
   get ratio() {
-    return (100 * this.points / this.ofPossible).toFixed(0) + '%'
+    return (100 * this.totalPoints / this.totalPossible).toFixed(0) + '%'
   }
 
   static empty(): Score {
@@ -52,10 +59,6 @@ export class Scores {
     return new Scores(map)
   }
 
-  inOrder() {
-    return Array.from(this.map).sort(([, a], [, b]) => b.rating - a.rating)
-  }
-
   static empty(): Scores {
     return new Scores(new Map())
   }
@@ -67,14 +70,11 @@ export class Scores {
   }
 
   show(channel: Discord.TextChannel | Discord.User) {
-    const positiveScoresInOrder = this.inOrder()
-      .filter(([, score]) => score.points > 0)
-
-    return Send(channel, new ScoresMessage(positiveScoresInOrder))
+    return Send(channel, new ScoresMessage(this))
   }
 
   static fromRound(arr: Array<[Discord.User, number]>): Scores {
     const available = arr.length - 1 // can't self-vote
-    return new Scores(new Map(arr.map(([user, points]) => [user, new Score([{ points, available }])])))
+    return new Scores(new Map(arr.map(([user, points]) => [user, new Score([new RoundScore(points, available)])])))
   }
 }
