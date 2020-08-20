@@ -31,7 +31,6 @@ export class RoundScoreView {
         voters,
         voted
       ))
-      console.log(`SubmissionScoreView(${sub.id}, ${sub.text}, ${submitter}, ${voters.length}[], ${voted})`)
     }
 
     return new RoundScoreView(id, filledPrompt, submissions)
