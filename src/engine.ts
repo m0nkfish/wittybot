@@ -119,8 +119,13 @@ export class Engine {
 
     if (command.type === 'get-scores') {
       const rounds = await db.dailyScores(command.source.guild)
+      console.log(`Fetched ${rounds.length} rounds of scores`)
       const scoreView = await Promise.all(rounds.map(round => RoundScoreView.fromDbView(this.context.client, round)))
       const scores = Scores.fromRoundViews(scoreView)
+      console.log(`Daily scores`)
+      for (const [user, score] of scores.map) {
+        console.log(`${user.username} ${score}`)
+      }
       return Send(command.source, new ScoresMessage(scores, 'from the last 24 hours'))
     }
   }
