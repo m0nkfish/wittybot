@@ -7,4 +7,6 @@ export class Id {
   eq = (other: Id) => this.value === other.value
 
   static create = () => new Id(uuid4(mt))
+
+  static fromString = (str: string) => new Id(str)
 }

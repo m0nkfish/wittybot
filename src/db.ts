@@ -4,6 +4,7 @@ import { failure } from 'io-ts/lib/PathReporter'
 import { Round } from './context';
 import { Id } from './id';
 import * as Discord from 'discord.js';
+import { getOrSet } from './util';
 
 const pool = new Postgres.Pool()
 
@@ -103,7 +104,6 @@ export async function fetchUnseenPrompts(guild: Discord.Guild) {
   return query(tPrompt, sql, [guild.id], "fetch_prompts")
 }
 
-
 export async function allReplacements() {
   const tReplacement = io.type({
     id: io.number,
@@ -111,4 +111,61 @@ export async function allReplacements() {
     type: io.string
   })
   return query(tReplacement, `SELECT * FROM replacements`)
+}
+
+export async function dailyRounds(guild: Discord.Guild) {
+  const roundsResult = io.type({
+    'round_id': io.string,
+    'prompt_filled': io.string,
+    'submission_id': io.string,
+    'submission': io.string,
+    'submitter_id': io.string,
+    'voter_id': io.union([io.null, io.string]),
+  })
+
+  const getRounds = `
+    select
+      r.id as round_id,
+      r.prompt_filled,
+      s.id as submission_id,
+      s.submission,
+      s.user_id as submitter_id,
+      v.user_id as voter_id
+    from rounds r
+    inner join submissions s on r.id = s.round_id
+    left join votes v on v.submission_id = s.id
+    where r.guild_id = $1
+    and r.finished >= NOW() - INTERVAL '24 HOURS'
+  `
+
+  const rounds = await query(roundsResult, getRounds, [guild.id], 'fetch_daily_rounds')
+
+  const roundsById: Map<Id, RoundView> = new Map()
+
+  for (const r of rounds) {
+    const id = Id.fromString(r.round_id)
+    const round = getOrSet(roundsById, id, () => new RoundView(id, r.prompt_filled))
+    const submission = round.getSubmission(Id.fromString(r.submission_id), r.submission, r.submitter_id)
+    if (r.voter_id) {
+      submission.votes.add(r.voter_id)
+    }
+  }
+
+  return roundsById
+}
+
+class RoundView {
+  constructor(readonly id: Id, readonly filledPrompt: string) {}
+
+  readonly submissions = new Map<Id, SubmissionView>()
+
+  getSubmission(id: Id, text: string, submitterId: string) {
+    return getOrSet(this.submissions, id, () => new SubmissionView(id, text, submitterId))
+  }
+}
+
+class SubmissionView {
+  constructor(readonly id: Id, readonly text: string, readonly submitterId: string) {}
+
+  readonly votes = new Set<string>()
 }
