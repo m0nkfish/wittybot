@@ -5,7 +5,7 @@ export const Begin = Case('begin', (user: Discord.User, channel: Discord.TextCha
 export const Submit = Case('submit', (submission: string, message: Discord.Message) => ({ user: message.author, submission, message }))
 export const Vote = Case('vote', (entry: number, message: Discord.Message) => ({ user: message.author, entry, message }))
 export const Skip = Case('skip', () => ({}))
-export const GetScores = Case('get-scores', (source: Discord.User | Discord.TextChannel) => ({ source }))
+export const GetScores = Case('get-scores', (source: Discord.TextChannel) => ({ source }))
 export const NotifyMe = Case('notify-me', (member: Discord.GuildMember) => ({ member }))
 export const UnnotifyMe = Case('unnotify-me', (member: Discord.GuildMember) => ({ member }))
 export const Help = Case('help', (source: Discord.User | Discord.TextChannel) => ({ source }))

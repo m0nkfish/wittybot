@@ -2,12 +2,14 @@ import { GlobalContext, GuildContext } from './context';
 import { IdleState, AnyGameState } from './state';
 import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send, NewState } from './actions';
 import * as Discord from 'discord.js';
-import { Command, Help, NotifyMe, UnnotifyMe } from './commands';
+import { Command, Help, NotifyMe, UnnotifyMe, GetScores } from './commands';
 import { getNotifyRole } from './notify';
-import { BasicMessage, HelpMessage, SubmissionAcceptedMessage } from './messages';
+import { BasicMessage, HelpMessage, SubmissionAcceptedMessage, ScoresMessage } from './messages';
 import * as db from './db'
 import { SubmissionState } from './state/SubmissionState';
 import { VotingState } from './state/VotingState';
+import { RoundScoreView } from './round';
+import { Scores } from './scores';
 
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -45,6 +47,10 @@ export class Engine {
     }
 
     if (message.channel instanceof Discord.TextChannel) {
+      if (message.content === '!scores') {
+        return GetScores(message.channel)
+      }
+
       const state = this.getState(message.channel.guild)
       if (state) {
         const command = state.interpreter(message)
@@ -110,6 +116,13 @@ export class Engine {
     if (command.type === 'help') {
       return Send(command.source, new HelpMessage())
     }
+
+    if (command.type === 'get-scores') {
+      const rounds = await db.dailyScores(command.source.guild)
+      const scoreView = await Promise.all(rounds.map(round => RoundScoreView.fromDbView(this.context.client, round)))
+      const scores = Scores.fromRoundViews(scoreView)
+      return Send(command.source, new ScoresMessage(scores, 'from the last 24 hours'))
+    }
   }
 
   run() {
@@ -154,8 +167,9 @@ export class Engine {
         }
         action.destination.send(content)
           .then(msg => {
-            if (msg.guild) {
-              action.message.onSent?.(msg, () => this.getState(msg.guild!))
+            const {guild} = msg
+            if (guild) {
+              action.message.onSent?.(msg, () => this.getState(guild))
             }
           })
         return handled

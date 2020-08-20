@@ -182,7 +182,7 @@ export class VotingFinishedMessage implements Message {
 }
 
 export class ScoresMessage implements Message {
-  constructor(readonly scores: Scores) {}
+  constructor(readonly scores: Scores, readonly timeframe: string) {}
 
   positiveScoresInOrder = Array.from(this.scores.map)
     .sort(([, a], [, b]) => b.rating - a.rating)
@@ -191,8 +191,8 @@ export class ScoresMessage implements Message {
   get content() {
     const description =
       this.positiveScoresInOrder.length === 0
-        ? `Nobody has scored since the bot was last restarted (start a game with the **!witty** command)`
-        : [`Current rating formula: \`\`\`score_per_round = points_score * min(points_available / 4, 1)\ntotal_score = score_per_round / max(games_played, 20)\`\`\``]
+        ? `Nobody has scored! Start a game with \`!witty\``
+        : `Current rating formula: \`\`\`score_per_round = points_score * min(points_available / 4, 1)\ntotal_score = score_per_round / max(games_played, 20)\`\`\``
 
     const emoji = (place: number) =>
       place === 0 ? ':first_place: '
@@ -201,7 +201,7 @@ export class ScoresMessage implements Message {
       : ''
 
     return new Discord.MessageEmbed()
-      .setTitle(`Scores on the doors...`)
+      .setTitle(`Scores ${this.timeframe}`)
       .setDescription(description)
       .addFields(this.positiveScoresInOrder.slice(0, 25).map(([user, score], i) => ({
         name: `${i + 1}. ${emoji(i)}${user.username} with a rating of ${score.rating.toFixed(2)}`,

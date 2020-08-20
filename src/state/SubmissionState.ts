@@ -6,7 +6,7 @@ import { shuffle } from 'random-js';
 import { mt } from '../random';
 import { RoundContext } from '../context';
 import { Scores } from '../scores';
-import { BasicMessage, VoteMessage, SubmissionAcceptedMessage } from '../messages';
+import { BasicMessage, VoteMessage, SubmissionAcceptedMessage, ScoresMessage } from '../messages';
 import { GameState } from './GameState';
 import { VotingState } from './VotingState';
 import { endRound } from './endRound';
@@ -43,7 +43,7 @@ export class SubmissionState implements GameState<RoundContext> {
       }
 
       const isReplacement = this.submissions.has(command.user)
-      
+
       return CompositeAction(
         OptionalAction(command.message.channel instanceof Discord.DMChannel && Send(command.user, new SubmissionAcceptedMessage(this.prompt, command.submission, isReplacement))),
         OptionalAction(!isReplacement && Send(this.context.channel, new BasicMessage(`Submission received from <@${command.user.id}>`))),
@@ -76,7 +76,7 @@ export class SubmissionState implements GameState<RoundContext> {
     if ((!this.context.inTestMode && this.submissions.size < 3) || this.submissions.size < 1) {
       return CompositeAction(
         Send(this.context.channel, new BasicMessage(`Not enough submissions to continue`)),
-        Scores.fromRounds(this.context.rounds).show(this.context.channel),
+        Send(this.context.channel, new ScoresMessage(Scores.fromRounds(this.context.rounds), 'from this game')),
         NewState(new IdleState(this.context.guildCtx))
       )
     }

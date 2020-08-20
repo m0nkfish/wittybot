@@ -113,7 +113,7 @@ export async function allReplacements() {
   return query(tReplacement, `SELECT * FROM replacements`)
 }
 
-export async function dailyRounds(guild: Discord.Guild) {
+export async function dailyScores(guild: Discord.Guild) {
   const roundsResult = io.type({
     'round_id': io.string,
     'prompt_filled': io.string,
@@ -140,31 +140,32 @@ export async function dailyRounds(guild: Discord.Guild) {
 
   const rounds = await query(roundsResult, getRounds, [guild.id], 'fetch_daily_rounds')
 
-  const roundsById: Map<Id, RoundView> = new Map()
+  const roundsById: Map<Id, RoundDbView> = new Map()
 
   for (const r of rounds) {
     const id = Id.fromString(r.round_id)
-    const round = getOrSet(roundsById, id, () => new RoundView(id, r.prompt_filled))
+    const round = getOrSet(roundsById, id, () => new RoundDbView(id, r.prompt_filled))
     const submission = round.getSubmission(Id.fromString(r.submission_id), r.submission, r.submitter_id)
     if (r.voter_id) {
       submission.votes.add(r.voter_id)
     }
   }
 
-  return roundsById
+  return Array.from(roundsById.values())
 }
 
-class RoundView {
+export class RoundDbView {
   constructor(readonly id: Id, readonly filledPrompt: string) {}
 
-  readonly submissions = new Map<Id, SubmissionView>()
+  readonly submissions = new Map<Id, SubmissionDbView>()
 
   getSubmission(id: Id, text: string, submitterId: string) {
-    return getOrSet(this.submissions, id, () => new SubmissionView(id, text, submitterId))
+    return getOrSet(this.submissions, id, () => new SubmissionDbView(id, text, submitterId))
   }
+
 }
 
-class SubmissionView {
+export class SubmissionDbView {
   constructor(readonly id: Id, readonly text: string, readonly submitterId: string) {}
 
   readonly votes = new Set<string>()

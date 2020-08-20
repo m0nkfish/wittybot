@@ -3,6 +3,8 @@ import { Send } from './actions';
 import { ScoresMessage } from './messages';
 import { Round } from './context';
 import { fold, semigroupSum } from 'fp-ts/lib/Semigroup'
+import { Id } from './id';
+import { RoundScoreView } from './round';
 const sum = fold(semigroupSum)
 
 export class RoundScore {
@@ -69,12 +71,19 @@ export class Scores {
       .reduce((a, b) => a.add(b), Scores.empty())
   }
 
-  show(channel: Discord.TextChannel | Discord.User) {
-    return Send(channel, new ScoresMessage(this))
+  static fromRoundViews(rounds: RoundScoreView[]): Scores {
+    return rounds
+      .map(round => Scores.fromRoundView(round))
+      .reduce((a, b) => a.add(b), Scores.empty())
   }
-
+  
   static fromRound(arr: Array<[Discord.User, number]>): Scores {
     const available = arr.length - 1 // can't self-vote
     return new Scores(new Map(arr.map(([user, points]) => [user, new Score([new RoundScore(points, available)])])))
+  }
+
+  static fromRoundView(round: RoundScoreView): Scores {
+    const available = round.size - 1
+    return new Scores(new Map(round.submissions.map(s => [s.user, new Score([new RoundScore(s.voted ? s.votes.length : 0, available)])])))
   }
 }
