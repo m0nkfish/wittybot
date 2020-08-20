@@ -36,7 +36,9 @@ async function query<T>(validator: io.Type<T>, queryString: string, params: any[
   }
 
   return withClient(async client => {
+    console.log('Querying', queryString, params)
     const res = await client.query({ name, text: queryString, values: params })
+    console.log(`${res.rowCount} results`)
     return res.rows.map(validate)
   })
 }
@@ -49,7 +51,7 @@ function inserter<T extends io.Props>(table: string, validator: io.TypeC<T>) {
     const fieldValues = fields.map(f => obj[f])
     const text = `INSERT INTO ${table}(${fieldNames}) VALUES (${fieldVars})`
 
-    console.log(text, fieldValues)
+    console.log('Inserting', text, fieldValues)
     return {
       text: text,
       values: fieldValues
