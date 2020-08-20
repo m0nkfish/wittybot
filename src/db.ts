@@ -142,12 +142,11 @@ export async function dailyScores(guild: Discord.Guild) {
 
   const rounds = await query(roundsResult, getRounds, [guild.id], 'fetch_daily_rounds')
 
-  const roundsById: Map<Id, RoundDbView> = new Map()
+  const roundsById: Map<string, RoundDbView> = new Map()
 
   for (const r of rounds) {
-    const id = Id.fromString(r.round_id)
-    const round = getOrSet(roundsById, id, () => new RoundDbView(id, r.prompt_filled))
-    const submission = round.getSubmission(Id.fromString(r.submission_id), r.submission, r.submitter_id)
+    const round = getOrSet(roundsById, r.round_id, () => new RoundDbView(Id.fromString(r.round_id), r.prompt_filled))
+    const submission = round.getSubmission(r.submission_id, r.submission, r.submitter_id)
     if (r.voter_id) {
       submission.votes.add(r.voter_id)
     }
@@ -159,10 +158,10 @@ export async function dailyScores(guild: Discord.Guild) {
 export class RoundDbView {
   constructor(readonly id: Id, readonly filledPrompt: string) {}
 
-  readonly submissions = new Map<Id, SubmissionDbView>()
+  readonly submissions = new Map<string, SubmissionDbView>()
 
-  getSubmission(id: Id, text: string, submitterId: string) {
-    return getOrSet(this.submissions, id, () => new SubmissionDbView(id, text, submitterId))
+  getSubmission(id: string, text: string, submitterId: string) {
+    return getOrSet(this.submissions, id, () => new SubmissionDbView(Id.fromString(id), text, submitterId))
   }
 
 }
