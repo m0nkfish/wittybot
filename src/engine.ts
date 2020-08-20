@@ -152,10 +152,11 @@ export class Engine {
         if (content instanceof Discord.MessageEmbed) {
           content.setColor('#A4218A')
         }
+        const guild = action.destination instanceof Discord.TextChannel ? action.destination.guild : null
         action.destination.send(content)
           .then(msg => {
-            if (msg.guild) {
-              const state = this.states.get(msg.guild)
+            if (guild) {
+              const state = this.states.get(guild)
               if (state) {
                 action.message.onSent?.(msg, () => state)
               }
