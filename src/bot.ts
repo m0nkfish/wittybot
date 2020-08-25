@@ -24,9 +24,11 @@ client.on('ready', () => {
   engine.run()
 
   for (const [_, guild] of client.guilds.cache) {
-    for (const [_, channel] of guild.channels.cache) {
-      if (channel instanceof Discord.TextChannel && channel.name === 'wittybot') {
-        engine.interpret(Send(channel, new ReleaseMessage(testMode)))
+    if (guild.name === 'wittybot') {
+      for (const [_, channel] of guild.channels.cache) {
+        if (channel instanceof Discord.TextChannel && channel.name === 'wittybot') {
+          engine.interpret(Send(channel, new ReleaseMessage(testMode)))
+        }
       }
     }
   }
