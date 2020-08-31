@@ -8,7 +8,7 @@ import { NewRoundMessage, GameStartedMessage } from '../messages';
 import { GameState } from './GameState';
 import { WaitingState } from './WaitingState';
 import { SubmissionState } from './SubmissionState'
-import { tryParseInt } from '../util';
+import { tryParseInt, clamp } from '../util';
 
 /** Default state, no active game */
 export class IdleState implements GameState<GuildContext> {
@@ -18,7 +18,7 @@ export class IdleState implements GameState<GuildContext> {
     if (message.channel instanceof Discord.TextChannel) {
       const parsed = /^!witty(?: (\d+))?$/.exec(message.content)
       if (parsed) {
-        const timeout = tryParseInt(parsed[1]) ?? this.context.config.defaultSubmitDurationSec
+        const timeout = clamp(tryParseInt(parsed[1]) ?? this.context.config.defaultSubmitDurationSec, 10, 120)
         return Begin(message.author, message.channel, timeout)
       }
     }

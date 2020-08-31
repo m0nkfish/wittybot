@@ -17,3 +17,7 @@ export function getOrSet<Key, Value>(map: Map<Key, Value>, key: Key, value: () =
   }
   return res
 }
+
+export function clamp(x: number, min: number, max: number) {
+  return Math.max(min, Math.min(x, max))
+}
