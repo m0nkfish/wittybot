@@ -52,6 +52,7 @@ export class HelpMessage implements Message {
         `\`!notify\` - be notified when a new game starts`,
         `\`!unnotify\` - stop being notified when a new game starts`
       ])
+      .setFooter(`This incarnation of wittybot was brought to you by monkfish#4812`)
   }
 }
 
