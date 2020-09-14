@@ -46,15 +46,19 @@ export class HelpMessage implements Message {
         `4. After submissions are in and the time's up, players vote for the funniest entry`,
         `5. Repeat ad infinitum (or until there aren't enough players)`
       ])
-      .addField('Commands', [
-        `\`!help\` - you're looking at it`,
-        `\`!witty [timeout]\` - start a new game. timeout is the number of seconds per round (defaults to 60)`,
-        `\`!skip\` - skip the current prompt`,
-        `\`!notify\` - be notified when a new game starts`,
-        `\`!unnotify\` - stop being notified when a new game starts`
-      ])
+      .addField('Commands', HelpMessage.commands.map(([command, description]) => `\`!${command}\` - ${description}`))
       .setFooter(`This incarnation of wittybot was brought to you by monkfish#4812`)
   }
+
+  static commands = [
+    ['help', "you're looking at it"],
+    ['witty [timeout]', "start a new game. timeout is the number of seconds per round (defaults to 60)"],
+    ['in', "register your interest when a game begins"],
+    ['skip', "skip the current prompt"],
+    ['notify', "be notified when a new game starts"],
+    ['unnotify', "stop being notified when a new game starts"],
+    ['scores [day|week|month|year|alltime]', "show the scores from this server (defaults to day)"]
+  ] as const
 }
 
 export class NewRoundMessage implements Message {

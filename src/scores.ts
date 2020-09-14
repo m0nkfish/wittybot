@@ -1,9 +1,6 @@
 import * as Discord from 'discord.js';
-import { Send } from './actions';
-import { ScoresMessage } from './messages';
 import { Round } from './context';
 import { fold, semigroupSum } from 'fp-ts/lib/Semigroup'
-import { Id } from './id';
 import { RoundScoreView } from './round';
 const sum = fold(semigroupSum)
 
@@ -87,3 +84,5 @@ export class Scores {
     return new Scores(new Map(round.submissions.map(s => [s.user, new Score([new RoundScore(s.voted ? s.votes.length : 0, available)])])))
   }
 }
+
+export type ScoreUnit = 'day' | 'week' | 'month' | 'year' | 'alltime'

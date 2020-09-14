@@ -9,7 +9,7 @@ import * as db from './db'
 import { SubmissionState } from './state/SubmissionState';
 import { VotingState } from './state/VotingState';
 import { RoundScoreView } from './round';
-import { Scores } from './scores';
+import { Scores, ScoreUnit } from './scores';
 
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -47,8 +47,10 @@ export class Engine {
     }
 
     if (message.channel instanceof Discord.TextChannel) {
-      if (message.content === '!scores') {
-        return GetScores(message.channel)
+      const scores = /^!scores(?: (day|week|month|year|alltime))?$/.exec(message.content)
+      if (scores) {
+        const unit = (scores[1] ?? 'day') as ScoreUnit
+        return GetScores(message.channel, unit)
       }
 
       const state = this.getState(message.channel.guild)
@@ -118,10 +120,10 @@ export class Engine {
     }
 
     if (command.type === 'get-scores') {
-      const rounds = await db.dailyScores(command.source.guild)
+      const rounds = await db.scores(command.source.guild, command.unit)
       const scoreView = await Promise.all(rounds.map(round => RoundScoreView.fromDbView(this.context.client, round)))
       const scores = Scores.fromRoundViews(scoreView)
-      return Send(command.source, new ScoresMessage(scores, 'from the last 24 hours'))
+      return Send(command.source, new ScoresMessage(scores, `this ${command.unit}`))
     }
   }
 

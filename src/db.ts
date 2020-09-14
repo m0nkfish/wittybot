@@ -5,6 +5,7 @@ import { Round } from './context';
 import { Id } from './id';
 import * as Discord from 'discord.js';
 import { getOrSet } from './util';
+import { ScoreUnit } from './scores';
 
 const pool = new Postgres.Pool()
 
@@ -115,7 +116,7 @@ export async function allReplacements() {
   return query(tReplacement, `SELECT * FROM replacements`)
 }
 
-export async function dailyScores(guild: Discord.Guild) {
+export async function scores(guild: Discord.Guild, unit: ScoreUnit) {
   const roundsResult = io.type({
     'round_id': io.string,
     'prompt_filled': io.string,
@@ -125,7 +126,7 @@ export async function dailyScores(guild: Discord.Guild) {
     'voter_id': io.union([io.null, io.string]),
   })
 
-  const getRounds = `
+  let roundsQuery = `
     select
       r.id as round_id,
       r.prompt_filled,
@@ -137,10 +138,22 @@ export async function dailyScores(guild: Discord.Guild) {
     inner join submissions s on r.id = s.round_id
     left join votes v on v.submission_id = s.id
     where r.guild_id = $1
-    and r.finished >= NOW() - INTERVAL '24 HOURS'
   `
 
-  const rounds = await query(roundsResult, getRounds, [guild.id], 'fetch_daily_rounds')
+  const interval = (function () {
+    switch (unit) {
+      case 'day': return '1 day'
+      case 'week': return '7 days'
+      case 'month': return '1 month'
+      case 'year': return '1 year'
+      case 'alltime': return null
+    }
+  })()
+  if (interval) {
+    roundsQuery = roundsQuery + ` and r.finished >= NOW() - INTERVAL '${interval}'`
+  }
+
+  const rounds = await query(roundsResult, roundsQuery, [guild.id])
 
   const roundsById: Map<string, RoundDbView> = new Map()
 
