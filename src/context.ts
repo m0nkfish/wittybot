@@ -50,6 +50,7 @@ export class GameContext {
   get globalCtx() { return this.guildCtx.globalCtx }
   get config() { return this.guildCtx.config }
   get guild() { return this.guildCtx.guild }
+  get inTestMode() { return this.guildCtx.inTestMode }
 
   addRound = (round: Round) =>
     new GameContext(this.guildCtx, this.channel, this.gameId, this.initiator, [...this.rounds, round], this.timeoutSec)

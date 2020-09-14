@@ -5,6 +5,7 @@ import { AnyGameState, SubmissionState, VotingState } from './state';
 import { Id } from './id';
 import { shuffle } from 'random-js';
 import { mt } from './random';
+import { not } from 'fp-ts/lib/function';
 
 export type Destination = Discord.TextChannel | Discord.User
 
@@ -95,8 +96,9 @@ export class NewRoundMessage implements Message {
 }
 
 export class GameStartedMessage extends BasicMessage {
-  constructor(notifyRole: Discord.Role, startedBy: Discord.User) {
-    super(`Calling all <@&${notifyRole.id}>! (:point_left: type !notify if you want to be in this group) A new game was started by <@${startedBy.id}>`)
+  constructor(notifyRole: Discord.Role | undefined, startedBy: Discord.User) {
+    const prefix = notifyRole ? `Calling all <@&${notifyRole.id}>! (:point_left: type \`!notify\` if you want to be in this group) ` : ''
+    super(`${prefix}A new game was started by <@${startedBy.id}>; type \`!in\` to register interest. Once three people are interested, the game will begin (expires in 5 minutes)`)
   }
 }
 
