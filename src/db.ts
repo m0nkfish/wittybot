@@ -96,7 +96,7 @@ export async function fetchUnseenPrompts(guild: Discord.Guild) {
     left join (
       select prompt_id
       from rounds
-      where guild_id != $1
+      where guild_id = $1
       group by (prompt_id)
       order by max(finished) desc
       limit (select count(*) / 2 from prompts where active = true)
