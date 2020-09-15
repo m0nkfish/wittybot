@@ -88,7 +88,7 @@ export class SubmissionState implements GameState<RoundContext> {
     return CompositeAction(
       NewState(VotingState.begin(this.context, this.prompt, shuffled)),
       DelayedAction(voteDurationSec * 1000, FromStateAction(this.context.guild, state => OptionalAction(state instanceof VotingState && state.context.sameRound(this.context) && state.finish()))),
-      Send(this.context.channel, new VoteMessage(this.context.roundId, this.prompt, shuffled, this.context.botUser, voteDurationSec))
+      Send(this.context.channel, new VoteMessage(this.context, this.prompt, shuffled, this.context.botUser, voteDurationSec))
     )
   }
 

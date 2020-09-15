@@ -5,10 +5,12 @@ import { Id } from '../id';
 import { shuffle } from 'random-js';
 import { mt } from '../random';
 import { Message } from './index'
+import { RoundContext } from '../context';
+import { memberName } from './memberName';
 
 export class VoteMessage implements Message {
   constructor(
-    readonly roundId: Id,
+    readonly context: RoundContext,
     readonly prompt: Prompt,
     readonly submissions: Array<{ user: Discord.User, submission: string }>,
     readonly botUser: Discord.User,
@@ -16,7 +18,6 @@ export class VoteMessage implements Message {
     this.users = [...submissions.map(x => x.user)]
     shuffle(mt, this.users)
   }
-
 
   private readonly users: Discord.User[]
 
@@ -33,7 +34,7 @@ export class VoteMessage implements Message {
 
   private message = (remainingSec: number, voters: Discord.User[]) =>
     this.baseContent
-      .setFooter(`You have ${remainingSec} seconds. Still left to vote: ${this.users.filter(u => !voters.some(v => v == u)).map(u => u.username).join(', ')}`)
+      .setFooter(`You have ${remainingSec} seconds. Still left to vote: ${this.users.filter(u => !voters.some(v => v == u)).map(u => memberName(this.context.guild, u)).join(', ')}`)
 
   get content() {
     return this.message(this.voteDurationSec, [])
@@ -44,7 +45,7 @@ export class VoteMessage implements Message {
     const interval = setInterval(() => {
       remainingSec -= 5
       const state = getState()
-      if (remainingSec > 0 && state instanceof VotingState && state.context.roundId.eq(this.roundId)) {
+      if (remainingSec > 0 && state instanceof VotingState && state.context.sameRound(this.context)) {
         msg.edit(this.message(remainingSec, Array.from(state.votes.keys())))
       } else {
         clearInterval(interval)

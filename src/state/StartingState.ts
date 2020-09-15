@@ -36,7 +36,7 @@ export class StartingState implements GameState<GameContext> {
 
   static begin(context: GameContext): Action {
     const gameStartedMessage = getNotifyRole(context.channel.guild)
-      .then(role => Send(context.channel, new GameStartedMessage(role, context.initiator, context.gameId)))
+      .then(role => Send(context.channel, new GameStartedMessage(role, context.initiator, context)))
 
     const cancel = 
       FromStateAction(context.channel.guild, state =>
