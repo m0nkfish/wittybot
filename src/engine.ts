@@ -164,9 +164,12 @@ export class Engine {
         this.states.set(action.newState.context.guild, action.newState)
         return handled
       case 'send-message':
+        const embedColor = '#A4218A'
         const content = action.message.content
         if (content instanceof Discord.MessageEmbed) {
-          content.setColor('#A4218A')
+          content.setColor(embedColor)
+        } else if (typeof content !== "string") {
+          content.embed.setColor(embedColor)
         }
         action.destination.send(content)
           .then(msg => {

@@ -5,12 +5,13 @@ import { AnyGameState, SubmissionState, VotingState } from './state';
 import { Id } from './id';
 import { shuffle } from 'random-js';
 import { mt } from './random';
-import { pairs, arrayEq, invoke } from './util';
+import { pairs, arrayEq } from './util';
+import { StartingState } from './state/StartingState';
 
 export type Destination = Discord.TextChannel | Discord.User
 
 export interface Message {
-  content: string | Discord.MessageAdditions
+  content: string | Discord.MessageEmbed | { content: string, embed: Discord.MessageEmbed }
   onSent?: (msg: Discord.Message, getState: () => AnyGameState) => void
 }
 
@@ -99,10 +100,39 @@ export class NewRoundMessage implements Message {
   }
 }
 
-export class GameStartedMessage extends BasicMessage {
-  constructor(notifyRole: Discord.Role | undefined, startedBy: Discord.User) {
-    const prefix = notifyRole ? `Calling all <@&${notifyRole.id}>! (:point_left: type \`!notify\` if you want to be in this group) ` : ''
-    super(`${prefix}A new game was started by <@${startedBy.id}>; type \`!in\` to register interest. Once three people are interested, the game will begin (expires in 5 minutes)`)
+export class GameStartedMessage implements Message {
+  constructor(readonly notifyRole: Discord.Role | undefined, readonly startedBy: Discord.User, readonly gameId: Id) {
+  }
+
+  get content() {
+    return this.message([this.startedBy])
+  }
+
+  message(interested: Discord.User[]) {
+    const embed = new Discord.MessageEmbed()
+      .setTitle(`:rotating_light: The game is afoot!`)
+      .setDescription(`A new game was started by <@${this.startedBy.id}>; type \`!in\` to register interest. Once three people are interested, the game will begin (expires in 5 minutes)`)
+      .setFooter(`In: ${interested.map(x => x.username).join(', ')}`)
+
+    return this.notifyRole
+      ? {
+        content: `Calling all <@&${this.notifyRole.id}>! (:point_left: type \`!notify\` if you want to be in this group)`,
+        embed
+      }
+      : embed
+  }
+
+  onSent = (msg: Discord.Message, getState: () => AnyGameState) => {
+    let remainingSec = StartingState.StartingStateDelayMs / 1000
+    const interval = setInterval(() => {
+      remainingSec -= 5
+      const state = getState()
+      if (remainingSec > 0 && state instanceof StartingState && state.context.gameId === this.gameId) {
+        msg.edit(this.message(state.interested))
+      } else {
+        clearInterval(interval)
+      }
+    }, 5000)
   }
 }
 
@@ -271,11 +301,5 @@ export class VoteAcceptedMessage implements Message {
         this.submission
       ])
       .setFooter(`Message again to replace your vote`)
-  }
-}
-
-export class StartingGameMessage implements Message {
-  get content() {
-    return ""
   }
 }

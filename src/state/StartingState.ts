@@ -36,7 +36,7 @@ export class StartingState implements GameState<GameContext> {
 
   static begin(context: GameContext): Action {
     const gameStartedMessage = getNotifyRole(context.channel.guild)
-      .then(role => Send(context.channel, new GameStartedMessage(role, context.initiator)))
+      .then(role => Send(context.channel, new GameStartedMessage(role, context.initiator, context.gameId)))
 
     const cancel = 
       FromStateAction(context.channel.guild, state =>
@@ -49,10 +49,10 @@ export class StartingState implements GameState<GameContext> {
     
     return CompositeAction(
       PromiseAction(gameStartedMessage),
-      DelayedAction(StartingStateDelayMs, cancel),
-      NewState(new StartingState(context, [])),
+      DelayedAction(StartingState.StartingStateDelayMs, cancel),
+      NewState(new StartingState(context, [context.initiator])),
     )
   }
-}
 
-const StartingStateDelayMs = 1000 * 60 * 5
+  static StartingStateDelayMs = 1000 * 60 * 5
+}
