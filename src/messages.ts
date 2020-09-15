@@ -1,12 +1,11 @@
 import * as Discord from 'discord.js'
-import { Score, Scores } from './scores';
+import {  Scores } from './scores';
 import { Prompt } from './prompts';
 import { AnyGameState, SubmissionState, VotingState } from './state';
 import { Id } from './id';
 import { shuffle } from 'random-js';
 import { mt } from './random';
-import { not } from 'fp-ts/lib/function';
-import { pairs, arrayEq } from './util';
+import { pairs, arrayEq, invoke } from './util';
 
 export type Destination = Discord.TextChannel | Discord.User
 
@@ -38,7 +37,7 @@ export class HelpMessage implements Message {
 
   get content() {
     return new Discord.MessageEmbed()
-      .setTitle('Wittybot help')
+      .setTitle(':information_source: Wittybot help')
       .setDescription(`Wittybot is a simple, fast-paced text game where you submit text answers to prompts, then vote for the funniest one.`)
       .addField('How to play', [
         `1. Someone starts a game with the \`!witty\` command`,
@@ -71,11 +70,11 @@ export class NewRoundMessage implements Message {
   ) { }
 
   private readonly baseContent = new Discord.MessageEmbed()
-    .setTitle('A new round begins! Complete the prompt')
+    .setTitle(this.prompt.formatted)
     .setDescription([
-      this.prompt.formatted,
-      ``,
-      `Submit by DMing the bot (:point_up: on desktop just click the sender name)\n**or** by using \`/spoiler <submission>\` in this channel (your message will be deleted)`])
+      `Submit by DMing the bot (:point_up: on desktop just click the sender name)`,
+      `**or** by using \`/spoiler <submission>\` in this channel (your message will be deleted)`
+    ])
   
   private message = (remainingSec: number) =>
     this.baseContent
@@ -234,11 +233,11 @@ export class ScoresMessage implements Message {
       : ''
 
     return new Discord.MessageEmbed()
-      .setTitle(`Scores ${this.timeframe}`)
+      .setTitle(`:trophy: Scores ${this.timeframe}`)
       .setDescription(description)
       .addFields(this.positiveScoresInOrder.slice(0, 25).map(([user, score], i) => ({
         name: `${i + 1}. ${emoji(i)}${user.username} with a rating of ${score.rating.toFixed(2)}`,
-        value: `${score.totalPoints} points of a possible ${score.totalPossible} (${score.ratio}), over ${score.games} games`
+        value: `${score.totalPoints} points of a possible ${score.totalPossible} (${score.ratio}), over ${score.games} games (${score.gamesRatio} points per game)`
       })))
   }
 }
@@ -264,7 +263,7 @@ export class VoteAcceptedMessage implements Message {
   constructor(readonly prompt: Prompt, readonly entry: number, readonly submission: string) { }
 
   get content() {
-    const message = new Discord.MessageEmbed()
+    return new Discord.MessageEmbed()
       .setTitle(`Vote recorded for entry ${this.entry}`)
       .setDescription([
         this.prompt.formatted,
@@ -272,7 +271,11 @@ export class VoteAcceptedMessage implements Message {
         this.submission
       ])
       .setFooter(`Message again to replace your vote`)
+  }
+}
 
-    return message
+export class StartingGameMessage implements Message {
+  get content() {
+    return ""
   }
 }

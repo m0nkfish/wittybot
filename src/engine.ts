@@ -123,7 +123,8 @@ export class Engine {
       const rounds = await db.scores(command.source.guild, command.unit)
       const scoreView = await Promise.all(rounds.map(round => RoundScoreView.fromDbView(this.context.client, round)))
       const scores = Scores.fromRoundViews(scoreView)
-      return Send(command.source, new ScoresMessage(scores, `this ${command.unit}`))
+      const timeframe = command.unit === 'alltime' ? "since the dawn of time itself" : `from the last ${command.unit}`
+      return Send(command.source, new ScoresMessage(scores, timeframe))
     }
   }
 

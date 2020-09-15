@@ -40,6 +40,10 @@ export class Score {
     return (100 * this.totalPoints / this.totalPossible).toFixed(0) + '%'
   }
 
+  get gamesRatio() {
+    return (this.totalPoints / this.games).toFixed(2)
+  }
+
   static empty(): Score {
     return new Score([])
   }

@@ -47,3 +47,5 @@ export function arrayEq<T>(a: T[], b: T[]): boolean {
 
   return true
 }
+
+export const invoke = <T>(f: () => T): T => f()
