@@ -73,8 +73,8 @@ export class NewRoundMessage implements Message {
   private readonly baseContent = new Discord.MessageEmbed()
     .setTitle(this.prompt.formatted)
     .setDescription([
-      `Submit by DMing the bot (:point_up: on desktop just click the sender name)`,
-      `**or** by using \`/spoiler <submission>\` in this channel (your message will be deleted)`
+      `Submit by sending a spoiler message (\`||whatever||\`, or \`/spoiler whatever\` on desktop) to this channel`,
+      `**or** by DMing the bot (:point_up: on desktop just click the sender name)`
     ])
   
   private message = (remainingSec: number) =>
@@ -151,13 +151,14 @@ export class VoteMessage implements Message {
   private readonly users: Discord.User[]
 
   private readonly baseContent = new Discord.MessageEmbed()
-    .setTitle(`Time's up!`)
+    .setTitle(`:timer: Time's up!`)
     .setDescription([
       this.prompt.formatted,
       ``,
       ...this.submissions.map((x, i) => `${i + 1}. ${x.submission}`),
       ``,
-      `Vote for your favourite by DMing the bot with the entry number\n**or** by using \`/spoiler <entry number>\` in this channel`
+      `Vote for your favourite by sending a spoiler message to this channel`,
+      `**or** by DMing the bot with the entry number`
     ])
 
   private message = (remainingSec: number, voters: Discord.User[]) => 
