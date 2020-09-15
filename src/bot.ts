@@ -3,8 +3,9 @@ import { Engine } from './engine';
 import { Send } from './actions';
 import { ReleaseMessage } from './messages';
 import { GlobalContext } from './context';
+import { log } from './log';
 
-console.log('Loading...')
+log('loading')
 
 const client = new Discord.Client();
 
@@ -16,11 +17,11 @@ client.on('ready', () => {
     }
   })
 
-  console.log('Ready')
-
   const testMode = process.env.TEST_MODE === "true"
 
-  const engine = new Engine(new GlobalContext(client, { defaultSubmitDurationSec: 60, testMode }))
+  log('ready', { testMode })
+
+  const engine = new Engine(new GlobalContext(client, { defaultSubmitDurationSec: 80, testMode }))
   engine.run()
 
   for (const [_, guild] of client.guilds.cache) {
@@ -32,7 +33,6 @@ client.on('ready', () => {
       }
     }
   }
-});
-
+})
 
 client.login(process.env.BOT_TOKEN);

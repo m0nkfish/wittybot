@@ -21,7 +21,7 @@ export class HelpMessage implements Message {
 
   static commands = [
     ['help', "you're looking at it"],
-    ['witty [timeout]', "start a new game. timeout is the number of seconds per round (defaults to 60)"],
+    ['witty [timeout]', "start a new game. timeout is the number of seconds per round (defaults to 80)"],
     ['in', "register your interest when a game begins"],
     ['skip', "skip the current prompt"],
     ['notify', "be notified when a new game starts"],

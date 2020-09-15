@@ -6,6 +6,7 @@ import { Id } from './id';
 import * as Discord from 'discord.js';
 import { getOrSet } from './util';
 import { ScoreUnit } from './scores';
+import { log } from './log';
 
 const pool = new Postgres.Pool()
 
@@ -27,7 +28,7 @@ async function execute(commands: Command[]) {
   return withClient(c => Promise.all(commands.map(cmd => c.query(cmd))))
 }
 
-async function query<T>(validator: io.Type<T>, queryString: string, params: any[] = [], name?: string): Promise<T[]> {
+async function query<T>(validator: io.Type<T>, queryString: string, params: string[] = [], name?: string): Promise<T[]> {
   function validate(row: unknown): T {
     const decoded = validator.decode(row)
     if (decoded._tag === "Left") {
@@ -37,9 +38,9 @@ async function query<T>(validator: io.Type<T>, queryString: string, params: any[
   }
 
   return withClient(async client => {
-    console.log('Querying', queryString, params)
+    log('db_query', { queryString: queryString.replace(/\n/, ' '), params: params.join(',') })
     const res = await client.query({ name, text: queryString, values: params })
-    console.log(`${res.rowCount} results`)
+    log(`${res.rowCount} results`)
     return res.rows.map(validate)
   })
 }
@@ -52,7 +53,7 @@ function inserter<T extends io.Props>(table: string, validator: io.TypeC<T>) {
     const fieldValues = fields.map(f => obj[f])
     const text = `INSERT INTO ${table}(${fieldNames}) VALUES (${fieldVars})`
 
-    console.log('Inserting', text, fieldValues)
+    log('db_insert', { text, fieldValues: fieldValues.map(x => `${x}`).join(',') } )
     return {
       text: text,
       values: fieldValues
