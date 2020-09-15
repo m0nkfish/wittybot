@@ -229,7 +229,7 @@ export class VotingFinishedMessage implements Message {
         this.prompt.formatted,
         ``,
         ...this.withVotes.map(x => {
-          let name = `**${x.user.username}**`
+          let name = `<@${x.user.id}>`
           if (x.voted) {
             name = name + `, with ${x.votes.length} votes`
             if (x.votes.length > 0) {
