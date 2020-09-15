@@ -23,7 +23,7 @@ export class ReleaseMessage implements Message {
   constructor(readonly testMode: boolean) { }
 
   get content() {
-    let title = 'Bot restarted/redeployed'
+    let title = ':robot: Bot restarted/redeployed'
     if (this.testMode) {
       title += ' (test mode)'
     }
