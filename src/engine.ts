@@ -213,9 +213,10 @@ export class Engine {
         message instanceof BasicMessage ? `content=${message.content}`
         : ``
 
-      const recipient =
-        destination instanceof Discord.User ? `@${destination.username}` : `#${destination.name}`
-      console.log('send_message', `message=${name(action.message)} recipient=${recipient} ${content}`)
+      const recipient = destination instanceof Discord.User ? `@${destination.username}` : `#${destination.name}`
+      const guild = destination instanceof Discord.TextChannel ? `guild_id=${destination.guild.id} guild_name=${destination.guild.name} ` : ''
+      
+      console.log('send_message', `message=${name(action.message)} recipient=${recipient} ${guild}${content}`)
     }
   }
 }
