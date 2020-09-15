@@ -150,21 +150,21 @@ export class Engine {
     });
   }
 
-  interpret = (action: Action): typeof handled => {
+  interpret = (action: Action): Exclude<any, typeof unhandled> => {
     this.log(action)
     switch (action.type) {
       case 'composite-action':
         action.actions.forEach(this.interpret)
-        return handled
+        return
       case 'promise-action':
         action.promise.then(action => this.interpret(action))
-        return handled
+        return
       case 'from-state-action':
         this.interpret(action.getAction(this.getState(action.guild)))
-        return handled
+        return
       case 'new-state':
         this.states.set(action.newState.context.guild, action.newState)
-        return handled
+        return
       case 'send-message':
         const embedColor = '#A4218A'
         const content = action.message.content
@@ -180,18 +180,20 @@ export class Engine {
               action.message.onSent?.(msg, () => this.getState(guild))
             }
           })
-        return handled
+        return
       case 'add-user-to-role':
         action.member.roles.add(action.role)
-        return handled
+        return
       case 'remove-user-from-role':
         action.member.roles.remove(action.role)
-        return handled
+        return
       case 'save-round':
         db.saveRound(action.round)
-        return handled
+        return
       case 'null-action':
-        return handled
+        return
+      default:
+        return unhandled
     }
   }
 
@@ -222,4 +224,4 @@ const logMessage = (message: Message) =>
 
 const name = (obj: any) => obj?.constructor?.name
 
-const handled = Symbol()
+const unhandled = Symbol()
