@@ -265,11 +265,14 @@ export class ScoresMessage implements Message {
 
     return new Discord.MessageEmbed()
       .setTitle(`:trophy: Scores ${this.timeframe}`)
-      .setDescription(description)
-      .addFields(this.positiveScoresInOrder.slice(0, 25).map(([user, score], i) => ({
-        name: `${i + 1}. ${emoji(i)}${mention(user)} with a rating of ${score.rating.toFixed(2)}`,
-        value: `${score.totalPoints} points of a possible ${score.totalPossible} (${score.ratio}), over ${score.games} games (${score.gamesRatio} points per game)`
-      })))
+      .setDescription([
+        ...description,
+        ...this.positiveScoresInOrder.slice(0, 25).flatMap(([user, score], i) => [
+          `**${i + 1}. ${emoji(i)}${mention(user)} with a rating of ${score.rating.toFixed(2)}**`,
+          `${score.totalPoints} points of a possible ${score.totalPossible} (${score.ratio}), over ${score.games} games (${score.gamesRatio} points per game)`
+        ])
+      ])
+      .addFields()
   }
 }
 
