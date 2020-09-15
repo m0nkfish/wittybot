@@ -111,12 +111,12 @@ export class GameStartedMessage implements Message {
   message(interested: Discord.User[]) {
     const embed = new Discord.MessageEmbed()
       .setTitle(`:rotating_light: The game is afoot!`)
-      .setDescription(`A new game was started by <@${this.startedBy.id}>; type \`!in\` to register interest. Once three people are interested, the game will begin (expires in 5 minutes)`)
+      .setDescription(`A new game was started by ${mention(this.startedBy)}; type \`!in\` to register interest. Once three people are interested, the game will begin (expires in 5 minutes)`)
       .setFooter(`In: ${interested.map(x => x.username).join(', ')}`)
 
     return this.notifyRole
       ? {
-        content: `Calling all <@&${this.notifyRole.id}>! (:point_left: type \`!notify\` if you want to be in this group)`,
+        content: `Calling all ${mention(this.notifyRole)}! (:point_left: type \`!notify\` if you want to be in this group)`,
         embed
       }
       : embed
@@ -229,11 +229,11 @@ export class VotingFinishedMessage implements Message {
         this.prompt.formatted,
         ``,
         ...this.withVotes.map(x => {
-          let name = `<@${x.user.id}>`
+          let name = mention(x.user)
           if (x.voted) {
             name = name + `, with ${x.votes.length} votes`
             if (x.votes.length > 0) {
-              name = name + `: ${x.votes.map(v => v.username).join(', ')}`
+              name = name + `: ${x.votes.map(mention).join(', ')}`
             }
           } else {
             name = name + `, who didn't vote`
@@ -267,7 +267,7 @@ export class ScoresMessage implements Message {
       .setTitle(`:trophy: Scores ${this.timeframe}`)
       .setDescription(description)
       .addFields(this.positiveScoresInOrder.slice(0, 25).map(([user, score], i) => ({
-        name: `${i + 1}. ${emoji(i)}${user.username} with a rating of ${score.rating.toFixed(2)}`,
+        name: `${i + 1}. ${emoji(i)}${mention(user)} with a rating of ${score.rating.toFixed(2)}`,
         value: `${score.totalPoints} points of a possible ${score.totalPossible} (${score.ratio}), over ${score.games} games (${score.gamesRatio} points per game)`
       })))
   }
@@ -303,4 +303,8 @@ export class VoteAcceptedMessage implements Message {
       ])
       .setFooter(`Message again to replace your vote`)
   }
+}
+
+export function mention(entity: Discord.User | Discord.Role) {
+  return entity instanceof Discord.Role ? `<@&${entity.id}>` : `<@${entity.id}>`
 }

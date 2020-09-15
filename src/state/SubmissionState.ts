@@ -6,7 +6,7 @@ import { shuffle } from 'random-js';
 import { mt } from '../random';
 import { RoundContext } from '../context';
 import { Scores } from '../scores';
-import { BasicMessage, VoteMessage, SubmissionAcceptedMessage, ScoresMessage } from '../messages';
+import { BasicMessage, VoteMessage, SubmissionAcceptedMessage, ScoresMessage, mention } from '../messages';
 import { GameState } from './GameState';
 import { VotingState } from './VotingState';
 import { endRound } from './endRound';
@@ -46,7 +46,7 @@ export class SubmissionState implements GameState<RoundContext> {
 
       return CompositeAction(
         OptionalAction(command.message.channel instanceof Discord.DMChannel && Send(command.user, new SubmissionAcceptedMessage(this.prompt, command.submission, isReplacement))),
-        OptionalAction(!isReplacement && Send(this.context.channel, new BasicMessage(`Submission received from <@${command.user.id}>`))),
+        OptionalAction(!isReplacement && Send(this.context.channel, new BasicMessage(`Submission received from ${mention(command.user)}`))),
         UpdateState(this.context.guild, state => state instanceof SubmissionState && state.context.sameRound(this.context) ? state.withSubmission(command.user, command.submission) : state),
       )
     } else if (command.type === 'skip') {

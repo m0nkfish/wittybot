@@ -1,3 +1,4 @@
+import * as Discord from 'discord.js';
 export const tryParseInt = (str: string) => {
   try {
     const entry = Number.parseInt(str)
