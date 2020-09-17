@@ -31,7 +31,7 @@ export class StartingState implements GameState<GameContext> {
     }
   }
 
-  enoughInterest() { return this.interested.length > 3 }
+  enoughInterest() { return this.interested.length >= 3 }
 
   begin() {
     return CompositeAction(
