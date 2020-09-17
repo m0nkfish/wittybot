@@ -14,8 +14,8 @@ export class GameStartedMessage implements Message {
 
   message(remainingSec: number, interested: Discord.User[]) {
     const remainingTime =
-      remainingSec >= 60 ? `${Math.floor(remainingSec / 60)} minutes remaining`
-      : `${remainingSec} seconds  remaining`
+      remainingSec >= 60 ? `${Math.floor(remainingSec / 60)} minutes`
+      : `${remainingSec} seconds`
 
     const embed = new Discord.MessageEmbed()
       .setTitle(`:rotating_light: The game is afoot!`)
