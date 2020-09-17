@@ -4,7 +4,7 @@ import { Action } from '../actions';
 import { GuildContext } from '../context';
 import { GameState } from './GameState';
 import { tryParseInt, clamp } from '../util';
-import { StartingState } from './StartingState';
+import { newGame } from './newGame';
 
 /** Default state, no active game */
 export class IdleState implements GameState<GuildContext> {
@@ -22,7 +22,7 @@ export class IdleState implements GameState<GuildContext> {
 
   receive(command: Command): Action | undefined {
     if (command.type === 'begin') {
-      return StartingState.begin(this.context.newGame(command.channel, command.user, command.timeoutSec)) 
+      return newGame(this.context.newGame(command.channel, command.user, command.timeoutSec)) 
     }
   }
 }

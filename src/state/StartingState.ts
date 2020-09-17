@@ -1,12 +1,10 @@
 import * as Discord from 'discord.js'
 import { Command, Interested } from '../commands';
-import { Action, NewState, CompositeAction, Send, PromiseAction, OptionalAction, DelayedAction, FromStateAction } from '../actions';
+import { Action, NewState, CompositeAction, Send, OptionalAction } from '../actions';
 import { GameContext } from '../context';
 import { GameState } from './GameState';
 import { newRound } from './newRound';
-import { getNotifyRole } from '../notify';
-import { GameStartedMessage, BasicMessage } from '../messages';
-import { IdleState } from './IdleState';
+import { BasicMessage, mention } from '../messages';
 
 /** Waiting for enough people to demonstrate interest */
 export class StartingState implements GameState<GameContext> {
@@ -26,33 +24,18 @@ export class StartingState implements GameState<GameContext> {
   receive(command: Command): Action | undefined {
     if (command.type === 'interested' && !this.interested.some(x => x === command.member.user)) {
       const interested = [...this.interested, command.member.user]
-      if (interested.length >= 3) {
-        return newRound(this.context)
-      } else {
-        return NewState(new StartingState(this.context, interested))
-      }
+      return CompositeAction(
+        NewState(new StartingState(this.context, interested)),
+        OptionalAction(interested.length === 5 && this.begin())
+      )
     }
   }
 
-  static begin(context: GameContext): Action {
-    const gameStartedMessage = getNotifyRole(context.channel.guild)
-      .then(role => Send(context.channel, new GameStartedMessage(role, context.initiator, context)))
+  enoughInterest() { return this.interested.length > 3 }
 
-    const cancel = 
-      FromStateAction(context.channel.guild, state =>
-        OptionalAction(state instanceof StartingState && state.context.gameId.eq(context.gameId) &&
-          CompositeAction(
-            Send(context.channel, new BasicMessage(`Not enough players to begin the game`)),
-            NewState(new IdleState(context.guildCtx))
-          )
-        ))
-    
+  begin() {
     return CompositeAction(
-      PromiseAction(gameStartedMessage),
-      DelayedAction(StartingState.StartingStateDelayMs, cancel),
-      NewState(new StartingState(context, [context.initiator])),
-    )
+      Send(this.context.channel, new BasicMessage(`Let's go! ` + this.interested.map(x => mention(x)).join(' '))),
+      newRound(this.context))
   }
-
-  static StartingStateDelayMs = 1000 * 60 * 5
 }
