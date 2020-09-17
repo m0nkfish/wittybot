@@ -13,9 +13,9 @@ export class GameStartedMessage implements Message {
   }
 
   message(remainingSec: number, interested: Discord.User[]) {
-    const remainingTime =
-      remainingSec >= 60 ? `${Math.floor(remainingSec / 60)} minutes`
-      : `${remainingSec} seconds`
+    const footer =
+      remainingSec >= 60 ? `${Math.floor(remainingSec / 60)} minutes remaining`
+      : `${remainingSec} seconds remaining`
 
     const embed = new Discord.MessageEmbed()
       .setTitle(`:rotating_light: The game is afoot!`)
@@ -25,7 +25,7 @@ export class GameStartedMessage implements Message {
         `In:`,
         ...interested.map(x => `• ${mention(x)}`)
       ])
-      .setFooter(`${remainingTime} remaining`)
+      .setFooter(footer)
 
     return this.notifyRole
       ? {
@@ -43,7 +43,7 @@ export class GameStartedMessage implements Message {
       if (remainingSec > 0 && state instanceof StartingState && state.context.gameId.eq(this.context.gameId)) {
         msg.edit(this.message(remainingSec, state.interested))
       } else {
-        msg.edit({ embed: { footer: '' }})
+        msg.edit({ embed: msg.embeds[0].setFooter('') })
         clearInterval(interval)
       }
     }, 5000)
