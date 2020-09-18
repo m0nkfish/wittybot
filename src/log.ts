@@ -1,9 +1,9 @@
 type Loggable = {
-  [key: string]: string | boolean | undefined | null
+  [key: string]: string | number | boolean | undefined | null
 } | undefined | null
 
 export function log(event: string, ...loggables: Loggable[]) {
-  const str = Array.from(getPairs([{ event }, ...loggables]))
+  const str = Object.entries(Object.fromEntries(getPairs([{ event }, ...loggables])))
     .map((([k, v]) => `${k}=${v}`))
     .join(' ')
 

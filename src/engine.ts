@@ -91,6 +91,7 @@ export class Engine {
   }
 
   async getAction(command: Command | ScopedCommand): Promise<Action | undefined> {
+    this.logCommand(command)
 
     if (command instanceof ScopedCommand) {
       return this.getState(command.guild)
@@ -151,7 +152,7 @@ export class Engine {
   }
 
   interpret = (action: Action): Exclude<any, typeof unhandled> => {
-    this.log(action)
+    this.logAction(action)
     switch (action.type) {
       case 'composite-action':
         action.actions.forEach(this.interpret)
@@ -197,22 +198,63 @@ export class Engine {
     }
   }
 
-  log = (action: Action) => {
-    if (action.type === 'promise-action') {
-      log('promise_action')
-    } else if (action.type === 'new-state') {
+  logAction = (action: Action) => {
+    if (action.type === 'new-state') {
       const {newState} = action
       log('new_state_action', logGuild(newState.context.guild), { state: name(newState) }, logState(newState))
     } else if (action.type === 'send-message') {
       const {message, destination} = action
-      const recipient = destination instanceof Discord.User ? `@${destination.username}` : `#${destination.name}`
-      log('send_message', logGuild(destination instanceof Discord.TextChannel ? destination.guild : undefined), { message: name(message), recipient }, logMessage(message))
+      log('send_message', logSource(destination), { message: name(message) }, logMessage(message))
+    }
+  }
+
+  logCommand = (input: Command | ScopedCommand) => {
+    const command = input instanceof ScopedCommand ? input.command : input
+    const guild = input instanceof ScopedCommand ? logGuild(input.guild) : undefined
+    const event = `command:${command.type}`
+    switch (command.type) {
+      case 'begin':
+        log(event, guild, logUser(command.user))
+        break;
+
+      case 'get-scores':
+        log(event, guild, { unit: command.unit }, logSource(command.source))
+        break;
+
+      case 'help':
+        log(event, guild, logSource(command.source))
+        break;
+
+      case 'interested':
+      case 'notify-me':
+      case 'unnotify-me':
+        log(event, guild, logMember(command.member))
+        break;
+
+      case 'skip':
+        log(event, guild)
+        break;
+
+      case 'submit':
+        log(event, guild, logUser(command.user), { submission: command.submission })
+        break;
+
+      case 'vote':
+        log(event, guild, logUser(command.user), { entry: command.entry })
+        break;
+    
+      default:
+        break;
     }
   }
 }
 
 const usernames = (users: Iterable<Discord.User>) => Array.from(users).map(u => u.username).join(',')
 const logGuild = (guild?: Discord.Guild) => ({ guildId: guild?.id, guildName: guild?.name })
+const logUser = (user?: Discord.User) => ({ userId: user?.id, userName: user?.username })
+const logMember = (member: Discord.GuildMember) => ({ ...logGuild(member.guild), ...logUser(member.user) })
+const logChannel = (channel: Discord.TextChannel) => ({ ...logGuild(channel.guild), channel: channel.name })
+const logSource = (source: Discord.TextChannel | Discord.User) => source instanceof Discord.TextChannel ? logChannel(source): logUser(source)
 const logState = (state: GameState<any>) =>
   state instanceof SubmissionState ? { submissions: usernames(state.submissions.keys()) }
   : state instanceof VotingState ? { submissions: usernames(state.submissions.map(x => x.user)), votes: usernames(state.votes.keys()) }
