@@ -199,12 +199,15 @@ export class Engine {
   }
 
   logAction = (action: Action) => {
+    const event = `action:${action.type}`
     if (action.type === 'new-state') {
       const {newState} = action
-      log('new_state_action', logGuild(newState.context.guild), { state: name(newState) }, logState(newState))
+      log(event, logGuild(newState.context.guild), { state: name(newState) }, logState(newState))
     } else if (action.type === 'send-message') {
       const {message, destination} = action
-      log('send_message', logSource(destination), { message: name(message) }, logMessage(message))
+      log(event, logSource(destination), { message: name(message) }, logMessage(message))
+    } else if (action.type === 'save-round') {
+      log(event, logChannel(action.round.channel), { round: action.round.id.value })
     }
   }
 

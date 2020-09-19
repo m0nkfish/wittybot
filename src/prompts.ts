@@ -3,6 +3,7 @@ import { mt } from './random';
 import * as db from './db'
 import { RoundContext } from './context';
 import * as Discord from 'discord.js';
+import { memberName } from './messages/memberName';
 
 const format: Record<string, (line: string) => string> = {
   misc: line => `:arrow_forward: ${line}`,
@@ -47,7 +48,7 @@ export async function choosePrompt(context: RoundContext) {
 
   const globalReplace = await cachedReplacements
   const replacements = new Map(globalReplace)
-    .set('user', users.map(x => x.username))
+    .set('user', users.map(x => memberName(context.guild, x)))
 
   const regex = new RegExp(`{(${Array.from(replacements.keys()).join('|')})}`, "g")
   const replaced = text
