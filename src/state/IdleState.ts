@@ -14,8 +14,9 @@ export class IdleState implements GameState<GuildContext> {
 
   readonly interpreter = (message: Discord.Message) => {
     if (message.channel instanceof Discord.TextChannel) {
+      const defaultMinPlayers = 3
       if (message.content === "!witty") {
-        return Begin(message.author, message.channel, this.context.config.defaultSubmitDurationSec, 3, O.none)
+        return Begin(message.author, message.channel, this.context.config.defaultSubmitDurationSec, defaultMinPlayers, O.none)
       }
 
       if (message.content.startsWith("!witty ")) {
@@ -32,7 +33,7 @@ export class IdleState implements GameState<GuildContext> {
           O.fromNullable,
           O.mapNullable(x => tryParseInt(x[1])),
           O.map(x => clamp(x, 3, 6)),
-          O.getOrElse(() => 3)
+          O.getOrElse(() => defaultMinPlayers)
         )
 
         const race = pipe(
