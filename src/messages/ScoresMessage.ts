@@ -5,9 +5,7 @@ import { Message, mention } from './index'
 export class ScoresMessage implements Message {
   constructor(readonly scores: Scores, readonly timeframe: string) { }
 
-  positiveScoresInOrder = Array.from(this.scores.map)
-    .sort(([, a], [, b]) => b.rating - a.rating)
-    .filter(([, score]) => score.totalPoints > 0)
+  positiveScoresInOrder = this.scores.byRatingDescending()
 
   get content() {
     const description =

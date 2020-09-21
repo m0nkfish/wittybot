@@ -21,7 +21,11 @@ export class HelpMessage implements Message {
 
   static commands = [
     ['help', "you're looking at it"],
-    ['witty [timeout]', "start a new game. timeout is the number of seconds per round (defaults to 80)"],
+    ['witty [race <score>] [timeout <seconds>] [players <min>]', ["start a new game",
+      "• `race <score>`: the game will finish when someone reaches <score> (5 - 30)",
+      "• `timeout <seconds>`: specify the number of seconds per round (10 - 120). default is 80",
+      "• `players <min>`: specify the minimum number of players (3 - 6). default is 3"
+    ].join('\n')],
     ['in', "register your interest when a game begins"],
     ['out', "retract your interest"],
     ['skip', "skip the current prompt"],

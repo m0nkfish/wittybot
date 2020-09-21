@@ -1,8 +1,9 @@
 import * as Discord from 'discord.js'
 import { Case } from './case'
 import { ScoreUnit } from './scores';
+import { Option } from 'fp-ts/Option'
 
-export const Begin = Case('begin', (user: Discord.User, channel: Discord.TextChannel, timeoutSec: number) => ({ channel, user, timeoutSec }))
+export const Begin = Case('begin', (user: Discord.User, channel: Discord.TextChannel, timeoutSec: number, minPlayers: number, race: Option<number>) => ({ channel, user, timeoutSec, minPlayers, race }))
 export const Submit = Case('submit', (submission: string, message: Discord.Message) => ({ user: message.author, submission, message }))
 export const Vote = Case('vote', (entry: number, message: Discord.Message) => ({ user: message.author, entry, message }))
 export const Skip = Case('skip', () => ({}))

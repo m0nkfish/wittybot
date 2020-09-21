@@ -1,4 +1,5 @@
 import * as Discord from 'discord.js'
+
 import { Command, Vote } from '../commands';
 import { Action, CompositeAction, NewState, FromStateAction, NullAction, Send, SaveRound, OptionalAction } from '../actions';
 import { Prompt } from '../prompts';

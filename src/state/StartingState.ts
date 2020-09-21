@@ -29,7 +29,7 @@ export class StartingState implements GameState<GameContext> {
       const interested = [...this.interested, command.member.user]
       return CompositeAction(
         NewState(new StartingState(this.context, interested)),
-        OptionalAction(interested.length === 5 && this.begin())
+        OptionalAction(interested.length === Math.max(this.context.minPlayers, 5) && this.begin())
       )
     }
 

@@ -1,4 +1,6 @@
 import * as Discord from 'discord.js';
+import { Option } from 'fp-ts/Option'
+
 import { Prompt } from './prompts';
 import { Id } from './id';
 
@@ -33,8 +35,8 @@ export class GuildContext {
   get config() { return this.globalCtx.config }
   get inTestMode() { return this.globalCtx.inTestMode }
 
-  newGame = (channel: Discord.TextChannel, initiator: Discord.User, timeoutSec: number) =>
-    new GameContext(this, channel, Id.create(), initiator, [], timeoutSec)
+  newGame = (channel: Discord.TextChannel, initiator: Discord.User, timeoutSec: number, minPlayers: number, race: Option<number>) =>
+    new GameContext(this, channel, Id.create(), initiator, [], timeoutSec, minPlayers, race)
 }
 
 export class GameContext {
@@ -44,7 +46,9 @@ export class GameContext {
     readonly gameId: Id,
     readonly initiator: Discord.User,
     readonly rounds: Round[],
-    readonly timeoutSec: number
+    readonly timeoutSec: number,
+    readonly minPlayers: number,
+    readonly race: Option<number>
   ) { }
 
   get globalCtx() { return this.guildCtx.globalCtx }
@@ -53,7 +57,7 @@ export class GameContext {
   get inTestMode() { return this.guildCtx.inTestMode }
 
   addRound = (round: Round) =>
-    new GameContext(this.guildCtx, this.channel, this.gameId, this.initiator, [...this.rounds, round], this.timeoutSec)
+    new GameContext(this.guildCtx, this.channel, this.gameId, this.initiator, [...this.rounds, round], this.timeoutSec, this.minPlayers, this.race)
 
   newRound = () =>
     new RoundContext(this, Id.create())
@@ -75,6 +79,8 @@ export class RoundContext {
   get channel() { return this.gameCtx.channel }
   get initiator() { return this.gameCtx.initiator }
   get guild() { return this.gameCtx.guild }
+  get minPlayers() { return this.gameCtx.minPlayers }
+  get race() { return this.gameCtx.race }
 
   sameRound = (other: RoundContext) => this.roundId.eq(other.roundId)
 }

@@ -7,7 +7,7 @@ import { StartingState } from './StartingState';
 
 export function newGame(context: GameContext): Action {
   const gameStartedMessage = getNotifyRole(context.channel.guild)
-    .then(role => Send(context.channel, new GameStartedMessage(role, context.initiator, context)))
+    .then(role => Send(context.channel, new GameStartedMessage(role, context)))
 
   const timeout =
     FromStateAction(context.channel.guild, state =>

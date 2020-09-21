@@ -1,4 +1,7 @@
 import * as Discord from 'discord.js'
+import * as O from 'fp-ts/Option'
+import { pipe } from 'fp-ts/function'
+
 import { AnyGameState } from '../state';
 import { StartingState } from '../state/StartingState';
 import { Message, mention } from './index'
@@ -6,7 +9,9 @@ import { GameContext } from '../context';
 import { StartingStateDelayMs } from '../state/newGame';
 
 export class GameStartedMessage implements Message {
-  constructor(readonly notifyRole: Discord.Role | undefined, readonly startedBy: Discord.User, readonly context: GameContext) { }
+  constructor(readonly notifyRole: Discord.Role | undefined, readonly context: GameContext) { }
+
+  get startedBy() { return this.context.initiator }
 
   get content() {
     return this.message(StartingStateDelayMs / 1000, [this.startedBy])
@@ -17,10 +22,16 @@ export class GameStartedMessage implements Message {
       remainingSec >= 60 ? `${Math.floor(remainingSec / 60)} minutes remaining`
       : `${remainingSec} seconds remaining`
 
+    const title = pipe(
+      this.context.race,
+      O.map(x => `:person_running: It's a race to ${x}`),
+      O.getOrElse(() => `:rotating_light: The game is afoot!`)
+    )
+
     const embed = new Discord.MessageEmbed()
-      .setTitle(`:rotating_light: The game is afoot!`)
+      .setTitle(title)
       .setDescription([
-        `A new game was started by ${mention(this.startedBy)}; type \`!in\` to register interest. The game will begin after five people are interested, or after three minutes (whichever comes first)`,
+        `A new game was started by ${mention(this.startedBy)}; type \`!in\` to register interest. The game will begin after ${Math.max(this.context.minPlayers, 5)} people are interested, or after three minutes (whichever comes first)`,
         ``,
         `In:`,
         ...interested.map(x => `• ${mention(x)}`)

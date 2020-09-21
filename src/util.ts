@@ -1,4 +1,3 @@
-import * as Discord from 'discord.js';
 export const tryParseInt = (str: string) => {
   try {
     const entry = Number.parseInt(str)
@@ -50,3 +49,14 @@ export function arrayEq<T>(a: T[], b: T[]): boolean {
 }
 
 export const invoke = <T>(f: () => T): T => f()
+
+const empty = Symbol()
+export const memo = <T>(f: () => T): () => T => {
+  let res: T | typeof empty = empty
+  return () => {
+    if (res === empty) {
+      res = f()
+    }
+    return res
+  }
+}

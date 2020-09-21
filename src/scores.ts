@@ -1,7 +1,10 @@
 import * as Discord from 'discord.js';
+
 import { Round } from './context';
 import { fold, semigroupSum } from 'fp-ts/lib/Semigroup'
 import { RoundScoreView } from './round';
+import { memo } from './util';
+
 const sum = fold(semigroupSum)
 
 export class RoundScore {
@@ -61,6 +64,32 @@ export class Scores {
     })
     return new Scores(map)
   }
+
+  mostPoints() {
+    const score = 0
+    let users: Discord.User[] = []
+    for (const [u, s] of this.map.entries()) {
+      if (s.totalPoints === score) {
+        users.push(u)
+      } else if (s.totalPoints > score) {
+        users = [u]
+      }
+    }
+    return {
+      users,
+      score
+    }
+  }
+
+  byRatingDescending = memo(() =>
+    Array.from(this.map)
+      .filter(([, score]) => score.totalPoints > 0)
+      .sort(([, a], [, b]) => b.rating - a.rating))
+  
+  byPointsDescending = memo(() =>
+    Array.from(this.map)
+      .filter(([, score]) => score.totalPoints > 0)
+      .sort(([, a], [, b]) => b.totalPoints - a.totalPoints))
 
   static empty(): Scores {
     return new Scores(new Map())

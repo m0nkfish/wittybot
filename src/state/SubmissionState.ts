@@ -73,9 +73,9 @@ export class SubmissionState implements GameState<RoundContext> {
     new SubmissionState(this.context, this.prompt, new Map(this.submissions).set(user, submission))
 
   finish = (): Action => {
-    if ((!this.context.inTestMode && this.submissions.size < 3) || this.submissions.size < 1) {
+    if ((!this.context.inTestMode && this.submissions.size < this.context.minPlayers) || this.submissions.size < 1) {
       return CompositeAction(
-        Send(this.context.channel, new BasicMessage(`Not enough submissions to continue`)),
+        Send(this.context.channel, new BasicMessage(`Not enough players to continue (${this.submissions.size}/${this.context.minPlayers})`)),
         Send(this.context.channel, new ScoresMessage(Scores.fromRounds(this.context.rounds), 'from this game')),
         NewState(new IdleState(this.context.guildCtx))
       )
