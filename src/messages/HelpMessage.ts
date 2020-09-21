@@ -23,6 +23,7 @@ export class HelpMessage implements Message {
     ['help', "you're looking at it"],
     ['witty [timeout]', "start a new game. timeout is the number of seconds per round (defaults to 80)"],
     ['in', "register your interest when a game begins"],
+    ['out', "retract your interest"],
     ['skip', "skip the current prompt"],
     ['notify', "be notified when a new game starts"],
     ['unnotify', "stop being notified when a new game starts"],

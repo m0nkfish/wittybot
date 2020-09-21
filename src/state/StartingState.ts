@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { Command, Interested } from '../commands';
+import { Command, Interested, Uninterested } from '../commands';
 import { Action, NewState, CompositeAction, Send, OptionalAction } from '../actions';
 import { GameContext } from '../context';
 import { GameState } from './GameState';
@@ -19,6 +19,9 @@ export class StartingState implements GameState<GameContext> {
     if (message.content === '!in') {
       return Interested(message.member)
     }
+    if (message.content === '!out') {
+      return Uninterested(message.member)
+    }
   }
 
   receive(command: Command): Action | undefined {
@@ -28,6 +31,10 @@ export class StartingState implements GameState<GameContext> {
         NewState(new StartingState(this.context, interested)),
         OptionalAction(interested.length === 5 && this.begin())
       )
+    }
+
+    if (command.type === 'uninterested' && this.interested.some(x => x === command.member.user)) {
+      return NewState(new StartingState(this.context, this.interested.filter(x => x !== command.member.user)))
     }
   }
 

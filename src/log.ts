@@ -14,7 +14,7 @@ function* getPairs(loggables: Loggable[]) {
   for (const l of loggables) {
     if (l) {
       for (const [k, v] of Object.entries(l)) {
-        if (v !== undefined && v !== null) {
+        if (v !== undefined && v !== null && v !== "") {
           yield [k, v] as const
         }
       }

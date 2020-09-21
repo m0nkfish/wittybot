@@ -11,6 +11,7 @@ export const NotifyMe = Case('notify-me', (member: Discord.GuildMember) => ({ me
 export const UnnotifyMe = Case('unnotify-me', (member: Discord.GuildMember) => ({ member }))
 export const Help = Case('help', (source: Discord.User | Discord.TextChannel) => ({ source }))
 export const Interested = Case('interested', (member: Discord.GuildMember) => ({ member }))
+export const Uninterested = Case('uninterested', (member: Discord.GuildMember) => ({ member }))
 
 export type Command =
   | ReturnType<typeof Begin>
@@ -22,3 +23,4 @@ export type Command =
   | ReturnType<typeof UnnotifyMe>
   | ReturnType<typeof Help>
   | ReturnType<typeof Interested>
+  | ReturnType<typeof Uninterested>
