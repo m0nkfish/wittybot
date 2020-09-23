@@ -2,8 +2,9 @@ import * as Discord from 'discord.js'
 import { Engine } from './engine';
 import { Send } from './actions';
 import { ReleaseMessage } from './messages';
-import { GlobalContext } from './context';
+import { GlobalContext, GameContext, RoundContext } from './context';
 import { log } from './log';
+import { BasicMessage } from './messages/BasicMessage';
 
 log('loading')
 
@@ -33,6 +34,15 @@ client.on('ready', () => {
       }
     }
   }
+
+  process.on('SIGTERM', () => {
+    engine.states.forEach(state => {
+      if (state.context instanceof RoundContext || state.context instanceof GameContext) {
+        engine.interpret(Send(state.context.channel, new BasicMessage(`Sorry! The bot has to shut down, it should be back momentarily but you will have to restart the game`)))
+      }
+    })
+  })
+
 })
 
 client.login(process.env.BOT_TOKEN);
