@@ -2,7 +2,7 @@ import * as Discord from 'discord.js'
 import { Scores, Score } from '../scores';
 import { Message, mention } from './index'
 
-export class ScoresMessage implements Message {
+export class ScoresByRatingMessage implements Message {
   constructor(readonly scores: Scores, readonly timeframe: string) { }
 
   positiveScoresInOrder = this.scores.byRatingDescending()
@@ -30,6 +30,15 @@ export class ScoresMessage implements Message {
   }
 }
 
-function userScore(user: Discord.User, score: Score, index: number) {
+export class ScoresByPointsMessage implements Message {
+  constructor(readonly scores: Scores) { }
 
+  get content() {
+    return new Discord.MessageEmbed()
+      .setTitle(`Scores so far...`)
+      .setDescription(
+        this.scores.byPointsDescending()
+          .map(([u, s], i) => `${i + 1}. **${s.totalPoints} points**: ${mention(u)}`)
+      )
+  }
 }

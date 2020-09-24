@@ -117,7 +117,7 @@ export async function allReplacements() {
   return query(tReplacement, `SELECT * FROM replacements`)
 }
 
-export async function scores(guild: Discord.Guild, unit: ScoreUnit) {
+export async function scores(guild: Discord.Guild, unit: Exclude<ScoreUnit, 'game'>) {
   const roundsResult = io.type({
     'round_id': io.string,
     'prompt_filled': io.string,
@@ -148,6 +148,7 @@ export async function scores(guild: Discord.Guild, unit: ScoreUnit) {
         case 'month': return '1 month'
         case 'year': return '1 year'
         case 'alltime': return null
+        default: throw new Error(`Incorrect unit: ${unit}`)
       }
     })
   if (interval) {

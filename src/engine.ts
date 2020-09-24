@@ -1,10 +1,10 @@
-import { GlobalContext, GuildContext } from './context';
+import { GlobalContext, GuildContext, RoundContext, GameContext } from './context';
 import { IdleState, AnyGameState } from './state';
 import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from './actions';
 import * as Discord from 'discord.js';
 import { Command, Help, NotifyMe, UnnotifyMe, GetScores } from './commands';
 import { getNotifyRole } from './notify';
-import { BasicMessage, HelpMessage, Message, ScoresMessage } from './messages';
+import { BasicMessage, HelpMessage, Message, ScoresByRatingMessage } from './messages';
 import * as db from './db'
 import { SubmissionState } from './state/SubmissionState';
 import { VotingState } from './state/VotingState';
@@ -12,6 +12,8 @@ import { RoundScoreView } from './round';
 import { Scores, ScoreUnit } from './scores';
 import { log } from './log';
 import { GameState } from './state/GameState';
+import { invoke } from './util';
+import { ScoresByPointsMessage } from './messages/ScoresMessage';
 
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -49,9 +51,16 @@ export class Engine {
     }
 
     if (message.channel instanceof Discord.TextChannel) {
-      const scores = /^!scores(?: (day|week|month|year|alltime))?$/.exec(message.content)
+      const scores = /^!scores(?: (game|day|week|month|year|alltime))?$/.exec(message.content)
       if (scores) {
-        const unit = (scores[1] ?? 'day') as ScoreUnit
+        const guild = message.channel.guild
+        const defaultUnit = () => {
+          const state = this.states.get(guild)
+          return state?.context instanceof GameContext || state?.context instanceof RoundContext
+            ? 'game'
+            : 'day'
+        }
+        const unit = (scores[1] ?? defaultUnit()) as ScoreUnit
         return GetScores(message.channel, unit)
       }
 
@@ -123,11 +132,18 @@ export class Engine {
     }
 
     if (command.type === 'get-scores') {
+      if (command.unit === 'game') {
+        const state = this.states.get(command.source.guild)
+        const message = state?.context instanceof GameContext || state?.context instanceof RoundContext
+          ? new ScoresByPointsMessage(Scores.fromRounds(state.context.rounds))
+          : new BasicMessage(`No game is running; start a game with \`!witty\``)
+        return Send(command.source, message)
+      }
       const rounds = await db.scores(command.source.guild, command.unit)
       const scoreView = await Promise.all(rounds.map(round => RoundScoreView.fromDbView(this.context.client, round)))
       const scores = Scores.fromRoundViews(scoreView)
       const timeframe = command.unit === 'alltime' ? "since the dawn of time itself" : `from the last ${command.unit}`
-      return Send(command.source, new ScoresMessage(scores, timeframe))
+      return Send(command.source, new ScoresByRatingMessage(scores, timeframe))
     }
   }
 

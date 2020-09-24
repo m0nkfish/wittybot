@@ -119,4 +119,4 @@ export class Scores {
   }
 }
 
-export type ScoreUnit = 'day' | 'week' | 'month' | 'year' | 'alltime'
+export type ScoreUnit = 'game' | 'day' | 'week' | 'month' | 'year' | 'alltime'

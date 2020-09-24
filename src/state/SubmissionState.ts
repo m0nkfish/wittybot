@@ -6,7 +6,7 @@ import { shuffle } from 'random-js';
 import { mt } from '../random';
 import { RoundContext } from '../context';
 import { Scores } from '../scores';
-import { BasicMessage, VoteMessage, SubmissionAcceptedMessage, ScoresMessage, mention } from '../messages';
+import { BasicMessage, VoteMessage, SubmissionAcceptedMessage, ScoresByRatingMessage, mention } from '../messages';
 import { GameState } from './GameState';
 import { VotingState } from './VotingState';
 import { endRound } from './endRound';
@@ -76,7 +76,7 @@ export class SubmissionState implements GameState<RoundContext> {
     if ((!this.context.inTestMode && this.submissions.size < this.context.minPlayers) || this.submissions.size < 1) {
       return CompositeAction(
         Send(this.context.channel, new BasicMessage(`Not enough players to continue (${this.submissions.size}/${this.context.minPlayers})`)),
-        Send(this.context.channel, new ScoresMessage(Scores.fromRounds(this.context.rounds), 'from this game')),
+        Send(this.context.channel, new ScoresByRatingMessage(Scores.fromRounds(this.context.rounds), 'from this game')),
         NewState(new IdleState(this.context.guildCtx))
       )
     }
