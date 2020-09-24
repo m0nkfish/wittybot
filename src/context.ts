@@ -3,6 +3,7 @@ import { Option } from 'fp-ts/Option'
 
 import { Prompt } from './prompts';
 import { Id } from './id';
+import { Scores } from './scores';
 
 export type Round = {
   id: Id
@@ -55,6 +56,8 @@ export class GameContext {
   get config() { return this.guildCtx.config }
   get guild() { return this.guildCtx.guild }
   get inTestMode() { return this.guildCtx.inTestMode }
+
+  get scores() { return Scores.fromRounds(this.rounds) }
 
   addRound = (round: Round) =>
     new GameContext(this.guildCtx, this.channel, this.gameId, this.initiator, [...this.rounds, round], this.timeoutSec, this.minPlayers, this.race)

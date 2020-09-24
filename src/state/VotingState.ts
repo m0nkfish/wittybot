@@ -110,7 +110,7 @@ export class VotingState implements GameState<RoundContext> {
     const newContext = this.context.gameCtx.addRound(round)
 
     return CompositeAction(
-      Send(this.context.channel, new VotingFinishedMessage(this.context, this.prompt, withVotes)),
+      Send(this.context.channel, new VotingFinishedMessage(newContext, this.prompt, withVotes)),
       OptionalAction(!this.context.inTestMode && SaveRound(round)),
       endRound(newContext)
     )

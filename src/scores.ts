@@ -66,19 +66,19 @@ export class Scores {
   }
 
   mostPoints() {
-    let score = 0
+    let points = 0
     let users: Discord.User[] = []
     for (const [u, s] of this.map.entries()) {
-      if (s.totalPoints === score) {
+      if (s.totalPoints === points) {
         users.push(u)
-      } else if (s.totalPoints > score) {
+      } else if (s.totalPoints > points) {
         users = [u]
-        score = s.totalPoints
+        points = s.totalPoints
       }
     }
     return {
       users,
-      score
+      points
     }
   }
 

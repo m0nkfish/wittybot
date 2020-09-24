@@ -1,13 +1,16 @@
 import * as Discord from 'discord.js'
+import * as O from 'fp-ts/Option'
+import { pipe } from 'fp-ts/function'
+
 import { Prompt } from '../prompts';
 import { pairs, arrayEq } from '../util';
 import { Message, mention } from './index'
-import { RoundContext } from '../context';
+import { GameContext } from '../context';
 import { memberName } from './memberName';
 
 export class VotingFinishedMessage implements Message {
   constructor(
-    readonly context: RoundContext,
+    readonly context: GameContext,
     readonly prompt: Prompt,
     readonly withVotes: Array<{ user: Discord.User, votes: Discord.User[], voted: boolean, submission: string }>) { }
 
@@ -34,6 +37,8 @@ export class VotingFinishedMessage implements Message {
 
   memberName = (user: Discord.User) => memberName(this.context.guild, user)
 
+  leaders = () => pipe(this.context.race, O.map(() => this.context.scores.mostPoints()))
+
   get content() {
     let title = `The votes are in!`
     const sweep = this.sweep()
@@ -46,6 +51,12 @@ export class VotingFinishedMessage implements Message {
     } else if (pals) {
       title = title + ` :revolving_hearts: ${this.memberName(pals[0])} and ${this.memberName(pals[1])} sitting in a tree, V-O-T-I-N-G (for each other)`
     }
+  
+    const footer = pipe(
+      this.leaders(),
+      O.map(l => `In the lead: ${l.users.map(this.memberName).join(' & ')} with ${l.points} points`),
+      O.getOrElse(() => '')
+    )
 
     return new Discord.MessageEmbed()
       .setTitle(title)
@@ -65,5 +76,6 @@ export class VotingFinishedMessage implements Message {
           return `• ${x.submission} (${name})`
         })
       ])
+      .setFooter(footer)
   }
 }
