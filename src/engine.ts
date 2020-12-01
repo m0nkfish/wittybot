@@ -12,6 +12,7 @@ import { log } from './log';
 import { ScoresByPointsMessage } from './messages/ScoresMessage';
 import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './loggable';
 import { beginTimer } from './util';
+import { RoundDbView } from './db';
 
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -138,20 +139,40 @@ export class Engine {
         return Send(command.source, message)
       }
 
-      const getRoundsTime = beginTimer()
-      log(`fetching_scores`, logGuild(command.source.guild), { unit: command.unit })
       const rounds = await db.scores(command.source.guild, command.unit)
-      log(`fetched_scores`, logGuild(command.source.guild), { unit: command.unit , duration_ms: getRoundsTime.getMs() })
+
+      const fetchUsersTime = beginTimer()
+      log(`fetching_user_cache`)
+      const users = await this.getUserLookup(rounds)
+      log(`fetched_user_cache`, { unit: command.unit, rounds: rounds.length, users: users.size, duration_ms: fetchUsersTime.getMs() })
 
       const getScoresTime = beginTimer()
-      log(`building_scores`, logGuild(command.source.guild), { unit: command.unit })
-      const scoreView = await Promise.all(rounds.map(round => RoundScoreView.fromDbView(this.context.client, round)))
-      log(`built_scores`, logGuild(command.source.guild), { unit: command.unit, duration_ms: getScoresTime.getMs() })
+      log(`building_scores`, { unit: command.unit, rounds: rounds.length })
+      const scoreView = rounds.map(round => RoundScoreView.fromDbView(round, users))
+      log(`built_scores`, { unit: command.unit, duration_ms: getScoresTime.getMs() })
 
       const scores = Scores.fromRoundViews(scoreView)
       const timeframe = command.unit === 'alltime' ? "since the dawn of time itself" : `from the last ${command.unit}`
       return Send(command.source, new ScoresByRatingMessage(scores, timeframe))
     }
+  }
+
+  async getUserLookup(rounds: RoundDbView[]): Promise<Map<string, Discord.User>> {
+    const ids = new Set<string>()
+    for (const r of rounds) {
+      for (const s of r.submissions.values()) {
+        ids.add(s.submitterId)
+        for (const v of s.votes.values()) {
+          ids.add(v)
+        }
+      }
+    }
+
+    const lookup = new Map<string, Discord.User>()
+    for (const id of ids) {
+      lookup.set(id, await this.context.client.users.fetch(id, true))
+    }
+    return lookup
   }
 
   run() {

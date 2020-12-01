@@ -13,14 +13,14 @@ export class RoundScoreView {
     return this.submissions.length
   }
 
-  static async fromDbView(client: Discord.Client, view: RoundDbView): Promise<RoundScoreView> {
+  static fromDbView(view: RoundDbView, users: Map<string, Discord.User>): RoundScoreView {
     const {filledPrompt, id} = view
     const submissions: SubmissionScoreView[] = []
     for (const sub of view.submissions.values()) {
-      const submitter = await client.users.fetch(sub.submitterId, true)
+      const submitter = users.get(sub.submitterId)!
       const voters: Discord.User[] = []
       for (const voterId of sub.votes) {
-        const user = await client.users.fetch(voterId, true)
+        const user = users.get(voterId)!
         voters.push(user)
       }
       const voted = Array.from(view.submissions.values()).some(s => s.votes.has(sub.submitterId))
