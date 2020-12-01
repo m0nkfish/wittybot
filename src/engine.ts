@@ -157,22 +157,22 @@ export class Engine {
     }
   }
 
-  async getUserLookup(rounds: RoundDbView[]): Promise<Map<string, Discord.User>> {
+  getUniqueIds(rounds: RoundDbView[]): string[] {
     const ids = new Set<string>()
     for (const r of rounds) {
       for (const s of r.submissions.values()) {
         ids.add(s.submitterId)
-        for (const v of s.votes.values()) {
-          ids.add(v)
-        }
+        // we can skip the voters because every voter must have submitted
       }
     }
 
-    const lookup = new Map<string, Discord.User>()
-    for (const id of ids) {
-      lookup.set(id, await this.context.client.users.fetch(id, true))
-    }
-    return lookup
+    return Array.from(ids)
+  }
+
+  async getUserLookup(rounds: RoundDbView[]): Promise<Map<string, Discord.User>> {
+    const ids = this.getUniqueIds(rounds)
+    const users = await Promise.all(ids.map(x => this.context.client.users.fetch(x, true)))
+    return new Map(users.map((u, i) => [ids[i], u]))
   }
 
   run() {
