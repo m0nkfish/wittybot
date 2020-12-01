@@ -38,9 +38,11 @@ async function query<T>(validator: io.Type<T>, queryString: string, params: stri
   }
 
   return withClient(async client => {
-    log('db_query', { queryString: queryString.replace(/\n/, ' '), params: params.join(',') })
+    const init = process.hrtime()
+    log('db_query', { queryString: queryString.replace(/\n|\r/, ' '), params: params.join(',') })
     const res = await client.query({ name, text: queryString, values: params })
-    log(`${res.rowCount} results`)
+    const end = process.hrtime(init)
+    log('db_query_finished', { count: res.rowCount, duration_ms: (end[0] * 1000) + (end[1] / 1000000) })
     return res.rows.map(validate)
   })
 }
