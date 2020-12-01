@@ -60,3 +60,13 @@ export const memo = <T>(f: () => T): () => T => {
     return res
   }
 }
+
+export function beginTimer() {
+  const start = process.hrtime()
+  return {
+    getMs() {
+      const end = process.hrtime(start)
+      return (end[0] * 1000) + (end[1] / 1000000)
+    }
+  }
+}

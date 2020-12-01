@@ -4,16 +4,14 @@ import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from
 import * as Discord from 'discord.js';
 import { Command, Help, NotifyMe, UnnotifyMe, GetScores } from './commands';
 import { getNotifyRole } from './notify';
-import { BasicMessage, HelpMessage, Message, ScoresByRatingMessage } from './messages';
+import { BasicMessage, HelpMessage, ScoresByRatingMessage } from './messages';
 import * as db from './db'
-import { SubmissionState } from './state/SubmissionState';
-import { VotingState } from './state/VotingState';
 import { RoundScoreView } from './round';
 import { Scores, ScoreUnit } from './scores';
 import { log } from './log';
-import { GameState } from './state/GameState';
-import { invoke } from './util';
 import { ScoresByPointsMessage } from './messages/ScoresMessage';
+import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './loggable';
+import { beginTimer } from './util';
 
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -139,8 +137,17 @@ export class Engine {
           : new BasicMessage(`No game is running; start a game with \`!witty\``)
         return Send(command.source, message)
       }
+
+      const getRoundsTime = beginTimer()
+      log(`fetching_scores`, logGuild(command.source.guild), { unit: command.unit })
       const rounds = await db.scores(command.source.guild, command.unit)
+      log(`fetched_scores`, logGuild(command.source.guild), { unit: command.unit , duration_ms: getRoundsTime.getMs() })
+
+      const getScoresTime = beginTimer()
+      log(`building_scores`, logGuild(command.source.guild), { unit: command.unit })
       const scoreView = await Promise.all(rounds.map(round => RoundScoreView.fromDbView(this.context.client, round)))
+      log(`built_scores`, logGuild(command.source.guild), { unit: command.unit, duration_ms: getScoresTime.getMs() })
+
       const scores = Scores.fromRoundViews(scoreView)
       const timeframe = command.unit === 'alltime' ? "since the dawn of time itself" : `from the last ${command.unit}`
       return Send(command.source, new ScoresByRatingMessage(scores, timeframe))
@@ -218,10 +225,10 @@ export class Engine {
     const event = `action:${action.type}`
     if (action.type === 'new-state') {
       const {newState} = action
-      log(event, logGuild(newState.context.guild), { state: name(newState) }, logState(newState))
+      log(event, logGuild(newState.context.guild), { state: getName(newState) }, logState(newState))
     } else if (action.type === 'send-message') {
       const {message, destination} = action
-      log(event, logSource(destination), { message: name(message) }, logMessage(message))
+      log(event, logSource(destination), { message: getName(message) }, logMessage(message))
     } else if (action.type === 'save-round') {
       log(event, logChannel(action.round.channel), { round: action.round.id.value })
     }
@@ -267,22 +274,5 @@ export class Engine {
     }
   }
 }
-
-const usernames = (users: Iterable<Discord.User>) => Array.from(users).map(u => u.username).join(',')
-const logGuild = (guild?: Discord.Guild) => ({ guildId: guild?.id, guildName: guild?.name })
-const logUser = (user?: Discord.User) => ({ userId: user?.id, userName: user?.username })
-const logMember = (member: Discord.GuildMember) => ({ ...logGuild(member.guild), ...logUser(member.user) })
-const logChannel = (channel: Discord.TextChannel) => ({ ...logGuild(channel.guild), channel: channel.name })
-const logSource = (source: Discord.TextChannel | Discord.User) => source instanceof Discord.TextChannel ? logChannel(source): logUser(source)
-const logState = (state: GameState<any>) =>
-  state instanceof SubmissionState ? { submissions: usernames(state.submissions.keys()) }
-  : state instanceof VotingState ? { submissions: usernames(state.submissions.map(x => x.user)), votes: usernames(state.votes.keys()) }
-  : undefined
-
-const logMessage = (message: Message) =>
-  message instanceof BasicMessage ? { content: message.content }
-  : undefined
-
-const name = (obj: any) => obj?.constructor?.name
 
 const unhandled = Symbol()

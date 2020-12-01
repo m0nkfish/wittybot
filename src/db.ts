@@ -4,9 +4,10 @@ import { failure } from 'io-ts/lib/PathReporter'
 import { Round } from './context';
 import { Id } from './id';
 import * as Discord from 'discord.js';
-import { getOrSet, invoke } from './util';
+import { getOrSet, invoke, beginTimer } from './util';
 import { ScoreUnit } from './scores';
 import { log } from './log';
+import { logGuild } from './loggable';
 
 const pool = new Postgres.Pool()
 
@@ -39,7 +40,7 @@ async function query<T>(validator: io.Type<T>, queryString: string, params: stri
 
   return withClient(async client => {
     const init = process.hrtime()
-    log('db_query', { queryString: queryString.replace(/\n|\r/, ' '), params: params.join(',') })
+    log('db_query', { queryString: queryString.replace(/\n/g, ' '), params: params.join(',') })
     const res = await client.query({ name, text: queryString, values: params })
     const end = process.hrtime(init)
     log('db_query_finished', { count: res.rowCount, duration_ms: (end[0] * 1000) + (end[1] / 1000000) })
