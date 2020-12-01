@@ -3,11 +3,25 @@ type Loggable = {
 } | undefined | null
 
 export function log(event: string, ...loggables: Loggable[]) {
-  const str = Object.entries(Object.fromEntries(getPairs([{ event }, ...loggables])))
+  console.log(makeString(event, loggables))
+}
+log.trace = function (event: string, ...loggables: Loggable[]) {
+  console.trace(makeString(event, loggables))
+}
+log.debug = function (event: string, ...loggables: Loggable[]) {
+  console.debug(makeString(event, loggables))
+}
+log.info = function (event: string, ...loggables: Loggable[]) {
+  console.info(makeString(event, loggables))
+}
+log.warn = function (event: string, ...loggables: Loggable[]) {
+  console.warn(makeString(event, loggables))
+}
+
+function makeString(event: string, loggables: Loggable[]) {
+  return Object.entries(Object.fromEntries(getPairs([{ event }, ...loggables])))
     .map((([k, v]) => `${k}=${v}`))
     .join(' ')
-
-  console.log(str)
 }
 
 function* getPairs(loggables: Loggable[]) {

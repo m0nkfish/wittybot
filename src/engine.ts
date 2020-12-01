@@ -157,21 +157,16 @@ export class Engine {
     }
   }
 
-  getUniqueIds(rounds: RoundDbView[]): string[] {
-    const ids = new Set<string>()
-    for (const r of rounds) {
-      for (const s of r.submissions.values()) {
-        ids.add(s.submitterId)
-        // we can skip the voters because every voter must have submitted
-      }
-    }
-
-    return Array.from(ids)
+  async getUser(id: string): Promise<Discord.User> {
+    const t = beginTimer()
+    const user = await this.context.client.users.fetch(id, true)
+    log.trace(`fetched_user`, logUser(user), { duration_ms: t.getMs() })
+    return user
   }
 
   async getUserLookup(rounds: RoundDbView[]): Promise<Map<string, Discord.User>> {
-    const ids = this.getUniqueIds(rounds)
-    const users = await Promise.all(ids.map(x => this.context.client.users.fetch(x, true)))
+    const ids = getUniqueIds(rounds)
+    const users = await Promise.all(ids.map(id => this.getUser(id)))
     return new Map(users.map((u, i) => [ids[i], u]))
   }
 
@@ -297,3 +292,16 @@ export class Engine {
 }
 
 const unhandled = Symbol()
+
+
+function getUniqueIds(rounds: RoundDbView[]): string[] {
+  const ids = new Set<string>()
+  for (const r of rounds) {
+    for (const s of r.submissions.values()) {
+      ids.add(s.submitterId)
+      // we can skip the voters because every voter must have submitted
+    }
+  }
+
+  return Array.from(ids)
+}
