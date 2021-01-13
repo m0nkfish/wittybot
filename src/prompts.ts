@@ -10,7 +10,8 @@ const format: Record<string, (line: string) => string> = {
   quote: line => `:speech_balloon: “${line}”`,
   proverb: line => `:older_man: As the proverb goes, “${line}”`,
   lyric: line => `:notes: ${line} :notes:`,
-  headline: line => `:newspaper2: Breaking News: ${line}`
+  headline: line => `:newspaper2: Breaking News: ${line}`,
+  caption: _ => `Caption competition!`
 }
 
 export class Prompt {

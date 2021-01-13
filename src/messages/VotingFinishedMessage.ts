@@ -58,7 +58,7 @@ export class VotingFinishedMessage implements Message {
       O.getOrElse(() => '')
     )
 
-    return new Discord.MessageEmbed()
+    const msg = new Discord.MessageEmbed()
       .setTitle(title)
       .setDescription([
         this.prompt.formatted,
@@ -77,5 +77,11 @@ export class VotingFinishedMessage implements Message {
         })
       ])
       .setFooter(footer)
+
+    if (this.prompt.type === 'caption') {
+      msg.setImage(this.prompt.prompt)
+    }
+
+    return msg
   }
 }

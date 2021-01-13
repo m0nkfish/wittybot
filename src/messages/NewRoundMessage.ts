@@ -12,12 +12,20 @@ export class NewRoundMessage implements Message {
     readonly submitDurationSec: number
   ) { }
 
-  private readonly baseContent = new Discord.MessageEmbed()
-    .setTitle(this.prompt.formatted)
-    .setDescription([
-      `Submit by sending a spoiler message (\`||whatever||\`, or \`/spoiler whatever\` on desktop) to this channel`,
-      `**or** by DMing the bot (:point_up: on desktop just click the sender name)`
-    ])
+  private get baseContent() {
+    const msg = new Discord.MessageEmbed()
+      .setTitle(this.prompt.formatted)
+      .setDescription([
+        `Submit by sending a spoiler message (\`||whatever||\`, or \`/spoiler whatever\` on desktop) to this channel`,
+        `**or** by DMing the bot (:point_up: on desktop just click the sender name)`
+      ])
+
+    if (this.prompt.type === 'caption') {
+      msg.setImage(this.prompt.prompt)
+    }
+
+    return msg
+  }
 
   private message = (remainingSec: number) =>
     this.baseContent

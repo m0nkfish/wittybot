@@ -15,6 +15,11 @@ export class SubmissionAcceptedMessage implements Message {
       ])
       .setFooter(`Submit again to replace this submission`)
 
+
+    if (this.prompt.type === 'caption') {
+      message.setImage(this.prompt.prompt)
+    }
+
     return message
   }
 }

@@ -6,7 +6,7 @@ export class VoteAcceptedMessage implements Message {
   constructor(readonly prompt: Prompt, readonly entry: number, readonly submission: string) { }
 
   get content() {
-    return new Discord.MessageEmbed()
+    const msg = new Discord.MessageEmbed()
       .setTitle(`Vote recorded for entry ${this.entry}`)
       .setDescription([
         this.prompt.formatted,
@@ -14,5 +14,11 @@ export class VoteAcceptedMessage implements Message {
         this.submission
       ])
       .setFooter(`Message again to replace your vote`)
+
+    if (this.prompt.type === 'caption') {
+      msg.setImage(this.prompt.prompt)
+    }
+
+    return msg
   }
 }

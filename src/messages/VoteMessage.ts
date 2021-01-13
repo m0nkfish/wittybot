@@ -21,16 +21,24 @@ export class VoteMessage implements Message {
 
   private readonly users: Discord.User[]
 
-  private readonly baseContent = new Discord.MessageEmbed()
-    .setTitle(`:timer: Time's up!`)
-    .setDescription([
-      this.prompt.formatted,
-      ``,
-      ...this.submissions.map((x, i) => `${i + 1}. ${x.submission}`),
-      ``,
-      `Vote for your favourite by sending a spoiler message to this channel`,
-      `**or** by DMing the bot with the entry number`
-    ])
+  private get baseContent() {
+    const msg = new Discord.MessageEmbed()
+      .setTitle(`:timer: Time's up!`)
+      .setDescription([
+        this.prompt.formatted,
+        ``,
+        ...this.submissions.map((x, i) => `${i + 1}. ${x.submission}`),
+        ``,
+        `Vote for your favourite by sending a spoiler message to this channel`,
+        `**or** by DMing the bot with the entry number`
+      ])
+
+    if (this.prompt.type === 'caption') {
+      msg.setImage(this.prompt.prompt)
+    }
+
+    return msg
+  }
 
   private message = (remainingSec: number, voters: Discord.User[]) =>
     this.baseContent
