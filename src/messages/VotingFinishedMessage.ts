@@ -37,7 +37,6 @@ export class VotingFinishedMessage implements Message {
 
   memberName = (user: Discord.User) => memberName(this.context.guild, user)
 
-  leaders = () => pipe(this.context.race, O.map(() => this.context.scores.mostPoints()))
 
   get content() {
     let title = `The votes are in!`
@@ -53,8 +52,11 @@ export class VotingFinishedMessage implements Message {
     }
   
     const footer = pipe(
-      this.leaders(),
-      O.map(l => `In the lead: ${l.users.map(this.memberName).join(' & ')} with ${l.points} points`),
+      this.context.race,
+      O.map(race => {
+        const l = this.context.scores.mostPoints()
+        return `In the lead: ${l.users.map(this.memberName).join(' & ')} with ${l.points} points. Goal: ${race}`
+      }),
       O.getOrElse(() => '')
     )
 
