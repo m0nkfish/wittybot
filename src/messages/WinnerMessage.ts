@@ -9,8 +9,10 @@ export class WinnerMessage implements Message {
   constructor(readonly context: GameContext, readonly score: number, readonly winners: Discord.User[]) {}
 
   get content() {
+    const winner = this.winners.length === 1 ? 'a winner' : `${this.winners.length} winners`
+
     return new Discord.MessageEmbed()
-      .setTitle(`:trophy: We have a winner!`)
+      .setTitle(`:trophy: After ${this.context.rounds.length} rounds, we have ${winner}!`)
       .setDescription([
         `Congratulations to ${this.winners.map(mention).join(' & ')} for winning the game with ${this.score} points`,
         ``,
