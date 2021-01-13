@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { Scores, Score } from '../scores';
+import { Scores } from '../scores';
 import { Message, mention } from './index'
 
 export class ScoresByRatingMessage implements Message {
@@ -19,14 +19,14 @@ export class ScoresByRatingMessage implements Message {
         ? [`Nobody has scored! Start a game with \`!witty\``]
         : this.positiveScoresInOrder.slice(0, 15).flatMap(([user, score], i) => [
           `${i + 1}. ${emoji(i)}${mention(user)}: **${score.rating.toFixed(2)}**`,
-          `${score.totalPoints} points/${score.totalPossible} possible; ${score.games} games; ${score.gamesRatio} points per game`,
+          `${score.totalPoints} points/${score.totalPossible} possible; ${score.games} rounds; ${score.gamesRatio} points per round`,
           ``
         ])
 
     return new Discord.MessageEmbed()
       .setTitle(`:trophy: Scores ${this.timeframe}`)
       .setDescription(description)
-      .addField('Current rating formula', `\`\`\`score_per_round = points_score * min(points_available / 4, 1)\ntotal_score = score_per_round / max(games_played, 20)\`\`\``)
+      .addField('Current rating formula', `\`\`\`score_per_round = points_score * min(points_available / 4, 1)\ntotal_score = score_per_round / max(rounds_played, 20)\`\`\``)
   }
 }
 
