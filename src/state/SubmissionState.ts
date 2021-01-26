@@ -11,6 +11,7 @@ import { GameState } from './GameState';
 import { VotingState } from './VotingState';
 import { endRound } from './endRound';
 import { IdleState } from './IdleState';
+import { log } from '../log';
 
 /** Prompt decided, submissions being accepted */
 export class SubmissionState implements GameState<RoundContext> {
@@ -30,7 +31,12 @@ export class SubmissionState implements GameState<RoundContext> {
 
       const spoilered = message.content.match(/^\|\|(.*)\|\|$/)
       if (spoilered && spoilered[1]) {
-        message.delete({ reason: 'Message recognised as wittybot submission' })
+        try {
+          message.delete({ reason: 'Message recognised as wittybot submission' })
+        } catch (e) {
+          const error = e instanceof Error ? e.message : 'unknown'
+          log.warn('delete_failed', { error })
+        }
         return Submit(spoilered[1], message)
       }
     }

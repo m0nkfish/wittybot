@@ -8,6 +8,7 @@ import { BasicMessage, VotingFinishedMessage, VoteAcceptedMessage } from '../mes
 import { GameState } from './GameState';
 import { endRound } from './endRound';
 import { tryParseInt } from '../util';
+import { log } from '../log';
 
 type Submission = { user: Discord.User, submission: string }
 
@@ -32,7 +33,12 @@ export class VotingState implements GameState<RoundContext> {
       if (spoilered && spoilered[1]) {
         const entry = tryParseInt(spoilered[1].trim())
         if (entry !== null) {
-          message.delete({ reason: 'Message recognised as wittybot submission' })
+          try {
+            message.delete({ reason: 'Message recognised as wittybot submission' })
+          } catch (e) {
+            const error = e instanceof Error ? e.message : 'unknown'
+            log.warn('delete_failed', { error })
+          }
           return Vote(entry, message)
         }
       }
