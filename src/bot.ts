@@ -1,10 +1,10 @@
 import * as Discord from 'discord.js'
-import { Engine } from './engine';
-import { Send } from './actions';
-import { ReleaseMessage } from './messages';
-import { GlobalContext, GameContext, RoundContext } from './context';
-import { log } from './log';
-import { BasicMessage } from './messages/BasicMessage';
+import { Engine } from './witty/engine';
+import { Send } from './witty/actions';
+import { ReleaseMessage } from './witty/messages';
+import { GlobalContext, GameContext, RoundContext } from './witty/context';
+import { log } from './witty/log';
+import { BasicMessage } from './witty/messages/BasicMessage';
 
 log('loading')
 

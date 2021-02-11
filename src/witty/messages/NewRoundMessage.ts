@@ -40,7 +40,7 @@ export class NewRoundMessage implements Message {
     const interval = setInterval(() => {
       remainingSec -= 5
       const state = getState()
-      if (remainingSec > 0 && state instanceof SubmissionState && state.context.roundId.eq(this.roundId)) {
+      if (remainingSec > 0 && state instanceof SubmissionState && state.context.roundId === this.roundId) {
         msg.edit(this.message(remainingSec))
       } else {
         clearInterval(interval)

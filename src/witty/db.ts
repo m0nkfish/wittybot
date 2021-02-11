@@ -71,7 +71,7 @@ const insertVote = inserter('votes', io.type({ 'submission_id': io.string, 'user
 export async function saveRound(round: Round) {
   const commands: Command[] = []
   commands.push(insertRound({
-    id: round.id.value,
+    id: round.id,
     prompt_id: round.prompt.id,
     prompt_filled: round.prompt.prompt,
     skipped: round.skipped,
@@ -80,9 +80,9 @@ export async function saveRound(round: Round) {
   
   for (const [user, {submission, votes}] of round.submissions) {
     const subId = Id.create()
-    commands.push(insertSubmission({ id: subId.value, round_id: round.id.value, submission, user_id: user.id }))
+    commands.push(insertSubmission({ id: subId, round_id: round.id, submission, user_id: user.id }))
     for (const voter of votes) {
-      commands.push(insertVote({ submission_id: subId.value, user_id: voter.id }))
+      commands.push(insertVote({ submission_id: subId, user_id: voter.id }))
     }
   }
 

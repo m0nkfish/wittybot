@@ -85,5 +85,5 @@ export class RoundContext {
   get minPlayers() { return this.gameCtx.minPlayers }
   get race() { return this.gameCtx.race }
 
-  sameRound = (other: RoundContext) => this.roundId.eq(other.roundId)
+  sameRound = (other: RoundContext) => this.roundId === other.roundId
 }
