@@ -5,6 +5,7 @@ import { GameContext } from '../context';
 import { GameState } from './GameState';
 import { newRound } from './newRound';
 import { BasicMessage, mention } from '../messages';
+import { IdleState } from './IdleState';
 
 /** Waiting for enough people to demonstrate interest */
 export class StartingState implements GameState<GameContext> {
@@ -34,7 +35,14 @@ export class StartingState implements GameState<GameContext> {
     }
 
     if (command.type === 'uninterested' && this.interested.some(x => x === command.member.user)) {
-      return NewState(new StartingState(this.context, this.interested.filter(x => x !== command.member.user)))
+      const interested = this.interested.filter(x => x !== command.member.user)
+      if (interested.length === 0) {
+        return CompositeAction(
+          NewState(new IdleState(this.context.guildCtx)),
+          Send(this.context.channel, new BasicMessage(`Witty game cancelled`)))
+      } else {
+        return NewState(new StartingState(this.context, this.interested.filter(x => x !== command.member.user)))
+      }
     }
   }
 
