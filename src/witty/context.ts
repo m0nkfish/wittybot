@@ -27,20 +27,19 @@ export class GlobalContext {
   get botUser() { return this.client.user! }
 }
 
-export class GuildContext {
+export class GuildContext extends GlobalContext {
   constructor(
     readonly globalCtx: GlobalContext,
     readonly guild: Discord.Guild
-  ) { }
-
-  get config() { return this.globalCtx.config }
-  get inTestMode() { return this.globalCtx.inTestMode }
+  ) {
+    super(globalCtx.client, globalCtx.config)
+  }
 
   newGame = (channel: Discord.TextChannel, initiator: Discord.User, timeoutSec: number, minPlayers: number, race: Option<number>) =>
     new GameContext(this, channel, Id.create(), initiator, [], timeoutSec, minPlayers, race)
 }
 
-export class GameContext {
+export class GameContext extends GuildContext {
   constructor(
     readonly guildCtx: GuildContext,
     readonly channel: Discord.TextChannel,
@@ -50,12 +49,9 @@ export class GameContext {
     readonly timeoutSec: number,
     readonly minPlayers: number,
     readonly race: Option<number>
-  ) { }
-
-  get globalCtx() { return this.guildCtx.globalCtx }
-  get config() { return this.guildCtx.config }
-  get guild() { return this.guildCtx.guild }
-  get inTestMode() { return this.guildCtx.inTestMode }
+  ) {
+    super(guildCtx.globalCtx, guildCtx.guild)
+  }
 
   get scores() { return Scores.fromRounds(this.rounds) }
 
@@ -66,24 +62,13 @@ export class GameContext {
     new RoundContext(this, Id.create())
 }
 
-export class RoundContext {
+export class RoundContext extends GameContext {
   constructor(
     readonly gameCtx: GameContext,
     readonly roundId: Id
   ) {
+    super(gameCtx.guildCtx, gameCtx.channel, gameCtx.gameId, gameCtx.initiator, gameCtx.rounds, gameCtx.timeoutSec, gameCtx.minPlayers, gameCtx.race)
   }
-
-  get globalCtx() { return this.gameCtx.globalCtx }
-  get guildCtx() { return this.gameCtx.guildCtx }
-  get rounds() { return this.gameCtx.rounds }
-  get config() { return this.gameCtx.config }
-  get inTestMode() { return !!this.config.testMode }
-  get botUser() { return this.globalCtx.botUser }
-  get channel() { return this.gameCtx.channel }
-  get initiator() { return this.gameCtx.initiator }
-  get guild() { return this.gameCtx.guild }
-  get minPlayers() { return this.gameCtx.minPlayers }
-  get race() { return this.gameCtx.race }
 
   sameRound = (other: RoundContext) => this.roundId === other.roundId
 }
