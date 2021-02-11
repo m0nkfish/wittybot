@@ -1,5 +1,5 @@
 import { pick } from 'random-js';
-import { mt } from './random';
+import { mt } from '../random';
 import * as db from './db'
 import { RoundContext } from './context';
 import * as Discord from 'discord.js';

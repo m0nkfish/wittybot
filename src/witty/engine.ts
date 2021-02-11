@@ -1,4 +1,5 @@
-import { GlobalContext, GuildContext, RoundContext, GameContext } from './context';
+import { RoundContext, GameContext } from './context';
+import { GlobalContext, GuildContext } from '../context'
 import { IdleState, AnyGameState } from './state';
 import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from './actions';
 import * as Discord from 'discord.js';
@@ -19,17 +20,17 @@ class ScopedCommand {
 }
 
 export class Engine {
-  states: Map<Discord.Guild, AnyGameState>
+  guildStates: Map<Discord.Guild, AnyGameState>
 
   constructor(readonly context: GlobalContext) {
-    this.states = new Map()
+    this.guildStates = new Map()
   }
 
   getState(guild: Discord.Guild): AnyGameState {
-    let state = this.states.get(guild)
+    let state = this.guildStates.get(guild)
     if (!state) {
       state = new IdleState(new GuildContext(this.context, guild))
-      this.states.set(guild, state)
+      this.guildStates.set(guild, state)
     }
     return state
   }
@@ -54,7 +55,7 @@ export class Engine {
       if (scores) {
         const guild = message.channel.guild
         const defaultUnit = () => {
-          const state = this.states.get(guild)
+          const state = this.guildStates.get(guild)
           return state?.context instanceof GameContext || state?.context instanceof RoundContext
             ? 'game'
             : 'day'
@@ -132,7 +133,7 @@ export class Engine {
 
     if (command.type === 'get-scores') {
       if (command.unit === 'game') {
-        const state = this.states.get(command.source.guild)
+        const state = this.guildStates.get(command.source.guild)
         const message = state?.context instanceof GameContext || state?.context instanceof RoundContext
           ? new ScoresByPointsMessage(Scores.fromRounds(state.context.rounds))
           : new BasicMessage(`No game is running; start a game with \`!witty\``)
@@ -203,7 +204,7 @@ export class Engine {
         this.interpret(action.getAction(this.getState(action.guild)))
         return
       case 'new-state':
-        this.states.set(action.newState.context.guild, action.newState)
+        this.guildStates.set(action.newState.context.guild, action.newState)
         return
       case 'send-message':
         const embedColor = '#A4218A'

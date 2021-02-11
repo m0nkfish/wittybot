@@ -1,9 +1,8 @@
 import * as Discord from 'discord.js'
 import { Prompt } from '../prompts';
 import { AnyGameState, VotingState } from '../state';
-import { Id } from '../id';
 import { shuffle } from 'random-js';
-import { mt } from '../random';
+import { mt } from '../../random';
 import { Message } from './index'
 import { RoundContext } from '../context';
 import { memberName } from './memberName';

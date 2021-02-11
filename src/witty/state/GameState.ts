@@ -1,7 +1,8 @@
 import * as Discord from 'discord.js'
 import { Command } from '../commands';
 import { Action } from '../actions';
-import { RoundContext, GuildContext, GameContext } from '../context';
+import { RoundContext, GameContext } from '../context';
+import { GuildContext } from '../../context'
 
 export type AnyGameState = GameState<GuildContext | GameContext | RoundContext>
 

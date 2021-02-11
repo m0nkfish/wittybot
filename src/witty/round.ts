@@ -1,4 +1,4 @@
-import { Id } from './id';
+import { Id } from '../id';
 import * as Discord from 'discord.js';
 import { RoundDbView } from './db';
 

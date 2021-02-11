@@ -2,8 +2,9 @@ import * as Discord from 'discord.js';
 import { Option } from 'fp-ts/Option'
 
 import { Prompt } from './prompts';
-import { Id } from './id';
+import { Id } from '../id';
 import { Scores } from './scores';
+import { GuildContext } from '../context';
 
 export type Round = {
   id: Id
@@ -15,28 +16,6 @@ export type Round = {
     voted: boolean
   }>
   skipped: boolean
-}
-
-export class GlobalContext {
-  constructor(
-    readonly client: Discord.Client,
-    readonly config: { defaultSubmitDurationSec: number, testMode?: boolean }
-  ) {}
-
-  get inTestMode() { return !!this.config.testMode }
-  get botUser() { return this.client.user! }
-}
-
-export class GuildContext extends GlobalContext {
-  constructor(
-    readonly globalCtx: GlobalContext,
-    readonly guild: Discord.Guild
-  ) {
-    super(globalCtx.client, globalCtx.config)
-  }
-
-  newGame = (channel: Discord.TextChannel, initiator: Discord.User, timeoutSec: number, minPlayers: number, race: Option<number>) =>
-    new GameContext(this, channel, Id.create(), initiator, [], timeoutSec, minPlayers, race)
 }
 
 export class GameContext extends GuildContext {

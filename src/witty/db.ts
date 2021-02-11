@@ -2,7 +2,7 @@ import * as Postgres from 'pg'
 import * as io from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import { Round } from './context';
-import { Id } from './id';
+import { Id } from '../id';
 import * as Discord from 'discord.js';
 import { getOrSet, invoke } from '../util';
 import { ScoreUnit } from './scores';

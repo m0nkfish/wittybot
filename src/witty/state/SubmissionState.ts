@@ -3,7 +3,7 @@ import { Command, Submit, Skip } from '../commands';
 import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, UpdateState, Send, SaveRound, OptionalAction } from '../actions';
 import { Prompt } from '../prompts';
 import { shuffle } from 'random-js';
-import { mt } from '../random';
+import { mt } from '../../random';
 import { RoundContext } from '../context';
 import { Scores } from '../scores';
 import { BasicMessage, VoteMessage, SubmissionAcceptedMessage, ScoresByRatingMessage, mention } from '../messages';

@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js'
 import { Command, Begin } from '../commands';
 import { Action } from '../actions';
-import { GuildContext } from '../context';
+import { GuildContext } from '../../context';
 import { GameState } from './GameState';
 import { tryParseInt, clamp } from '../../util';
 import { newGame } from './newGame';
@@ -50,7 +50,7 @@ export class IdleState implements GameState<GuildContext> {
 
   receive(command: Command): Action | undefined {
     if (command.type === 'begin') {
-      return newGame(this.context.newGame(command.channel, command.user, command.timeoutSec, command.minPlayers, command.race)) 
+      return newGame(this.context.newWittyGame(command.channel, command.user, command.timeoutSec, command.minPlayers, command.race)) 
     }
   }
 }
