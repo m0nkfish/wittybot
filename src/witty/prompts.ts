@@ -3,7 +3,7 @@ import { mt } from '../random';
 import * as db from './db'
 import { RoundContext } from './context';
 import * as Discord from 'discord.js';
-import { memberName } from './messages/memberName';
+import { memberName } from '../messages';
 
 const format: Record<string, (line: string) => string> = {
   misc: line => `:arrow_forward: ${line}`,

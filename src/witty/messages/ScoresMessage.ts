@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
 import { Scores } from '../scores';
-import { Message, mention } from './index'
+import { Message, mention } from '../../messages'
 
 export class ScoresByRatingMessage implements Message {
   constructor(readonly scores: Scores, readonly timeframe: string) { }

@@ -2,7 +2,7 @@ import * as Discord from 'discord.js'
 import { Prompt } from '../prompts';
 import { AnyGameState, SubmissionState } from '../state';
 import { Id } from '../../id';
-import { Message } from './index'
+import { Message } from '../../messages'
 
 export class NewRoundMessage implements Message {
   constructor(

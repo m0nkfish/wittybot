@@ -1,7 +1,8 @@
 import { Action, NewState, CompositeAction, Send, PromiseAction, OptionalAction, DelayedAction, FromStateAction } from '../actions';
 import { GameContext } from '../context';
 import { getNotifyRole } from '../notify';
-import { GameStartedMessage, BasicMessage } from '../messages';
+import { GameStartedMessage } from '../messages';
+import { BasicMessage } from '../../messages';
 import { IdleState } from './IdleState';
 import { StartingState } from './StartingState';
 

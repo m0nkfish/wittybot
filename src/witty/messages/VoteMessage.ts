@@ -3,9 +3,8 @@ import { Prompt } from '../prompts';
 import { AnyGameState, VotingState } from '../state';
 import { shuffle } from 'random-js';
 import { mt } from '../../random';
-import { Message } from './index'
+import { Message, memberName } from '../../messages'
 import { RoundContext } from '../context';
-import { memberName } from './memberName';
 
 export class VoteMessage implements Message {
   constructor(

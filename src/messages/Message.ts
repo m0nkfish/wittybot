@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { AnyGameState } from '../state';
+import { AnyGameState } from '../witty/state';
 
 export type Destination = Discord.TextChannel | Discord.User
 

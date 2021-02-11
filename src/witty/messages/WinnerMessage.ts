@@ -1,8 +1,6 @@
 import * as Discord from 'discord.js'
-
-import { Message } from './index'
 import { GameContext } from '../context';
-import { mention } from './mention';
+import { Message, mention } from '../../messages'
 import { Scores } from '../scores';
 
 export class WinnerMessage implements Message {

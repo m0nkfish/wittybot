@@ -4,7 +4,7 @@ import { Action, NewState, CompositeAction, Send, OptionalAction } from '../acti
 import { GameContext } from '../context';
 import { GameState } from './GameState';
 import { newRound } from './newRound';
-import { BasicMessage, mention } from '../messages';
+import { BasicMessage, mention } from '../../messages';
 import { IdleState } from './IdleState';
 
 /** Waiting for enough people to demonstrate interest */

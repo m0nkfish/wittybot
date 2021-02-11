@@ -5,7 +5,8 @@ import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from
 import * as Discord from 'discord.js';
 import { Command, Help, NotifyMe, UnnotifyMe, GetScores } from './commands';
 import { getNotifyRole } from './notify';
-import { BasicMessage, HelpMessage, ScoresByRatingMessage } from './messages';
+import { ScoresByRatingMessage } from './messages';
+import { BasicMessage, HelpMessage } from '../messages';
 import * as db from './db'
 import { RoundScoreView } from './round';
 import { Scores, ScoreUnit } from './scores';

@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { BasicMessage, Message } from './messages';
+import { Message, BasicMessage } from '../messages'
 import { SubmissionState } from './state/SubmissionState';
 import { VotingState } from './state/VotingState';
 import { GameState } from './state/GameState';

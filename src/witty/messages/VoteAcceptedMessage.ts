@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
 import { Prompt } from '../prompts';
-import { Message } from './index'
+import { Message } from '../../messages'
 
 export class VoteAcceptedMessage implements Message {
   constructor(readonly prompt: Prompt, readonly entry: number, readonly submission: string) { }

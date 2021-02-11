@@ -4,7 +4,7 @@ import { pipe } from 'fp-ts/function'
 
 import { AnyGameState } from '../state';
 import { StartingState } from '../state/StartingState';
-import { Message, mention } from './index'
+import { Message, mention } from '../../messages'
 import { GameContext } from '../context';
 import { StartingStateDelayMs } from '../state/newGame';
 
