@@ -1,74 +1,17 @@
-import * as Postgres from 'pg'
 import * as io from 'io-ts'
-import { failure } from 'io-ts/lib/PathReporter'
 import { Round } from './context';
 import { Id } from '../id';
 import * as Discord from 'discord.js';
 import { getOrSet, invoke } from '../util';
 import { ScoreUnit } from './scores';
-import { log } from '../log';
-
-const pool = new Postgres.Pool()
-
-async function withClient<T>(f: (client: Postgres.PoolClient) => T) {
-  const client = await pool.connect()
-  try {
-    return f(client)
-  } finally {
-    client.release()
-  }
-}
-
-type Command = {
-  text: string
-  values: any[]
-}
-
-async function execute(commands: Command[]) {
-  return withClient(c => Promise.all(commands.map(cmd => c.query(cmd))))
-}
-
-async function query<T>(validator: io.Type<T>, queryString: string, params: string[] = [], name?: string): Promise<T[]> {
-  function validate(row: unknown): T {
-    const decoded = validator.decode(row)
-    if (decoded._tag === "Left") {
-      throw new Error(failure(decoded.left).join(','))
-    }
-    return decoded.right
-  }
-
-  return withClient(async client => {
-    const init = process.hrtime()
-    log('db_query', { queryString: queryString.replace(/\n/g, ' '), params: params.join(',') })
-    const res = await client.query({ name, text: queryString, values: params })
-    const end = process.hrtime(init)
-    log('db_query_finished', { count: res.rowCount, duration_ms: (end[0] * 1000) + (end[1] / 1000000) })
-    return res.rows.map(validate)
-  })
-}
-
-function inserter<T extends io.Props>(table: string, validator: io.TypeC<T>) {
-  return function(obj: io.OutputOf<typeof validator>) {
-    const fields = Object.getOwnPropertyNames(validator.props)
-    const fieldNames = fields.map(f => `"${f}"`).join(', ')
-    const fieldVars = fields.map((_, i) => `$${i+1}`).join(', ')
-    const fieldValues = fields.map(f => obj[f])
-    const text = `INSERT INTO ${table}(${fieldNames}) VALUES (${fieldVars})`
-
-    log('db_insert', { text, fieldValues: fieldValues.map(x => `${x}`).join(',') } )
-    return {
-      text: text,
-      values: fieldValues
-    }
-  }
-}
+import { inserter, DbCommand, execute, query } from '../db';
 
 const insertRound = inserter('rounds', io.type({ 'id': io.string, 'prompt_id': io.number, 'prompt_filled': io.string, 'skipped': io.boolean, 'guild_id': io.string }))
 const insertSubmission = inserter('submissions', io.type({ 'id': io.string, 'round_id': io.string, 'submission': io.string, 'user_id': io.string }))
 const insertVote = inserter('votes', io.type({ 'submission_id': io.string, 'user_id': io.string }))
 
 export async function saveRound(round: Round) {
-  const commands: Command[] = []
+  const commands: DbCommand[] = []
   commands.push(insertRound({
     id: round.id,
     prompt_id: round.prompt.id,

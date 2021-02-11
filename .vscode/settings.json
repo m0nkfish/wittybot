@@ -1,0 +1,14 @@
+{
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "wittyfirebot.cscimceksjpw.eu-west-2.rds.amazonaws.com",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "wittyfirebot",
+      "password": "keenan69",
+      "username": "postgres",
+      "database": "postgres"
+    }
+  ]
+}
