@@ -8,7 +8,7 @@ import { BasicMessage, HelpMessage, ScoresByRatingMessage } from './messages';
 import * as db from './db'
 import { RoundScoreView } from './round';
 import { Scores, ScoreUnit } from './scores';
-import { log } from './log';
+import { log } from '../log';
 import { ScoresByPointsMessage } from './messages/ScoresMessage';
 import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './loggable';
 import { beginTimer } from '../util';

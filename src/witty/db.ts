@@ -6,7 +6,7 @@ import { Id } from './id';
 import * as Discord from 'discord.js';
 import { getOrSet, invoke } from '../util';
 import { ScoreUnit } from './scores';
-import { log } from './log';
+import { log } from '../log';
 
 const pool = new Postgres.Pool()
 

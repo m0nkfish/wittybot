@@ -8,7 +8,7 @@ import { BasicMessage, VotingFinishedMessage, VoteAcceptedMessage } from '../mes
 import { GameState } from './GameState';
 import { endRound } from './endRound';
 import { tryParseInt } from '../../util';
-import { log } from '../log';
+import { log } from '../../log';
 
 type Submission = { user: Discord.User, submission: string }
 

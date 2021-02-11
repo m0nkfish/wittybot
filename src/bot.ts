@@ -3,7 +3,7 @@ import { Engine } from './witty/engine';
 import { Send } from './witty/actions';
 import { ReleaseMessage } from './witty/messages';
 import { GlobalContext, GameContext, RoundContext } from './witty/context';
-import { log } from './witty/log';
+import { log } from './log';
 import { BasicMessage } from './witty/messages/BasicMessage';
 
 log('loading')
