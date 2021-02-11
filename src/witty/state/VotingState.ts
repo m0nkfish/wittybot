@@ -7,7 +7,7 @@ import { Round, RoundContext } from '../context';
 import { BasicMessage, VotingFinishedMessage, VoteAcceptedMessage } from '../messages';
 import { GameState } from './GameState';
 import { endRound } from './endRound';
-import { tryParseInt } from '../util';
+import { tryParseInt } from '../../util';
 import { log } from '../log';
 
 type Submission = { user: Discord.User, submission: string }

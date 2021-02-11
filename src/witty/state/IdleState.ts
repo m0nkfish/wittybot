@@ -3,7 +3,7 @@ import { Command, Begin } from '../commands';
 import { Action } from '../actions';
 import { GuildContext } from '../context';
 import { GameState } from './GameState';
-import { tryParseInt, clamp } from '../util';
+import { tryParseInt, clamp } from '../../util';
 import { newGame } from './newGame';
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'

@@ -11,7 +11,7 @@ export function newGame(context: GameContext): Action {
 
   const timeout =
     FromStateAction(context.channel.guild, state =>
-      OptionalAction(state instanceof StartingState && state.context.gameId.eq(context.gameId) &&
+      OptionalAction(state instanceof StartingState && state.context.sameGame(context) &&
         (state.enoughInterest()
         ? state.begin()
         : CompositeAction(

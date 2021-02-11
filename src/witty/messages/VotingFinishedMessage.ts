@@ -3,7 +3,7 @@ import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'
 
 import { Prompt } from '../prompts';
-import { pairs, arrayEq } from '../util';
+import { pairs, arrayEq } from '../../util';
 import { Message, mention } from './index'
 import { GameContext } from '../context';
 import { memberName } from './memberName';

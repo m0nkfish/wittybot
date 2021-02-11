@@ -4,10 +4,9 @@ import { failure } from 'io-ts/lib/PathReporter'
 import { Round } from './context';
 import { Id } from './id';
 import * as Discord from 'discord.js';
-import { getOrSet, invoke, beginTimer } from './util';
+import { getOrSet, invoke } from '../util';
 import { ScoreUnit } from './scores';
 import { log } from './log';
-import { logGuild } from './loggable';
 
 const pool = new Postgres.Pool()
 

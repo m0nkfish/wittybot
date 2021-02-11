@@ -60,6 +60,8 @@ export class GameContext extends GuildContext {
 
   newRound = () =>
     new RoundContext(this, Id.create())
+
+  sameGame = (other: GameContext) => this.gameId === other.gameId
 }
 
 export class RoundContext extends GameContext {

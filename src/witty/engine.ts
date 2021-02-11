@@ -11,7 +11,7 @@ import { Scores, ScoreUnit } from './scores';
 import { log } from './log';
 import { ScoresByPointsMessage } from './messages/ScoresMessage';
 import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './loggable';
-import { beginTimer } from './util';
+import { beginTimer } from '../util';
 import { RoundDbView } from './db';
 
 class ScopedCommand {
@@ -246,7 +246,7 @@ export class Engine {
       const {message, destination} = action
       log(event, logSource(destination), { message: getName(message) }, logMessage(message))
     } else if (action.type === 'save-round') {
-      log(event, logChannel(action.round.channel), { round: action.round.id.value })
+      log(event, logChannel(action.round.channel), { round: action.round.id })
     }
   }
 

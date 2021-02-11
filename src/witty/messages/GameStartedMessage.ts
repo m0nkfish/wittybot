@@ -51,7 +51,7 @@ export class GameStartedMessage implements Message {
     const interval = setInterval(() => {
       remainingSec -= 5
       const state = getState()
-      if (remainingSec > 0 && state instanceof StartingState && state.context.gameId.eq(this.context.gameId)) {
+      if (remainingSec > 0 && state instanceof StartingState && state.context.sameGame(this.context)) {
         msg.edit(this.message(remainingSec, state.interested))
       } else {
         msg.edit({ embed: msg.embeds[0].setFooter('') })
