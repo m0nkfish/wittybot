@@ -6,5 +6,6 @@ export const Case = <Key extends string, Args extends any[], Res>(type: Key, f: 
       type
     }
   }
+  ff.type = type
   return ff
 }

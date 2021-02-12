@@ -5,11 +5,11 @@ import { pipe } from 'fp-ts/function'
 import { AnyGameState } from '../../state';
 import { StartingState } from '../state/StartingState';
 import { Message, mention } from '../../messages'
-import { GameContext } from '../context';
+import { WittyGameContext } from '../context';
 import { StartingStateDelayMs } from '../state/newGame';
 
 export class GameStartedMessage implements Message {
-  constructor(readonly notifyRole: Discord.Role | undefined, readonly context: GameContext) { }
+  constructor(readonly notifyRole: Discord.Role | undefined, readonly context: WittyGameContext) { }
 
   get startedBy() { return this.context.initiator }
 
@@ -22,11 +22,7 @@ export class GameStartedMessage implements Message {
       remainingSec >= 60 ? `${Math.floor(remainingSec / 60)} minutes remaining`
       : `${remainingSec} seconds remaining`
 
-    const title = pipe(
-      this.context.race,
-      O.map(x => `:person_running: It's a race to ${x}`),
-      O.getOrElse(() => `:rotating_light: The game is afoot!`)
-    )
+    const title = `:person_running: It's a race to ${this.context.race}`
 
     const embed = new Discord.MessageEmbed()
       .setTitle(title)

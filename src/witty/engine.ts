@@ -1,4 +1,4 @@
-import { RoundContext, GameContext } from './context';
+import { RoundContext, WittyGameContext } from './context';
 import { GlobalContext, GuildContext } from '../context'
 import { IdleState, AnyGameState } from '../state';
 import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from './actions';
@@ -57,7 +57,7 @@ export class Engine {
         const guild = message.channel.guild
         const defaultUnit = () => {
           const state = this.guildStates.get(guild)
-          return state?.context instanceof GameContext || state?.context instanceof RoundContext
+          return state?.context instanceof WittyGameContext || state?.context instanceof RoundContext
             ? 'game'
             : 'day'
         }
@@ -135,7 +135,7 @@ export class Engine {
     if (command.type === 'get-scores') {
       if (command.unit === 'game') {
         const state = this.guildStates.get(command.source.guild)
-        const message = state?.context instanceof GameContext || state?.context instanceof RoundContext
+        const message = state?.context instanceof WittyGameContext || state?.context instanceof RoundContext
           ? new ScoresByPointsMessage(Scores.fromRounds(state.context.rounds))
           : new BasicMessage(`No game is running; start a game with \`!witty\``)
         return Send(command.source, message)
@@ -257,7 +257,7 @@ export class Engine {
     const guild = input instanceof ScopedCommand ? logGuild(input.guild) : undefined
     const event = `command:${command.type}`
     switch (command.type) {
-      case 'begin':
+      case 'witty-begin':
         log(event, guild, logUser(command.user))
         break;
 

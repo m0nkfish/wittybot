@@ -1,10 +1,10 @@
 import * as Discord from 'discord.js'
-import { GameContext } from '../context';
+import { WittyGameContext } from '../context';
 import { Message, mention } from '../../messages'
 import { Scores } from '../scores';
 
 export class WinnerMessage implements Message {
-  constructor(readonly context: GameContext, readonly score: number, readonly winners: Discord.User[]) {}
+  constructor(readonly context: WittyGameContext, readonly score: number, readonly winners: Discord.User[]) {}
 
   get content() {
     const winner = this.winners.length === 1 ? 'a winner' : `${this.winners.length} winners`

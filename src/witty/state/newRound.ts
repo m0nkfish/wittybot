@@ -1,11 +1,11 @@
 import { CompositeAction, NewState, DelayedAction, FromStateAction, Send, PromiseAction, OptionalAction } from '../actions';
 import { choosePrompt } from '../prompts';
-import { GameContext } from '../context';
+import { WittyGameContext } from '../context';
 import { NewRoundMessage } from '../messages';
 import { WaitingState } from './WaitingState';
 import { SubmissionState } from './SubmissionState'
 
-export function newRound(context: GameContext) {
+export function newRound(context: WittyGameContext) {
   const roundCtx = context.newRound()
 
   const prompt = choosePrompt(roundCtx)

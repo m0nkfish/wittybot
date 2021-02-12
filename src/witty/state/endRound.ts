@@ -1,6 +1,4 @@
-import * as O from 'fp-ts/Option'
-
-import { GameContext } from '../context';
+import { WittyGameContext } from '../context';
 import { CompositeAction, NewState, DelayedAction, FromStateAction, OptionalAction, Send } from '../actions';
 import { WaitingState } from './WaitingState';
 import { IdleState } from '../../state';
@@ -8,11 +6,11 @@ import { newRound } from './newRound';
 import { Scores } from '../scores';
 import { WinnerMessage } from '../messages';
 
-export function endRound(context: GameContext) {
+export function endRound(context: WittyGameContext) {
 
   const top = Scores.fromRounds(context.rounds).mostPoints()
 
-  if (O.isSome(context.race) && top.points >= context.race.value) {
+  if (top.points >= context.race) {
     return CompositeAction(
       Send(context.channel, new WinnerMessage(context, top.points, top.users)),
       NewState(new IdleState(context.guildCtx)))

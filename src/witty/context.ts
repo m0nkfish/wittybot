@@ -18,7 +18,7 @@ export type Round = {
   skipped: boolean
 }
 
-export class GameContext extends GuildContext {
+export class WittyGameContext extends GuildContext {
   constructor(
     readonly guildCtx: GuildContext,
     readonly channel: Discord.TextChannel,
@@ -27,7 +27,7 @@ export class GameContext extends GuildContext {
     readonly rounds: Round[],
     readonly timeoutSec: number,
     readonly minPlayers: number,
-    readonly race: Option<number>
+    readonly race: number
   ) {
     super(guildCtx.globalCtx, guildCtx.guild)
   }
@@ -35,17 +35,17 @@ export class GameContext extends GuildContext {
   get scores() { return Scores.fromRounds(this.rounds) }
 
   addRound = (round: Round) =>
-    new GameContext(this.guildCtx, this.channel, this.gameId, this.initiator, [...this.rounds, round], this.timeoutSec, this.minPlayers, this.race)
+    new WittyGameContext(this.guildCtx, this.channel, this.gameId, this.initiator, [...this.rounds, round], this.timeoutSec, this.minPlayers, this.race)
 
   newRound = () =>
     new RoundContext(this, Id.create())
 
-  sameGame = (other: GameContext) => this.gameId === other.gameId
+  sameGame = (other: WittyGameContext) => this.gameId === other.gameId
 }
 
-export class RoundContext extends GameContext {
+export class RoundContext extends WittyGameContext {
   constructor(
-    readonly gameCtx: GameContext,
+    readonly gameCtx: WittyGameContext,
     readonly roundId: Id
   ) {
     super(gameCtx.guildCtx, gameCtx.channel, gameCtx.gameId, gameCtx.initiator, gameCtx.rounds, gameCtx.timeoutSec, gameCtx.minPlayers, gameCtx.race)

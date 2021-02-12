@@ -5,11 +5,11 @@ import { pipe } from 'fp-ts/function'
 import { Prompt } from '../prompts';
 import { pairs, arrayEq } from '../../util';
 import { Message, mention, memberName } from '../../messages'
-import { GameContext } from '../context';
+import { WittyGameContext } from '../context';
 
 export class VotingFinishedMessage implements Message {
   constructor(
-    readonly context: GameContext,
+    readonly context: WittyGameContext,
     readonly prompt: Prompt,
     readonly withVotes: Array<{ user: Discord.User, votes: Discord.User[], voted: boolean, submission: string }>) { }
 
@@ -50,14 +50,8 @@ export class VotingFinishedMessage implements Message {
       title = title + ` :revolving_hearts: ${this.memberName(pals[0])} and ${this.memberName(pals[1])} sitting in a tree, V-O-T-I-N-G (for each other)`
     }
   
-    const footer = pipe(
-      this.context.race,
-      O.map(race => {
-        const l = this.context.scores.mostPoints()
-        return `In the lead: ${l.users.map(this.memberName).join(' & ')} with ${l.points} points. Goal: ${race}`
-      }),
-      O.getOrElse(() => '')
-    )
+    const leader = this.context.scores.mostPoints()
+    const footer = `In the lead: ${leader.users.map(this.memberName).join(' & ')} with ${leader.points} points. Goal: ${this.context.race}`
 
     const msg = new Discord.MessageEmbed()
       .setTitle(title)

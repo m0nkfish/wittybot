@@ -1,12 +1,12 @@
 import { Action, NewState, CompositeAction, Send, PromiseAction, OptionalAction, DelayedAction, FromStateAction } from '../actions';
-import { GameContext } from '../context';
+import { WittyGameContext } from '../context';
 import { getNotifyRole } from '../notify';
 import { GameStartedMessage } from '../messages';
 import { BasicMessage } from '../../messages';
 import { IdleState } from './../../state';
 import { StartingState } from './StartingState';
 
-export function newGame(context: GameContext): Action {
+export function newGame(context: WittyGameContext): Action {
   const gameStartedMessage = getNotifyRole(context.channel.guild)
     .then(role => Send(context.channel, new GameStartedMessage(role, context)))
 
