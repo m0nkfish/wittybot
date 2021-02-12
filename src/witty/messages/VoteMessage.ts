@@ -1,10 +1,11 @@
 import * as Discord from 'discord.js'
 import { Prompt } from '../prompts';
-import { AnyGameState, VotingState } from '../state';
+import { VotingState } from '../state';
 import { shuffle } from 'random-js';
 import { mt } from '../../random';
 import { Message, memberName } from '../../messages'
 import { RoundContext } from '../context';
+import { AnyGameState } from '../../state';
 
 export class VoteMessage implements Message {
   constructor(

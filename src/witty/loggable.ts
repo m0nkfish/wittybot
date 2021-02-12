@@ -1,8 +1,8 @@
 import * as Discord from 'discord.js';
 import { Message, BasicMessage } from '../messages'
-import { SubmissionState } from './state/SubmissionState';
-import { VotingState } from './state/VotingState';
-import { GameState } from './state/GameState';
+import { SubmissionState } from './state';
+import { VotingState } from './state';
+import { GameState } from '../state';
 
 export const logUsernames = (users: Iterable<Discord.User>) => Array.from(users).map(u => u.username).join(',')
 export const logGuild = (guild?: Discord.Guild) => ({ guildId: guild?.id, guildName: guild?.name })

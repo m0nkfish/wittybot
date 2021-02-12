@@ -2,10 +2,9 @@ import * as Discord from 'discord.js'
 import { Command, Interested, Uninterested } from '../commands';
 import { Action, NewState, CompositeAction, Send, OptionalAction } from '../actions';
 import { GameContext } from '../context';
-import { GameState } from './GameState';
 import { newRound } from './newRound';
 import { BasicMessage, mention } from '../../messages';
-import { IdleState } from './IdleState';
+import { IdleState, GameState } from '../../state';
 
 /** Waiting for enough people to demonstrate interest */
 export class StartingState implements GameState<GameContext> {

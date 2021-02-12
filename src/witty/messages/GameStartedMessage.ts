@@ -2,7 +2,7 @@ import * as Discord from 'discord.js'
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'
 
-import { AnyGameState } from '../state';
+import { AnyGameState } from '../../state';
 import { StartingState } from '../state/StartingState';
 import { Message, mention } from '../../messages'
 import { GameContext } from '../context';

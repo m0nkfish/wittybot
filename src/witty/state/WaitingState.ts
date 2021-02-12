@@ -1,5 +1,5 @@
 import { GameContext } from '../context';
-import { GameState } from './GameState';
+import { GameState } from '../../state';
 
 export class WaitingState implements GameState<GameContext> {
   constructor(readonly context: GameContext) { }

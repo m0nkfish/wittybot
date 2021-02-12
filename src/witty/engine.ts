@@ -1,6 +1,6 @@
 import { RoundContext, GameContext } from './context';
 import { GlobalContext, GuildContext } from '../context'
-import { IdleState, AnyGameState } from './state';
+import { IdleState, AnyGameState } from '../state';
 import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from './actions';
 import * as Discord from 'discord.js';
 import { Command, Help, NotifyMe, UnnotifyMe, GetScores } from './commands';

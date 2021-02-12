@@ -8,10 +8,9 @@ import { RoundContext } from '../context';
 import { Scores } from '../scores';
 import { VoteMessage, SubmissionAcceptedMessage, ScoresByRatingMessage } from '../messages';
 import { BasicMessage, mention } from '../../messages';
-import { GameState } from './GameState';
 import { VotingState } from './VotingState';
 import { endRound } from './endRound';
-import { IdleState } from './IdleState';
+import { IdleState, GameState } from '../../state';
 import { log } from '../../log';
 
 /** Prompt decided, submissions being accepted */

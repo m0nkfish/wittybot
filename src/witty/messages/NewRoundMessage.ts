@@ -1,6 +1,7 @@
 import * as Discord from 'discord.js'
 import { Prompt } from '../prompts';
-import { AnyGameState, SubmissionState } from '../state';
+import { SubmissionState } from '../state';
+import { AnyGameState } from '../../state';
 import { Id } from '../../id';
 import { Message } from '../../messages'
 

@@ -3,7 +3,7 @@ import { GameContext } from '../context';
 import { getNotifyRole } from '../notify';
 import { GameStartedMessage } from '../messages';
 import { BasicMessage } from '../../messages';
-import { IdleState } from './IdleState';
+import { IdleState } from './../../state';
 import { StartingState } from './StartingState';
 
 export function newGame(context: GameContext): Action {

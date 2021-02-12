@@ -1,10 +1,10 @@
 import * as Discord from 'discord.js'
-import { Command, Begin } from '../commands';
-import { Action } from '../actions';
-import { GuildContext } from '../../context';
+import { Command, Begin } from '../witty/commands';
+import { Action } from '../witty/actions';
+import { GuildContext } from '../context';
 import { GameState } from './GameState';
-import { tryParseInt, clamp } from '../../util';
-import { newGame } from './newGame';
+import { tryParseInt, clamp } from '../util';
+import { newGame } from '../witty/state/newGame';
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'
 

@@ -3,7 +3,7 @@ import * as O from 'fp-ts/Option'
 import { GameContext } from '../context';
 import { CompositeAction, NewState, DelayedAction, FromStateAction, OptionalAction, Send } from '../actions';
 import { WaitingState } from './WaitingState';
-import { IdleState } from './IdleState';
+import { IdleState } from '../../state';
 import { newRound } from './newRound';
 import { Scores } from '../scores';
 import { WinnerMessage } from '../messages';

@@ -6,7 +6,7 @@ import { Prompt } from '../prompts';
 import { Round, RoundContext } from '../context';
 import { VotingFinishedMessage, VoteAcceptedMessage } from '../messages';
 import { BasicMessage } from '../../messages';
-import { GameState } from './GameState';
+import { GameState } from '../../state';
 import { endRound } from './endRound';
 import { tryParseInt } from '../../util';
 import { log } from '../../log';
