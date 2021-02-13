@@ -15,6 +15,7 @@ import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessag
 import { beginTimer } from '../util';
 import { RoundDbView } from './db';
 import { Command, Begin, Skip, Submit, Vote, GetScores, In, Out, Notify, Unnotify, AllWittyCommands, Help } from './commands';
+import { AllCommandHandlers } from './command-handlers/all';
 
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -86,8 +87,8 @@ export class Engine {
     this.logCommand(command)
 
     if (command instanceof ScopedCommand) {
-      return this.getState(command.guild)
-        .receive(command.command)
+      const state = this.getState(command.guild)
+      return AllCommandHandlers.handle(state, command.command)
     }
 
     if (command.type === Notify.type) {

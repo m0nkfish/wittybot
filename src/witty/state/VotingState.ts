@@ -1,14 +1,12 @@
 import * as Discord from 'discord.js'
 
-import { Command } from '../commands';
-import { Action, CompositeAction, Send, SaveRound, OptionalAction } from '../actions';
+import { CompositeAction, Send, SaveRound, OptionalAction } from '../actions';
 import { Prompt } from '../prompts';
 import { WittyRoundContext } from '../context';
 import { Round } from '../round'
 import { VotingFinishedMessage } from '../messages';
 import { GameState } from '../../state';
 import { endRound } from './endRound';
-import { AllCommandHandlers } from '../command-handlers/all';
 
 type Submission = { user: Discord.User, submission: string }
 
@@ -20,8 +18,6 @@ export class VotingState implements GameState<WittyRoundContext> {
     readonly prompt: Prompt,
     readonly submissions: Submission[],
     readonly votes: Map<Discord.User, number>) { }
-
-  receive = (command: Command): Action | undefined => AllCommandHandlers.handle(this, command)
 
   allVotesIn = () => this.votes.size === this.submissions.length
 

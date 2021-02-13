@@ -1,5 +1,4 @@
 import * as Discord from 'discord.js'
-import { Command } from '../commands';
 import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, Send, OptionalAction } from '../actions';
 import { Prompt } from '../prompts';
 import { shuffle } from 'random-js';
@@ -10,7 +9,6 @@ import { VoteMessage, ScoresByRatingMessage } from '../messages';
 import { BasicMessage } from '../../messages';
 import { VotingState } from './VotingState';
 import { IdleState, GameState } from '../../state';
-import { AllCommandHandlers } from '../command-handlers/all';
 
 /** Prompt decided, submissions being accepted */
 export class SubmissionState implements GameState<WittyRoundContext> {
@@ -19,8 +17,6 @@ export class SubmissionState implements GameState<WittyRoundContext> {
     readonly context: WittyRoundContext,
     readonly prompt: Prompt,
     readonly submissions: Map<Discord.User, string>) { }
-
-  receive = (command: Command): Action | undefined => AllCommandHandlers.handle(this, command)
 
   withSubmission = (user: Discord.User, submission: string) =>
     new SubmissionState(this.context, this.prompt, new Map(this.submissions).set(user, submission))
