@@ -41,9 +41,6 @@ export class Engine {
     if (message.channel instanceof Discord.TextChannel) {
       const state = this.getState(message.channel.guild)
       const command = AllWittyCommands.process(state, message)
-      if ((<string[]>[GetScores.type]).includes(command?.type ?? '')) { // TODO: remove this hack
-        return command
-      }
       if (command) {
         return new ScopedCommand(command, message.channel.guild)
       }
