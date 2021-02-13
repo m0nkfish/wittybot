@@ -1,6 +1,6 @@
 import { GlobalContext, GuildContext } from '../context'
 import { IdleState, AnyGameState } from '../state';
-import { Action, Send } from './actions';
+import { Action, CompositeAction, FromStateAction, NewState, PromiseAction, Send, AddUserToRole, RemoveUserFromRole, SaveRound, NullAction } from './actions';
 import * as Discord from 'discord.js';
 import { HelpMessage } from '../messages';
 import * as db from './db'
@@ -103,22 +103,26 @@ export class Engine {
     });
   }
 
-  interpret = (action: Action): Exclude<any, typeof unhandled> => {
+  interpret = (action: Action) => {
     logAction(action)
     switch (action.type) {
-      case 'composite-action':
+      case CompositeAction.type:
         action.actions.forEach(this.interpret)
         return
-      case 'promise-action':
+
+      case PromiseAction.type:
         action.promise.then(action => this.interpret(action))
         return
-      case 'from-state-action':
+
+      case FromStateAction.type:
         this.interpret(action.getAction(this.getState(action.guild)))
         return
-      case 'new-state':
+
+      case NewState.type:
         this.guildStates.set(action.newState.context.guild, action.newState)
         return
-      case 'send-message':
+
+      case Send.type:
         const embedColor = '#A4218A'
         const content = action.message.content
         if (content instanceof Discord.MessageEmbed) {
@@ -134,22 +138,22 @@ export class Engine {
             }
           })
         return
-      case 'add-user-to-role':
+
+      case AddUserToRole.type:
         action.member.roles.add(action.role)
         return
-      case 'remove-user-from-role':
+
+      case RemoveUserFromRole.type:
         action.member.roles.remove(action.role)
         return
-      case 'save-round':
+
+      case SaveRound.type:
         db.saveRound(action.round)
         return
-      case 'null-action':
+
+      case NullAction.type:
         return
-      default:
-        return unhandled
     }
   }
 
 }
-
-const unhandled = Symbol()
