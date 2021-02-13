@@ -1,6 +1,6 @@
 import { CommandHandler } from '../../command-handler';
 import { Unnotify } from '../commands';
-import { CompositeAction, RemoveUserFromRole, Send } from '../actions'
+import { CompositeAction, RemoveUserFromRole, Send } from '../../actions'
 import { BasicMessage } from '../../messages';
 import { getNotifyRole } from '../notify';
 

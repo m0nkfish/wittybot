@@ -2,7 +2,7 @@ import * as Discord from 'discord.js';
 import { CommandHandler } from '../../command-handler';
 import { VotingState } from '../state';
 import { Vote } from '../commands';
-import { CompositeAction, FromStateAction, NewState, NullAction, OptionalAction, Send } from '../actions';
+import { CompositeAction, FromStateAction, NewState, NullAction, OptionalAction, Send } from '../../actions';
 import { BasicMessage } from '../../messages';
 import { VoteAcceptedMessage } from '../messages';
 

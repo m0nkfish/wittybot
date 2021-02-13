@@ -1,10 +1,11 @@
 import * as Discord from 'discord.js'
-import { Engine } from './witty/engine';
-import { Send } from './witty/actions';
+import { Engine } from './engine';
+import { Send } from './actions';
 import { ReleaseMessage, BasicMessage } from './messages';
 import { WittyGameContext, WittyRoundContext } from './witty/context';
 import { log } from './log';
 import { GlobalContext } from './context';
+import { Duration } from './duration';
 
 log('loading')
 
@@ -22,7 +23,7 @@ client.on('ready', () => {
 
   log('ready', { testMode })
 
-  const engine = new Engine(new GlobalContext(client, { defaultSubmitDurationSec: 80, testMode }))
+  const engine = new Engine(new GlobalContext(client, { defaultSubmitDuration: Duration.seconds(80), testMode }))
   engine.run()
 
   for (const [_, guild] of client.guilds.cache) {
@@ -36,6 +37,7 @@ client.on('ready', () => {
   }
 
   process.on('SIGTERM', () => {
+    log.error('sigterm')
     engine.guildStates.forEach(state => {
       if (state.context instanceof WittyRoundContext || state.context instanceof WittyGameContext) {
         engine.interpret(Send(state.context.channel, new BasicMessage(`Sorry! The bot has to shut down, it should be back momentarily but you will have to restart the game`)))

@@ -1,7 +1,7 @@
 import { CommandHandler } from '../../command-handler';
 import { SubmissionState, endRound } from '../state';
 import { Skip } from '../commands';
-import { CompositeAction, SaveRound, Send } from '../actions';
+import { CompositeAction, SaveRound, Send } from '../../actions';
 import { BasicMessage } from '../../messages';
 
 export const SkipHandler = CommandHandler.build.state(SubmissionState).command(Skip).sync(state => {

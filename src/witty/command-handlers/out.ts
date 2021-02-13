@@ -2,7 +2,7 @@ import { CommandHandler } from '../../command-handler';
 import { StartingState } from '../state';
 import { IdleState } from '../../state'
 import { Out } from '../commands';
-import { CompositeAction, NewState, Send } from '../actions'
+import { CompositeAction, NewState, Send } from '../../actions'
 import { BasicMessage } from '../../messages';
 
 export const OutHandler = CommandHandler.build.state(StartingState).command(Out).sync((state, command) => {

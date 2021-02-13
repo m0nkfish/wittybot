@@ -1,7 +1,7 @@
 import { Case } from './case';
 import { log } from './log';
 import { AnyGameState } from './state';
-import { Action } from './witty/actions';
+import { Action } from './actions';
 import { Command } from './witty/commands';
 
 export class CommandHandler {

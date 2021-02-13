@@ -1,4 +1,4 @@
-import { CompositeAction, NewState, DelayedAction, FromStateAction, Send, PromiseAction, OptionalAction } from '../actions';
+import { CompositeAction, NewState, DelayedAction, FromStateAction, Send, PromiseAction, OptionalAction } from '../../actions';
 import { choosePrompt } from '../prompts';
 import { WittyGameContext } from '../context';
 import { NewRoundMessage } from '../messages';

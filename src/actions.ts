@@ -1,9 +1,9 @@
 import * as Discord from 'discord.js'
-import { Case } from '../case'
-import { AnyGameState } from '../state';
-import { Destination, Message } from '../messages'
-import { Round } from './round';
-import { Duration } from '../duration';
+import { Case } from './case'
+import { AnyGameState } from './state';
+import { Destination, Message } from './messages'
+import { Round } from './witty/round';
+import { Duration } from './duration';
 
 export const Send = Case('send-message', (destination: Destination, message: Message) => ({ destination, message }))
 export const NewState = Case('new-state', (newState: AnyGameState) => ({ newState }))

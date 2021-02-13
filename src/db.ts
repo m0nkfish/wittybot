@@ -2,6 +2,7 @@ import * as Postgres from 'pg'
 import * as io from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import { log } from './log';
+import { Timer } from './util';
 
 const pool = new Postgres.Pool()
 
@@ -33,11 +34,10 @@ export async function query<T>(validator: io.Type<T>, queryString: string, param
   }
 
   return withClient(async client => {
-    const init = process.hrtime()
+    const timer = Timer.begin()
     log('db_query', { queryString: trimSql(queryString), params: params.join(',') })
     const res = await client.query({ name, text: queryString, values: params })
-    const end = process.hrtime(init)
-    log('db_query_finished', { count: res.rowCount, duration_ms: (end[0] * 1000) + (end[1] / 1000000) })
+    log('db_query_finished', { count: res.rowCount }, Timer.log(timer))
     return res.rows.map(validate)
   })
 }

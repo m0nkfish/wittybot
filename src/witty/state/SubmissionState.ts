@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, Send, OptionalAction } from '../actions';
+import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, Send, OptionalAction } from '../../actions';
 import { Prompt } from '../prompts';
 import { shuffle } from 'random-js';
 import { mt } from '../../random';

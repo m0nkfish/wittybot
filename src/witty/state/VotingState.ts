@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js'
 
 import { Duration } from '../../duration';
-import { CompositeAction, Send, SaveRound, OptionalAction } from '../actions';
+import { CompositeAction, Send, SaveRound, OptionalAction } from '../../actions';
 import { Prompt } from '../prompts';
 import { WittyRoundContext } from '../context';
 import { Round } from '../round'

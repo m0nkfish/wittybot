@@ -1,16 +1,16 @@
-import { GlobalContext, GuildContext } from '../context'
-import { IdleState, AnyGameState } from '../state';
+import { GlobalContext, GuildContext } from './context'
+import { IdleState, AnyGameState } from './state';
 import { Action, CompositeAction, FromStateAction, NewState, PromiseAction, Send, AddUserToRole, RemoveUserFromRole, SaveRound, NullAction } from './actions';
 import * as Discord from 'discord.js';
-import { HelpMessage } from '../messages';
-import * as db from './db'
-import { Command, AllWittyCommands, Help } from './commands';
-import { AllCommandHandlers } from './command-handlers';
-import { logAction, logCommand } from './log';
+import { HelpMessage } from './messages';
+import * as db from './witty/db'
+import { Command, AllWittyCommands, Help } from './witty/commands';
+import { AllCommandHandlers } from './witty/command-handlers';
+import { logAction, logCommand } from './engine-log';
 import * as O from 'rxjs'
 import { filter, map, mergeMap } from 'rxjs/operators';
-import { isNonNull } from '../util';
-import { log, loggableError } from '../log'
+import { getOrSet, isNonNull } from './util';
+import { log, loggableError } from './log'
 
 export class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -23,14 +23,8 @@ export class Engine {
     this.guildStates = new Map()
   }
 
-  getState(guild: Discord.Guild): AnyGameState {
-    let state = this.guildStates.get(guild)
-    if (!state) {
-      state = new IdleState(new GuildContext(this.context, guild))
-      this.guildStates.set(guild, state)
-    }
-    return state
-  }
+  getState = (guild: Discord.Guild): AnyGameState =>
+    getOrSet(this.guildStates, guild, () => new IdleState(new GuildContext(this.context, guild)))
 
   getCommand(message: Discord.Message): Command | ScopedCommand | undefined {
     try {

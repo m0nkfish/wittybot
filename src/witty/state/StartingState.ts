@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { CompositeAction, Send } from '../actions';
+import { CompositeAction, Send } from '../../actions';
 import { WittyGameContext } from '../context';
 import { newRound } from './newRound';
 import { BasicMessage, mention } from '../../messages';

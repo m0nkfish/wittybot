@@ -1,4 +1,4 @@
-import { Action, NewState, CompositeAction, Send, PromiseAction, OptionalAction, DelayedAction, FromStateAction } from '../actions';
+import { Action, NewState, CompositeAction, Send, PromiseAction, OptionalAction, DelayedAction, FromStateAction } from '../../actions';
 import { WittyGameContext } from '../context';
 import { getNotifyRole } from '../notify';
 import { GameStartedMessage } from '../messages';

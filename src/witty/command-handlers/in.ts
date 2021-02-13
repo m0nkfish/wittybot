@@ -1,7 +1,7 @@
 import { CommandHandler } from '../../command-handler';
 import { StartingState } from '../state';
 import { In } from '../commands';
-import { CompositeAction, NewState, OptionalAction } from '../actions'
+import { CompositeAction, NewState, OptionalAction } from '../../actions'
 
 export const InHandler = CommandHandler.build.state(StartingState).command(In).sync((state, command) => {
   if (!state.isInterested(command.member.user)) {

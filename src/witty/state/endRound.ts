@@ -1,5 +1,5 @@
 import { WittyGameContext } from '../context';
-import { CompositeAction, NewState, DelayedAction, FromStateAction, OptionalAction, Send } from '../actions';
+import { CompositeAction, NewState, DelayedAction, FromStateAction, OptionalAction, Send } from '../../actions';
 import { WaitingState } from './WaitingState';
 import { IdleState } from '../../state';
 import { newRound } from './newRound';

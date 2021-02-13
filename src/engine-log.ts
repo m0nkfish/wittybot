@@ -1,7 +1,7 @@
 import { Action } from './actions';
-import { log } from '../log';
-import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './loggable';
-import { Command, Begin, Skip, Submit, Vote, GetScores, In, Out, Notify, Unnotify } from './commands';
+import { log } from './log';
+import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './witty/loggable';
+import { Command, Begin, Skip, Submit, Vote, GetScores, In, Out, Notify, Unnotify } from './witty/commands';
 import { ScopedCommand } from './engine';
 
 export function logAction(action: Action) {

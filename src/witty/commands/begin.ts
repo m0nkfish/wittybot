@@ -17,7 +17,8 @@ export const BeginFactory = new CommandFactory((state, message) => {
       O.fromNullable,
       O.mapNullable(x => tryParseInt(x[1])),
       O.map(x => clamp(x, 10, 120)),
-      O.getOrElse(() => state.context.config.defaultSubmitDurationSec)
+      O.map(Duration.seconds),
+      O.getOrElse(() => state.context.config.defaultSubmitDuration)
     )
 
     const minPlayers = pipe(
@@ -36,6 +37,6 @@ export const BeginFactory = new CommandFactory((state, message) => {
       O.getOrElse(() => 20)
     )
 
-    return Begin(message.author, message.channel, Duration.seconds(timeout), minPlayers, race)
+    return Begin(message.author, message.channel, timeout, minPlayers, race)
   }
 })
