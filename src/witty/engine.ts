@@ -7,6 +7,10 @@ import * as db from './db'
 import { Command, AllWittyCommands, Help } from './commands';
 import { AllCommandHandlers } from './command-handlers';
 import { logAction, logCommand } from './log';
+import * as O from 'rxjs'
+import { filter, map, mergeMap } from 'rxjs/operators';
+import { isNonNull } from '../util';
+import { log, loggableError } from '../log'
 
 export class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -29,78 +33,83 @@ export class Engine {
   }
 
   getCommand(message: Discord.Message): Command | ScopedCommand | undefined {
-    if (message.channel instanceof Discord.NewsChannel) {
-      return 
-    }
-    const source = message.channel instanceof Discord.TextChannel ? message.channel : message.author
-    if (message.content === '!help') {
-      return Help(source)
-    }
-
-    if (message.channel instanceof Discord.TextChannel) {
-      const state = this.getState(message.channel.guild)
-      const command = AllWittyCommands.process(state, message)
-      if (command) {
-        return new ScopedCommand(command, message.channel.guild)
+    try {
+      if (message.channel instanceof Discord.NewsChannel) {
+        return 
       }
-    } else if (message.channel instanceof Discord.DMChannel) {
-      const commands = this.context.client.guilds.cache
-        .filter(g => g.member(message.author) !== null)
-        .map(g => {
-          const state = this.getState(g)
-          if (state) {
-            const command = AllWittyCommands.process(state, message)
-            if (command) {
-              return new ScopedCommand(command, g)
+      const source = message.channel instanceof Discord.TextChannel ? message.channel : message.author
+      if (message.content === '!help') {
+        return Help(source)
+      }
+
+      if (message.channel instanceof Discord.TextChannel) {
+        const state = this.getState(message.channel.guild)
+        const command = AllWittyCommands.process(state, message)
+        if (command) {
+          return new ScopedCommand(command, message.channel.guild)
+        }
+      } else if (message.channel instanceof Discord.DMChannel) {
+        const commands = this.context.client.guilds.cache
+          .filter(g => g.member(message.author) !== null)
+          .map(g => {
+            const state = this.getState(g)
+            if (state) {
+              const command = AllWittyCommands.process(state, message)
+              if (command) {
+                return new ScopedCommand(command, g)
+              }
             }
-          }
-        })
-        .filter(cmd => !!cmd) as ScopedCommand[]
+          })
+          .filter(cmd => !!cmd) as ScopedCommand[]
 
-      if (commands.length === 0) {
-        return
+        if (commands.length === 0) {
+          return
+        }
+
+        if (commands.length > 1) {
+          message.reply(`Sorry, could not establish which server you meant to send this command to`)
+          return
+        }
+
+        return commands[0]
       }
-
-      if (commands.length > 1) {
-        message.reply(`Sorry, could not establish which server you meant to send this command to`)
-        return
-      }
-
-      return commands[0]
+    } catch (err) {
+      log.error('error:get_command', loggableError(err))
     }
-
   }
 
   async getAction(command: Command | ScopedCommand): Promise<Action | undefined> {
-    logCommand(command)
+    try {
+      logCommand(command)
 
-    if (command instanceof ScopedCommand) {
-      return AllCommandHandlers.handle(this.getState(command.guild), command.command)
-    }
+      if (command instanceof ScopedCommand) {
+        return AllCommandHandlers.handle(this.getState(command.guild), command.command)
+      }
 
-    if (command.type === 'help') {
-      return Send(command.source, new HelpMessage())
+      if (command.type === 'help') {
+        return Send(command.source, new HelpMessage())
+      }
+    } catch (err) {
+      log.error('error:get_action', loggableError(err))
     }
   }
 
   run() {
-    this.context.client.on('message', async message => {
-      if (message.author.bot) {
-        return
-      }
-
-      const command = this.getCommand(message)
-      if (!command) {
-        return
-      }
-
-      const action = await this.getAction(command)
-      if (!action) {
-        return
-      }
-
-      this.interpret(action)
-    });
+    log('run')
+    O.fromEvent<Discord.Message>(this.context.client, 'message')
+      .pipe(
+        filter(m => !m.author.bot),
+        map(m => this.getCommand(m)),
+        filter(isNonNull),
+        mergeMap(c => this.getAction(c)),
+        filter(isNonNull)
+      ).subscribe(
+        a => this.interpret(a),
+        err => {
+          log.error('error:unhandled', loggableError(err))
+          this.run()
+        }
+      )
   }
 
   interpret = (action: Action) => {

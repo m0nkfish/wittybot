@@ -17,11 +17,18 @@ log.info = function (event: string, ...loggables: Loggable[]) {
 log.warn = function (event: string, ...loggables: Loggable[]) {
   console.warn(makeString(event, loggables))
 }
+log.error = function(event: string, ...loggables: Loggable[]) {
+  console.error(makeString(event, loggables))
+}
 
 function makeString(event: string, loggables: Loggable[]) {
-  return Object.entries(Object.fromEntries(getPairs([{ event }, ...loggables])))
-    .map((([k, v]) => `${k}=${v}`))
-    .join(' ')
+  try {
+    return Object.entries(Object.fromEntries(getPairs([{ event }, ...loggables])))
+      .map((([k, v]) => `${k}=${v}`))
+      .join(' ')
+  } catch {
+    return '(error in loggable handler)'
+  }
 }
 
 function* getPairs(loggables: Loggable[]) {
@@ -34,4 +41,8 @@ function* getPairs(loggables: Loggable[]) {
       }
     }
   }
+}
+
+export function loggableError(err: any) {
+  return err instanceof Error ? { name: err.name, message: err.message } : null
 }
