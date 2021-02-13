@@ -16,7 +16,7 @@ export class IdleState implements GameState<GuildContext> {
 
   receive(command: Command): Action | undefined {
     if (command.type === Begin.type) {
-      return newGame(this.context.newWittyGame(command.channel, command.user, command.timeoutSec, command.minPlayers, command.race)) 
+      return newGame(this.context, command.channel, command.user, command.timeoutSec, command.minPlayers, command.race)
     }
   }
 }

@@ -5,9 +5,13 @@ import { GameStartedMessage } from '../messages';
 import { BasicMessage } from '../../messages';
 import { IdleState } from './../../state';
 import { StartingState } from './StartingState';
+import { GuildContext } from '../../context/GuildContext';
+import * as Discord from 'discord.js';
+import { Id } from '../../id';
 
-export function newGame(context: WittyGameContext): Action {
-  const gameStartedMessage = getNotifyRole(context.channel.guild)
+export function newGame(guildContext: GuildContext, channel: Discord.TextChannel, initiator: Discord.User, timeoutSec: number, minPlayers: number, race: number): Action {
+  const context = new WittyGameContext(guildContext, channel, Id.create(), initiator, [], timeoutSec, minPlayers, race)
+  const gameStartedMessage = getNotifyRole(context.guild)
     .then(role => Send(context.channel, new GameStartedMessage(role, context)))
 
   const timeout =

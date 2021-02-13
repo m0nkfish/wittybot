@@ -15,6 +15,7 @@ import { ScoresByPointsMessage } from './messages/ScoresMessage';
 import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './loggable';
 import { beginTimer } from '../util';
 import { RoundDbView } from './db';
+import { Begin } from './command-factory';
 
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -257,7 +258,7 @@ export class Engine {
     const guild = input instanceof ScopedCommand ? logGuild(input.guild) : undefined
     const event = `command:${command.type}`
     switch (command.type) {
-      case 'witty-begin':
+      case Begin.type:
         log(event, guild, logUser(command.user))
         break;
 
