@@ -28,8 +28,6 @@ export const GetScoresHandler = new CommandHandler(async (state, command) => {
   }
 
   if (command.type === GetScores.type) {
-    log('scores_handler');
-
     if (command.unit === 'game') {
       const message = state.context instanceof WittyGameContext
         ? new ScoresByPointsMessage(Scores.fromRounds(state.context.rounds))
