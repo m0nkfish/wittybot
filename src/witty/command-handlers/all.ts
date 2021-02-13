@@ -6,6 +6,7 @@ import { SubmitHandler } from './submit';
 import { VoteHandler } from './vote';
 import { NotifyHandler } from './notify';
 import { UnnotifyHandler } from './unnotify';
+import { GetScoresHandler } from './scores';
 
 export const AllCommandHandlers =
   BeginHandler
@@ -16,3 +17,4 @@ export const AllCommandHandlers =
     .orElse(VoteHandler)
     .orElse(NotifyHandler)
     .orElse(UnnotifyHandler)
+    .orElse(GetScoresHandler)

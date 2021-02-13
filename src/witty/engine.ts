@@ -1,19 +1,11 @@
-import { WittyRoundContext, WittyGameContext } from './context';
 import { GlobalContext, GuildContext } from '../context'
 import { IdleState, AnyGameState } from '../state';
-import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from './actions';
+import { Action, Send } from './actions';
 import * as Discord from 'discord.js';
-import { getNotifyRole } from './notify';
-import { ScoresByRatingMessage } from './messages';
-import { BasicMessage, HelpMessage } from '../messages';
+import { HelpMessage } from '../messages';
 import * as db from './db'
-import { RoundScoreView } from './round';
-import { Scores } from './scores';
 import { log } from '../log';
-import { ScoresByPointsMessage } from './messages/ScoresMessage';
 import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './loggable';
-import { beginTimer } from '../util';
-import { RoundDbView } from './db';
 import { Command, Begin, Skip, Submit, Vote, GetScores, In, Out, Notify, Unnotify, AllWittyCommands, Help } from './commands';
 import { AllCommandHandlers } from './command-handlers';
 
@@ -93,45 +85,6 @@ export class Engine {
     if (command.type === 'help') {
       return Send(command.source, new HelpMessage())
     }
-
-    if (command.type === GetScores.type) {
-      if (command.unit === 'game') {
-        const state = this.guildStates.get(command.source.guild)
-        const message = state?.context instanceof WittyGameContext || state?.context instanceof WittyRoundContext
-          ? new ScoresByPointsMessage(Scores.fromRounds(state.context.rounds))
-          : new BasicMessage(`No game is running; start a game with \`!witty\``)
-        return Send(command.source, message)
-      }
-
-      const rounds = await db.scores(command.source.guild, command.unit)
-
-      const fetchUsersTime = beginTimer()
-      log(`fetching_user_cache`)
-      const users = await this.getUserLookup(rounds)
-      log(`fetched_user_cache`, { unit: command.unit, rounds: rounds.length, users: users.size, duration_ms: fetchUsersTime.getMs() })
-
-      const getScoresTime = beginTimer()
-      log(`building_scores`, { unit: command.unit, rounds: rounds.length })
-      const scoreView = rounds.map(round => RoundScoreView.fromDbView(round, users))
-      log(`built_scores`, { unit: command.unit, duration_ms: getScoresTime.getMs() })
-
-      const scores = Scores.fromRoundViews(scoreView)
-      const timeframe = command.unit === 'alltime' ? "since the dawn of time itself" : `from the last ${command.unit}`
-      return Send(command.source, new ScoresByRatingMessage(scores, timeframe))
-    }
-  }
-
-  async getUser(id: string): Promise<Discord.User> {
-    const t = beginTimer()
-    const user = await this.context.client.users.fetch(id, true)
-    log(`fetched_user`, logUser(user), { duration_ms: t.getMs() })
-    return user
-  }
-
-  async getUserLookup(rounds: RoundDbView[]): Promise<Map<string, Discord.User>> {
-    const ids = getUniqueIds(rounds)
-    const users = await Promise.all(ids.map(id => this.getUser(id)))
-    return new Map(users.map((u, i) => [ids[i], u]))
   }
 
   run() {
@@ -257,16 +210,3 @@ export class Engine {
 }
 
 const unhandled = Symbol()
-
-
-function getUniqueIds(rounds: RoundDbView[]): string[] {
-  const ids = new Set<string>()
-  for (const r of rounds) {
-    for (const s of r.submissions.values()) {
-      ids.add(s.submitterId)
-      // we can skip the voters because every voter must have submitted
-    }
-  }
-
-  return Array.from(ids)
-}
