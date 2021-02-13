@@ -4,13 +4,10 @@ import { In } from '../commands';
 import { CompositeAction, NewState, OptionalAction } from '../actions'
 
 export const InHandler = new CommandHandler((state, command) => {
-  if (state instanceof StartingState && command.type === In.type) {
-    if (!state.interested.some(x => x === command.member.user)) {
-      const interested = [...state.interested, command.member.user]
-      return CompositeAction(
-        NewState(new StartingState(state.context, interested)),
-        OptionalAction(interested.length === Math.max(state.context.minPlayers, 5) && state.begin())
-      )
-    }
+  if (state instanceof StartingState && command.type === In.type && !state.isInterested(command.member.user)) {
+    const nextState = state.addInterested(command.member.user)
+    return CompositeAction(
+      NewState(nextState),
+      OptionalAction(nextState.interested.length === Math.max(state.context.minPlayers, 5) && state.begin()))
   }
 })

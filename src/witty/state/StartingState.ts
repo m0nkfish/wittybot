@@ -14,6 +14,15 @@ export class StartingState implements GameState<WittyGameContext> {
 
   receive = (command: Command): Action | undefined => AllCommandHandlers.handle(this, command)
 
+  isInterested = (user: Discord.User) =>
+    this.interested.some(x => x === user)
+
+  addInterested = (user: Discord.User) =>
+    new StartingState(this.context, [...this.interested, user])
+
+  removeInterested = (user: Discord.User) =>
+    new StartingState(this.context, this.interested.filter(x => x !== user))
+
   enoughInterest() { return this.interested.length >= this.context.minPlayers }
 
   begin() {
