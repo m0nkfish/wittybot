@@ -1,4 +1,4 @@
-import { CommandHandler } from '../../command-handler';
+import { CommandHandler } from '../../commands';
 import { GetScores } from '../commands';
 import { Send } from '../../actions'
 import { BasicMessage } from '../../messages';

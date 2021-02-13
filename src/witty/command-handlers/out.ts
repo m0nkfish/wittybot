@@ -1,4 +1,4 @@
-import { CommandHandler } from '../../command-handler';
+import { CommandHandler } from '../../commands';
 import { StartingState } from '../state';
 import { IdleState } from '../../state'
 import { Out } from '../commands';

@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js';
 import { Case } from '../../case'
-import { CommandFactory } from '../../command';
+import { CommandFactory } from '../../commands';
 import { StartingState } from '../state';
 
 export const In = Case('interested', (member: Discord.GuildMember) => ({ member }))

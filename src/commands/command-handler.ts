@@ -1,8 +1,8 @@
-import { Case } from './case';
-import { log } from './log';
-import { AnyGameState } from './state';
-import { Action } from './actions';
-import { Command } from './witty/commands';
+import { Case } from '../case';
+import { log } from '../log';
+import { AnyGameState } from '../state';
+import { Action } from '../actions';
+import { Command } from './command';
 
 export class CommandHandler {
   constructor(public handle: (state: AnyGameState, command: Command) => Promise<Action | undefined>) { }

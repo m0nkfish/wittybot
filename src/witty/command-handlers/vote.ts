@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { CommandHandler } from '../../command-handler';
+import { CommandHandler } from '../../commands';
 import { VotingState } from '../state';
 import { Vote } from '../commands';
 import { CompositeAction, FromStateAction, NewState, NullAction, OptionalAction, Send } from '../../actions';

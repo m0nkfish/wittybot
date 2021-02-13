@@ -1,4 +1,4 @@
-import { CommandHandler } from '../../command-handler';
+import { CommandHandler } from '../../commands';
 import { StartingState } from '../state';
 import { In } from '../commands';
 import { CompositeAction, NewState, OptionalAction } from '../../actions'

@@ -1,4 +1,4 @@
-import { CommandHandler } from '../../command-handler';
+import { CommandHandler } from '../../commands';
 import { SubmissionState, endRound } from '../state';
 import { Skip } from '../commands';
 import { CompositeAction, SaveRound, Send } from '../../actions';

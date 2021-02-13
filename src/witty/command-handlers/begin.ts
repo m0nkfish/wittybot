@@ -1,4 +1,4 @@
-import { CommandHandler } from '../../command-handler';
+import { CommandHandler } from '../../commands';
 import { IdleState } from '../../state';
 import { newGame } from '../state';
 import { Begin } from '../commands';

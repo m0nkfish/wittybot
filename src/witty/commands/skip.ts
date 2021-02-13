@@ -1,5 +1,5 @@
 import { Case } from '../../case'
-import { CommandFactory } from '../../command';
+import { CommandFactory } from '../../commands';
 import { SubmissionState } from '../state/SubmissionState';
 
 export const Skip = Case('witty-skip', () => ({}))

@@ -7,7 +7,6 @@ import { Submit, SubmitFactory } from './submit';
 import { Vote, VoteFactory } from './vote';
 import { Notify, NotifyFactory } from './notify';
 import { Unnotify, UnnotifyFactory } from './unnotify';
-import { Help } from './help';
 
 export const AllWittyCommands =
   BeginFactory
@@ -20,7 +19,7 @@ export const AllWittyCommands =
     .combine(SubmitFactory)
     .combine(VoteFactory)
 
-export type Command =
+export type WittyCommand =
   | ReturnType<typeof Begin>
   | ReturnType<typeof Submit>
   | ReturnType<typeof Vote>
@@ -28,6 +27,5 @@ export type Command =
   | ReturnType<typeof GetScores>
   | ReturnType<typeof Notify>
   | ReturnType<typeof Unnotify>
-  | ReturnType<typeof Help>
   | ReturnType<typeof In>
   | ReturnType<typeof Out>

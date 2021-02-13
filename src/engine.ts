@@ -4,13 +4,12 @@ import { Action, CompositeAction, FromStateAction, NewState, PromiseAction, Send
 import * as Discord from 'discord.js';
 import { HelpMessage } from './messages';
 import * as db from './witty/db'
-import { Command, AllWittyCommands, Help } from './witty/commands';
-import { AllCommandHandlers } from './witty/command-handlers';
 import { logAction, logCommand } from './engine-log';
 import * as O from 'rxjs'
 import { filter, map, mergeMap } from 'rxjs/operators';
 import { getOrSet, isNonNull } from './util';
 import { log, loggableError } from './log'
+import { AllCommandFactories, AllCommandHandlers, Command, Help } from './commands'
 
 export class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -38,7 +37,7 @@ export class Engine {
 
       if (message.channel instanceof Discord.TextChannel) {
         const state = this.getState(message.channel.guild)
-        const command = AllWittyCommands.process(state, message)
+        const command = AllCommandFactories.process(state, message)
         if (command) {
           return new ScopedCommand(command, message.channel.guild)
         }
@@ -48,7 +47,7 @@ export class Engine {
           .map(g => {
             const state = this.getState(g)
             if (state) {
-              const command = AllWittyCommands.process(state, message)
+              const command = AllCommandFactories.process(state, message)
               if (command) {
                 return new ScopedCommand(command, g)
               }

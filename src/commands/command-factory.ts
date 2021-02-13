@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { AnyGameState } from './state/GameState';
+import { AnyGameState } from '../state/GameState';
 
 export class CommandFactory<C> {
   constructor(public readonly process: (state: AnyGameState, event: Discord.Message) => C | undefined) {}

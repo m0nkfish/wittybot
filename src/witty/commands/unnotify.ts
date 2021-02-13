@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
 import { Case } from '../../case'
-import { CommandFactory } from '../../command';
+import { CommandFactory } from '../../commands';
 
 export const Unnotify = Case('unnotify-me', (member: Discord.GuildMember) => ({ member }))
 

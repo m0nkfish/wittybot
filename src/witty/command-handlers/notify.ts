@@ -1,4 +1,4 @@
-import { CommandHandler } from '../../command-handler';
+import { CommandHandler } from '../../commands';
 import { Notify } from '../commands';
 import { AddUserToRole, CompositeAction, Send } from '../../actions'
 import { BasicMessage } from '../../messages';

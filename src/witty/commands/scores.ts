@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
 import { Case } from '../../case'
-import { CommandFactory } from '../../command';
+import { CommandFactory } from '../../commands';
 import { ScoreUnit } from '../scores';
 import { WittyGameContext } from '../context';
 

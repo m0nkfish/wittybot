@@ -8,7 +8,7 @@ import { NotifyHandler } from './notify';
 import { UnnotifyHandler } from './unnotify';
 import { GetScoresHandler } from './scores';
 
-export const AllCommandHandlers =
+export const AllWittyCommandHandlers =
   BeginHandler
     .orElse(InHandler)
     .orElse(OutHandler)

@@ -5,7 +5,7 @@ import { IdleState } from '../../state/IdleState';
 import { tryParseInt, clamp } from '../../util';
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'
-import { CommandFactory } from '../../command';
+import { CommandFactory } from '../../commands';
 import { Duration } from '../../duration';
 
 export const Begin = Case('witty-begin', (user: Discord.User, channel: Discord.TextChannel, timeout: Duration, minPlayers: number, race: number) => ({ channel, user, timeout, minPlayers, race }))
