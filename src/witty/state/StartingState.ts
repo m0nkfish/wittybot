@@ -14,7 +14,7 @@ export class StartingState implements GameState<WittyGameContext> {
 
   receive = (command: Command): Action | undefined => AllCommandHandlers.handle(this, command)
 
-  enoughInterest() { return this.interested.length >= 3 }
+  enoughInterest() { return this.interested.length >= this.context.minPlayers }
 
   begin() {
     return CompositeAction(
