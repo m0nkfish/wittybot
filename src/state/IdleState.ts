@@ -4,7 +4,7 @@ import { Action } from '../witty/actions';
 import { GuildContext } from '../context';
 import { GameState } from './GameState';
 import { newGame } from '../witty/state/newGame';
-import { Begin, BeginFactory } from '../witty/command-factory';
+import { Begin } from '../witty/commands';
 
 /** Default state, no active game */
 export class IdleState implements GameState<GuildContext> {

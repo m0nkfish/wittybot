@@ -8,7 +8,7 @@ import { VotingFinishedMessage, VoteAcceptedMessage } from '../messages';
 import { BasicMessage } from '../../messages';
 import { GameState } from '../../state';
 import { endRound } from './endRound';
-import { VoteFactory, Vote } from '../command-factory';
+import { Vote } from '../commands';
 
 type Submission = { user: Discord.User, submission: string }
 

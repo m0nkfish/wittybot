@@ -1,5 +1,6 @@
 export * from './all'
 export * from './begin'
+export * from './help'
 export * from './in'
 export * from './notify'
 export * from './out'

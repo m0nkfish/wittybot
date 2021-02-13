@@ -3,7 +3,6 @@ import { GlobalContext, GuildContext } from '../context'
 import { IdleState, AnyGameState } from '../state';
 import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from './actions';
 import * as Discord from 'discord.js';
-import { Command, Help } from './commands';
 import { getNotifyRole } from './notify';
 import { ScoresByRatingMessage } from './messages';
 import { BasicMessage, HelpMessage } from '../messages';
@@ -15,8 +14,7 @@ import { ScoresByPointsMessage } from './messages/ScoresMessage';
 import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './loggable';
 import { beginTimer } from '../util';
 import { RoundDbView } from './db';
-import { Begin, Skip, Submit, Vote, GetScores, In, Out, Notify, Unnotify } from './command-factory';
-import { AllWittyCommands } from './command-factory/all';
+import { Command, Begin, Skip, Submit, Vote, GetScores, In, Out, Notify, Unnotify, AllWittyCommands, Help } from './commands';
 
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -46,7 +44,7 @@ export class Engine {
     if (message.content === '!help') {
       return Help(source)
     }
-
+1
     if (message.channel instanceof Discord.TextChannel) {
       const state = this.getState(message.channel.guild)
       const command = AllWittyCommands.process(state, message)

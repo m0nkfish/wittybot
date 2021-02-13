@@ -11,7 +11,7 @@ import { BasicMessage, mention } from '../../messages';
 import { VotingState } from './VotingState';
 import { endRound } from './endRound';
 import { IdleState, GameState } from '../../state';
-import { SubmitFactory, Submit, SkipFactory, Skip } from '../command-factory';
+import { Submit, Skip } from '../commands';
 
 /** Prompt decided, submissions being accepted */
 export class SubmissionState implements GameState<WittyRoundContext> {

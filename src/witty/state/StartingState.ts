@@ -1,11 +1,10 @@
 import * as Discord from 'discord.js'
-import { Command } from '../commands';
+import { Command, In, Out } from '../commands';
 import { Action, NewState, CompositeAction, Send, OptionalAction } from '../actions';
 import { WittyGameContext } from '../context';
 import { newRound } from './newRound';
 import { BasicMessage, mention } from '../../messages';
 import { IdleState, GameState } from '../../state';
-import { In, Out } from '../command-factory'
 
 /** Waiting for enough people to demonstrate interest */
 export class StartingState implements GameState<WittyGameContext> {
