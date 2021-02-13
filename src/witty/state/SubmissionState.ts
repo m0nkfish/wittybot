@@ -1,17 +1,16 @@
 import * as Discord from 'discord.js'
 import { Command } from '../commands';
-import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, UpdateState, Send, SaveRound, OptionalAction } from '../actions';
+import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, Send, OptionalAction } from '../actions';
 import { Prompt } from '../prompts';
 import { shuffle } from 'random-js';
 import { mt } from '../../random';
 import { WittyRoundContext } from '../context';
 import { Scores } from '../scores';
-import { VoteMessage, SubmissionAcceptedMessage, ScoresByRatingMessage } from '../messages';
-import { BasicMessage, mention } from '../../messages';
+import { VoteMessage, ScoresByRatingMessage } from '../messages';
+import { BasicMessage } from '../../messages';
 import { VotingState } from './VotingState';
-import { endRound } from './endRound';
 import { IdleState, GameState } from '../../state';
-import { Submit, Skip } from '../commands';
+import { AllCommandHandlers } from '../command-handlers/all';
 
 /** Prompt decided, submissions being accepted */
 export class SubmissionState implements GameState<WittyRoundContext> {
@@ -21,38 +20,7 @@ export class SubmissionState implements GameState<WittyRoundContext> {
     readonly prompt: Prompt,
     readonly submissions: Map<Discord.User, string>) { }
 
-  receive(command: Command): Action | undefined {
-    if (command.type === Submit.type) {
-      if (command.submission.length > 280) {
-        return Send(command.user, new BasicMessage('Submissions cannot be more than 280 characters long'))
-      }
-
-      const isReplacement = this.submissions.has(command.user)
-
-      return CompositeAction(
-        OptionalAction(command.message.channel instanceof Discord.DMChannel && Send(command.user, new SubmissionAcceptedMessage(this.prompt, command.submission, isReplacement))),
-        OptionalAction(!isReplacement && Send(this.context.channel, new BasicMessage(`Submission received from ${mention(command.user)}`))),
-        UpdateState(this.context.guild, state => state instanceof SubmissionState && state.context.sameRound(this.context) ? state.withSubmission(command.user, command.submission) : state),
-      )
-    } else if (command.type === Skip.type) {
-      if (this.submissions.size === 0) {
-        const skippedRound = {
-          id: this.context.roundId,
-          channel: this.context.channel,
-          prompt: this.prompt,
-          skipped: true,
-          submissions: new Map()
-        }
-        return CompositeAction(
-          SaveRound(skippedRound),
-          Send(this.context.channel, new BasicMessage(`Skipping this prompt`)),
-          endRound(this.context.gameCtx)
-        )
-      } else {
-        return Send(this.context.channel, new BasicMessage(`Prompt already has submissions; won't skip`))
-      }
-    }
-  }
+  receive = (command: Command): Action | undefined => AllCommandHandlers.handle(this, command)
 
   withSubmission = (user: Discord.User, submission: string) =>
     new SubmissionState(this.context, this.prompt, new Map(this.submissions).set(user, submission))
