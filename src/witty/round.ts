@@ -1,6 +1,20 @@
 import { Id } from '../id';
 import * as Discord from 'discord.js';
 import { RoundDbView } from './db';
+import { Prompt } from './prompts';
+
+export type Round = {
+  id: Id
+  prompt: Prompt
+  channel: Discord.TextChannel
+  submissions: Map<Discord.User, {
+    submission: string
+    votes: Discord.User[]
+    voted: boolean
+  }>
+  skipped: boolean
+}
+
 
 export class RoundScoreView {
   constructor(

@@ -1,8 +1,7 @@
 import * as Discord from 'discord.js';
 
-import { Round } from './context';
 import { fold, semigroupSum } from 'fp-ts/lib/Semigroup'
-import { RoundScoreView } from './round';
+import { Round, RoundScoreView } from './round';
 import { memo } from '../util';
 
 const sum = fold(semigroupSum)

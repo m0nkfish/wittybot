@@ -1,22 +1,8 @@
 import * as Discord from 'discord.js';
-import { Option } from 'fp-ts/Option'
-
-import { Prompt } from './prompts';
 import { Id } from '../id';
 import { Scores } from './scores';
 import { GuildContext } from '../context';
-
-export type Round = {
-  id: Id
-  prompt: Prompt
-  channel: Discord.TextChannel
-  submissions: Map<Discord.User, {
-    submission: string
-    votes: Discord.User[]
-    voted: boolean
-  }>
-  skipped: boolean
-}
+import { Round } from './round'
 
 export class WittyGameContext extends GuildContext {
   constructor(

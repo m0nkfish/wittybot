@@ -3,7 +3,8 @@ import * as Discord from 'discord.js'
 import { Command } from '../commands';
 import { Action, CompositeAction, NewState, FromStateAction, NullAction, Send, SaveRound, OptionalAction } from '../actions';
 import { Prompt } from '../prompts';
-import { Round, WittyRoundContext } from '../context';
+import { WittyRoundContext } from '../context';
+import { Round } from '../round'
 import { VotingFinishedMessage, VoteAcceptedMessage } from '../messages';
 import { BasicMessage } from '../../messages';
 import { GameState } from '../../state';

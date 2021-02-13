@@ -1,5 +1,5 @@
 import * as io from 'io-ts'
-import { Round } from './context';
+import { Round } from './round';
 import { Id } from '../id';
 import * as Discord from 'discord.js';
 import { getOrSet, invoke } from '../util';
