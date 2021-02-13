@@ -3,7 +3,7 @@ import * as Discord from 'discord.js'
 import { Command } from '../commands';
 import { Action, CompositeAction, NewState, FromStateAction, NullAction, Send, SaveRound, OptionalAction } from '../actions';
 import { Prompt } from '../prompts';
-import { Round, RoundContext } from '../context';
+import { Round, WittyRoundContext } from '../context';
 import { VotingFinishedMessage, VoteAcceptedMessage } from '../messages';
 import { BasicMessage } from '../../messages';
 import { GameState } from '../../state';
@@ -13,10 +13,10 @@ import { VoteFactory, Vote } from '../command-factory';
 type Submission = { user: Discord.User, submission: string }
 
 /** Submission phase complete; voting stage */
-export class VotingState implements GameState<RoundContext> {
+export class VotingState implements GameState<WittyRoundContext> {
 
   constructor(
-    readonly context: RoundContext,
+    readonly context: WittyRoundContext,
     readonly prompt: Prompt,
     readonly submissions: Submission[],
     readonly votes: Map<Discord.User, number>) { }
@@ -100,7 +100,7 @@ export class VotingState implements GameState<RoundContext> {
     )
   }
 
-  static begin = (context: RoundContext, prompt: Prompt, submissions: Submission[]) =>
+  static begin = (context: WittyRoundContext, prompt: Prompt, submissions: Submission[]) =>
     new VotingState(context, prompt, submissions, new Map())
 }
 

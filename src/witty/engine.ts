@@ -1,21 +1,21 @@
-import { RoundContext, WittyGameContext } from './context';
+import { WittyRoundContext, WittyGameContext } from './context';
 import { GlobalContext, GuildContext } from '../context'
 import { IdleState, AnyGameState } from '../state';
 import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from './actions';
 import * as Discord from 'discord.js';
-import { Command, Help, NotifyMe, UnnotifyMe, GetScores } from './commands';
+import { Command, Help, NotifyMe, UnnotifyMe } from './commands';
 import { getNotifyRole } from './notify';
 import { ScoresByRatingMessage } from './messages';
 import { BasicMessage, HelpMessage } from '../messages';
 import * as db from './db'
 import { RoundScoreView } from './round';
-import { Scores, ScoreUnit } from './scores';
+import { Scores } from './scores';
 import { log } from '../log';
 import { ScoresByPointsMessage } from './messages/ScoresMessage';
 import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './loggable';
 import { beginTimer } from '../util';
 import { RoundDbView } from './db';
-import { Begin, Skip, Submit, Vote } from './command-factory';
+import { Begin, Skip, Submit, Vote, GetScores, GetScoresFactory } from './command-factory';
 
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -53,25 +53,15 @@ export class Engine {
     }
 
     if (message.channel instanceof Discord.TextChannel) {
-      const scores = /^!scores(?: (game|day|week|month|year|alltime))?$/.exec(message.content)
-      if (scores) {
-        const guild = message.channel.guild
-        const defaultUnit = () => {
-          const state = this.guildStates.get(guild)
-          return state?.context instanceof WittyGameContext || state?.context instanceof RoundContext
-            ? 'game'
-            : 'day'
-        }
-        const unit = (scores[1] ?? defaultUnit()) as ScoreUnit
-        return GetScores(message.channel, unit)
+      const state = this.getState(message.channel.guild)
+      const getScores = GetScoresFactory.process(state, message)
+      if (getScores) { 
+        return getScores
       }
 
-      const state = this.getState(message.channel.guild)
-      if (state) {
-        const command = state.interpreter(message)
-        if (command) {
-          return new ScopedCommand(command, message.channel.guild)
-        }
+      const command = state.interpreter(message)
+      if (command) {
+        return new ScopedCommand(command, message.channel.guild)
       }
     } else if (message.channel instanceof Discord.DMChannel) {
       const commands = this.context.client.guilds.cache
@@ -133,10 +123,10 @@ export class Engine {
       return Send(command.source, new HelpMessage())
     }
 
-    if (command.type === 'get-scores') {
+    if (command.type === GetScores.type) {
       if (command.unit === 'game') {
         const state = this.guildStates.get(command.source.guild)
-        const message = state?.context instanceof WittyGameContext || state?.context instanceof RoundContext
+        const message = state?.context instanceof WittyGameContext || state?.context instanceof WittyRoundContext
           ? new ScoresByPointsMessage(Scores.fromRounds(state.context.rounds))
           : new BasicMessage(`No game is running; start a game with \`!witty\``)
         return Send(command.source, message)
@@ -262,7 +252,7 @@ export class Engine {
         log(event, guild, logUser(command.user))
         break;
 
-      case 'get-scores':
+      case GetScores.type:
         log(event, guild, { unit: command.unit }, logSource(command.source))
         break;
 

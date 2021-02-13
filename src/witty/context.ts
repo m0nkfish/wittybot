@@ -38,12 +38,12 @@ export class WittyGameContext extends GuildContext {
     new WittyGameContext(this.guildCtx, this.channel, this.gameId, this.initiator, [...this.rounds, round], this.timeoutSec, this.minPlayers, this.race)
 
   newRound = () =>
-    new RoundContext(this, Id.create())
+    new WittyRoundContext(this, Id.create())
 
   sameGame = (other: WittyGameContext) => this.gameId === other.gameId
 }
 
-export class RoundContext extends WittyGameContext {
+export class WittyRoundContext extends WittyGameContext {
   constructor(
     readonly gameCtx: WittyGameContext,
     readonly roundId: Id
@@ -51,5 +51,5 @@ export class RoundContext extends WittyGameContext {
     super(gameCtx.guildCtx, gameCtx.channel, gameCtx.gameId, gameCtx.initiator, gameCtx.rounds, gameCtx.timeoutSec, gameCtx.minPlayers, gameCtx.race)
   }
 
-  sameRound = (other: RoundContext) => this.roundId === other.roundId
+  sameRound = (other: WittyRoundContext) => this.roundId === other.roundId
 }

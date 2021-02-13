@@ -1,7 +1,7 @@
 import { pick } from 'random-js';
 import { mt } from '../random';
 import * as db from './db'
-import { RoundContext } from './context';
+import { WittyRoundContext } from './context';
 import * as Discord from 'discord.js';
 import { memberName } from '../messages';
 
@@ -34,7 +34,7 @@ const cachedReplacements = db.allReplacements()
     return map
   })
 
-export async function choosePrompt(context: RoundContext) {
+export async function choosePrompt(context: WittyRoundContext) {
   let users: Discord.User[] = []
   if (context.rounds.length > 0) {
     users = Array.from(context.rounds[context.rounds.length - 1].submissions.keys())

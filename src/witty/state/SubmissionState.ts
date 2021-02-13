@@ -4,7 +4,7 @@ import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, Upda
 import { Prompt } from '../prompts';
 import { shuffle } from 'random-js';
 import { mt } from '../../random';
-import { RoundContext } from '../context';
+import { WittyRoundContext } from '../context';
 import { Scores } from '../scores';
 import { VoteMessage, SubmissionAcceptedMessage, ScoresByRatingMessage } from '../messages';
 import { BasicMessage, mention } from '../../messages';
@@ -14,10 +14,10 @@ import { IdleState, GameState } from '../../state';
 import { SubmitFactory, Submit, SkipFactory, Skip } from '../command-factory';
 
 /** Prompt decided, submissions being accepted */
-export class SubmissionState implements GameState<RoundContext> {
+export class SubmissionState implements GameState<WittyRoundContext> {
 
   constructor(
-    readonly context: RoundContext,
+    readonly context: WittyRoundContext,
     readonly prompt: Prompt,
     readonly submissions: Map<Discord.User, string>) { }
 
@@ -80,5 +80,5 @@ export class SubmissionState implements GameState<RoundContext> {
     )
   }
 
-  static begin = (context: RoundContext, prompt: Prompt) => new SubmissionState(context, prompt, new Map())
+  static begin = (context: WittyRoundContext, prompt: Prompt) => new SubmissionState(context, prompt, new Map())
 }

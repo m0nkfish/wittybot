@@ -4,12 +4,12 @@ import { VotingState } from '../state';
 import { shuffle } from 'random-js';
 import { mt } from '../../random';
 import { Message, memberName } from '../../messages'
-import { RoundContext } from '../context';
+import { WittyRoundContext } from '../context';
 import { AnyGameState } from '../../state';
 
 export class VoteMessage implements Message {
   constructor(
-    readonly context: RoundContext,
+    readonly context: WittyRoundContext,
     readonly prompt: Prompt,
     readonly submissions: Array<{ user: Discord.User, submission: string }>,
     readonly botUser: Discord.User,
