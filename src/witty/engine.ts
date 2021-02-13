@@ -4,12 +4,11 @@ import { Action, Send } from './actions';
 import * as Discord from 'discord.js';
 import { HelpMessage } from '../messages';
 import * as db from './db'
-import { log } from '../log';
-import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './loggable';
-import { Command, Begin, Skip, Submit, Vote, GetScores, In, Out, Notify, Unnotify, AllWittyCommands, Help } from './commands';
+import { Command, AllWittyCommands, Help } from './commands';
 import { AllCommandHandlers } from './command-handlers';
+import { logAction, logCommand } from './log';
 
-class ScopedCommand {
+export class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
 }
 
@@ -73,7 +72,7 @@ export class Engine {
   }
 
   async getAction(command: Command | ScopedCommand): Promise<Action | undefined> {
-    this.logCommand(command)
+    logCommand(command)
 
     if (command instanceof ScopedCommand) {
       return AllCommandHandlers.handle(this.getState(command.guild), command.command)
@@ -105,7 +104,7 @@ export class Engine {
   }
 
   interpret = (action: Action): Exclude<any, typeof unhandled> => {
-    this.logAction(action)
+    logAction(action)
     switch (action.type) {
       case 'composite-action':
         action.actions.forEach(this.interpret)
@@ -151,59 +150,6 @@ export class Engine {
     }
   }
 
-  logAction = (action: Action) => {
-    const event = `action:${action.type}`
-    if (action.type === 'new-state') {
-      const {newState} = action
-      log(event, logGuild(newState.context.guild), { state: getName(newState) }, logState(newState))
-    } else if (action.type === 'send-message') {
-      const {message, destination} = action
-      log(event, logSource(destination), { message: getName(message) }, logMessage(message))
-    } else if (action.type === 'save-round') {
-      log(event, logChannel(action.round.channel), { round: action.round.id })
-    }
-  }
-
-  logCommand = (input: Command | ScopedCommand) => {
-    const command = input instanceof ScopedCommand ? input.command : input
-    const guild = input instanceof ScopedCommand ? logGuild(input.guild) : undefined
-    const event = `command:${command.type}`
-    switch (command.type) {
-      case Begin.type:
-        log(event, guild, logUser(command.user))
-        break;
-
-      case GetScores.type:
-        log(event, guild, { unit: command.unit }, logSource(command.source))
-        break;
-
-      case 'help':
-        log(event, guild, logSource(command.source))
-        break;
-
-      case In.type:
-      case Out.type:
-      case Notify.type:
-      case Unnotify.type:
-        log(event, guild, logMember(command.member))
-        break;
-
-      case Skip.type:
-        log(event, guild)
-        break;
-
-      case Submit.type:
-        log(event, guild, logUser(command.user), { submission: command.submission })
-        break;
-
-      case Vote.type:
-        log(event, guild, logUser(command.user), { entry: command.entry })
-        break;
-    
-      default:
-        break;
-    }
-  }
 }
 
 const unhandled = Symbol()
