@@ -1,5 +1,6 @@
 import * as Discord from 'discord.js'
 
+import { Duration } from '../../duration';
 import { CompositeAction, Send, SaveRound, OptionalAction } from '../actions';
 import { Prompt } from '../prompts';
 import { WittyRoundContext } from '../context';
@@ -7,6 +8,7 @@ import { Round } from '../round'
 import { VotingFinishedMessage } from '../messages';
 import { GameState } from '../../state';
 import { endRound } from './endRound';
+import { Timer } from '../../util';
 
 type Submission = { user: Discord.User, submission: string }
 
@@ -17,12 +19,15 @@ export class VotingState implements GameState<WittyRoundContext> {
     readonly context: WittyRoundContext,
     readonly prompt: Prompt,
     readonly submissions: Submission[],
-    readonly votes: Map<Discord.User, number>) { }
+    readonly votes: Map<Discord.User, number>,
+    readonly timer: Timer) { }
+
+  remaining = (): Duration => Duration.seconds(this.submissions.length * 10).subtract(this.timer.duration())
 
   allVotesIn = () => this.votes.size === this.submissions.length
 
   withVote = (user: Discord.User, entry: number) =>
-    new VotingState(this.context, this.prompt, this.submissions, new Map(this.votes).set(user, entry))
+    new VotingState(this.context, this.prompt, this.submissions, new Map(this.votes).set(user, entry), this.timer)
 
   finish = () => {
     const withVotes = [...this.submissions.map(x => ({ ...x, votes: [] as Discord.User[], voted: false }))]
@@ -61,6 +66,6 @@ export class VotingState implements GameState<WittyRoundContext> {
   }
 
   static begin = (context: WittyRoundContext, prompt: Prompt, submissions: Submission[]) =>
-    new VotingState(context, prompt, submissions, new Map())
+    new VotingState(context, prompt, submissions, new Map(), Timer.begin())
 }
 

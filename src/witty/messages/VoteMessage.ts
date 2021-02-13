@@ -1,4 +1,8 @@
 import * as Discord from 'discord.js'
+import { interval } from 'rxjs'
+import { map, takeWhile } from 'rxjs/operators'
+
+import  { Duration } from '../../duration'
 import { Prompt } from '../prompts';
 import { VotingState } from '../state';
 import { shuffle } from 'random-js';
@@ -13,7 +17,7 @@ export class VoteMessage implements Message {
     readonly prompt: Prompt,
     readonly submissions: Array<{ user: Discord.User, submission: string }>,
     readonly botUser: Discord.User,
-    readonly voteDurationSec: number) {
+    readonly voteDuration: Duration) {
     this.users = [...submissions.map(x => x.user)]
     shuffle(mt, this.users)
   }
@@ -39,25 +43,24 @@ export class VoteMessage implements Message {
     return msg
   }
 
-  private message = (remainingSec: number, voters: Discord.User[]) =>
+  private message = (remaining: Duration, voters: Discord.User[]) =>
     this.baseContent
-      .setFooter(`You have ${remainingSec} seconds. Still left to vote: ${this.users.filter(u => !voters.some(v => v == u)).map(u => memberName(this.context.guild, u)).join(', ')}`)
+      .setFooter(`You have ${remaining.seconds} seconds. Still left to vote: ${this.users.filter(u => !voters.some(v => v == u)).map(u => memberName(this.context.guild, u)).join(', ')}`)
 
   get content() {
-    return this.message(this.voteDurationSec, [])
+    return this.message(this.voteDuration, [])
   }
 
   onSent = (msg: Discord.Message, getState: () => AnyGameState) => {
-    let remainingSec = this.voteDurationSec
-    const interval = setInterval(() => {
-      remainingSec -= 5
-      const state = getState()
-      if (remainingSec > 0 && state instanceof VotingState && state.context.sameRound(this.context)) {
-        msg.edit(this.message(remainingSec, Array.from(state.votes.keys())))
-      } else {
-        clearInterval(interval)
-        msg.edit(this.baseContent.setFooter(`Voting over!`))
-      }
-    }, 5000)
+    interval(5000)
+      .pipe(
+        map(_ => getState()),
+        takeWhile(s => s instanceof VotingState && s.context.sameRound(this.context) && s.remaining().isGreaterThan(0)),
+        map(s => s as VotingState)
+      )
+      .subscribe(
+        s => msg.edit(this.message(s.remaining(), Array.from(s.votes.keys()))),
+        () => this.baseContent.setFooter(`Voting over!`),
+        () => this.baseContent.setFooter(`Voting over!`))
   }
 }

@@ -6,8 +6,9 @@ import { tryParseInt, clamp } from '../../util';
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'
 import { CommandFactory } from '../../command';
+import { Duration } from '../../duration';
 
-export const Begin = Case('witty-begin', (user: Discord.User, channel: Discord.TextChannel, timeoutSec: number, minPlayers: number, race: number) => ({ channel, user, timeoutSec, minPlayers, race }))
+export const Begin = Case('witty-begin', (user: Discord.User, channel: Discord.TextChannel, timeout: Duration, minPlayers: number, race: number) => ({ channel, user, timeout, minPlayers, race }))
 
 export const BeginFactory = new CommandFactory((state, message) => {
   if (state instanceof IdleState && message.channel instanceof Discord.TextChannel && /^!witty\b/.test(message.content)) {
@@ -35,6 +36,6 @@ export const BeginFactory = new CommandFactory((state, message) => {
       O.getOrElse(() => 20)
     )
 
-    return Begin(message.author, message.channel, timeout, minPlayers, race)
+    return Begin(message.author, message.channel, Duration.seconds(timeout), minPlayers, race)
   }
 })

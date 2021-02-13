@@ -1,16 +1,20 @@
 import * as Discord from 'discord.js'
+import { interval } from 'rxjs'
+import { map, takeWhile } from 'rxjs/operators'
+
 import { Prompt } from '../prompts';
 import { SubmissionState } from '../state';
 import { AnyGameState } from '../../state';
 import { Id } from '../../id';
 import { Message } from '../../messages'
+import { Duration } from '../../duration';
 
 export class NewRoundMessage implements Message {
   constructor(
     readonly roundId: Id,
     readonly prompt: Prompt,
     readonly botUser: Discord.User,
-    readonly submitDurationSec: number
+    readonly submitDuration: Duration
   ) { }
 
   private get baseContent() {
@@ -28,25 +32,24 @@ export class NewRoundMessage implements Message {
     return msg
   }
 
-  private message = (remainingSec: number) =>
+  private message = (remaining: Duration) =>
     this.baseContent
-      .setFooter(`You have ${remainingSec} seconds to come up with an answer`)
+      .setFooter(`You have ${remaining.seconds} seconds to come up with an answer`)
 
   get content() {
-    return this.message(this.submitDurationSec)
+    return this.message(this.submitDuration)
   }
 
   onSent = (msg: Discord.Message, getState: () => AnyGameState) => {
-    let remainingSec = this.submitDurationSec
-    const interval = setInterval(() => {
-      remainingSec -= 5
-      const state = getState()
-      if (remainingSec > 0 && state instanceof SubmissionState && state.context.roundId === this.roundId) {
-        msg.edit(this.message(remainingSec))
-      } else {
-        clearInterval(interval)
-        msg.edit(this.baseContent.setFooter(`Time's up!`))
-      }
-    }, 5000)
+    interval(5000)
+      .pipe(
+        map(_ => getState()),
+        takeWhile(s => s instanceof SubmissionState && s.context.roundId === this.roundId && s.remaining().isGreaterThan(0)),
+        map(s => s as SubmissionState)
+      )
+      .subscribe(
+        s => msg.edit(this.message(s.remaining())),
+        () => msg.edit(this.baseContent.setFooter(`Time's up!`)),
+        () => msg.edit(this.baseContent.setFooter(`Time's up!`)))
   }
 }

@@ -1,10 +1,13 @@
 import * as Discord from 'discord.js'
+import { interval } from 'rxjs'
+import { map, takeWhile } from 'rxjs/operators'
 
 import { AnyGameState } from '../../state';
 import { StartingState } from '../state/StartingState';
 import { Message, mention } from '../../messages'
 import { WittyGameContext } from '../context';
-import { StartingStateDelayMs } from '../state/newGame';
+import { StartingStateDelay } from '../state/newGame';
+import { Duration } from '../../duration';
 
 export class GameStartedMessage implements Message {
   constructor(readonly notifyRole: Discord.Role | undefined, readonly context: WittyGameContext) { }
@@ -12,13 +15,14 @@ export class GameStartedMessage implements Message {
   get startedBy() { return this.context.initiator }
 
   get content() {
-    return this.message(StartingStateDelayMs / 1000, [this.startedBy])
+    return this.message(StartingStateDelay, [this.startedBy])
   }
 
-  message(remainingSec: number, interested: Discord.User[]) {
+  message(remaining: Duration, interested: Discord.User[]) {
     const footer =
-      remainingSec >= 60 ? `${Math.floor(remainingSec / 60)} minutes remaining`
-      : `${remainingSec} seconds remaining`
+      remaining.isGreaterThan(Duration.minutes(1))
+      ? `${remaining.minutes} minutes remaining`
+      : `${remaining.seconds} seconds remaining`
 
     const title = `:person_running: It's a race to ${this.context.race}`
 
@@ -41,16 +45,15 @@ export class GameStartedMessage implements Message {
   }
 
   onSent = (msg: Discord.Message, getState: () => AnyGameState) => {
-    let remainingSec = StartingStateDelayMs / 1000
-    const interval = setInterval(() => {
-      remainingSec -= 5
-      const state = getState()
-      if (remainingSec > 0 && state instanceof StartingState && state.context.sameGame(this.context)) {
-        msg.edit(this.message(remainingSec, state.interested))
-      } else {
-        msg.edit({ embed: msg.embeds[0].setFooter('') })
-        clearInterval(interval)
-      }
-    }, 5000)
+    interval(5000)
+      .pipe(
+        map(_ => getState()),
+        takeWhile(s => s instanceof StartingState && s.context.sameGame(this.context) && s.remaining().isGreaterThan(0)),
+        map(s => s as StartingState)
+      )
+      .subscribe(
+        s => msg.edit(this.message(s.remaining(), s.interested)),
+        () => msg.edit({ embed: msg.embeds[0].setFooter('') }),
+        () => msg.edit({ embed: msg.embeds[0].setFooter('') }))
   }
 }

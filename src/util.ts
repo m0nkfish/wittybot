@@ -1,3 +1,5 @@
+import { Duration } from "./duration"
+
 export const tryParseInt = (str: string) => {
   try {
     const entry = Number.parseInt(str)
@@ -61,12 +63,22 @@ export const memo = <T>(f: () => T): () => T => {
   }
 }
 
-export function beginTimer() {
+export type Timer = {
+  getMs(): number,
+  duration(): Duration
+}
+export const Timer = {
+  begin: beginTimer
+}
+export function beginTimer(): Timer {
   const start = process.hrtime()
   return {
     getMs() {
       const end = process.hrtime(start)
       return (end[0] * 1000) + (end[1] / 1000000)
+    },
+    duration() {
+      return new Duration(this.getMs())
     }
   }
 }

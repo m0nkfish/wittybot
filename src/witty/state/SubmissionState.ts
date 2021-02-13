@@ -9,6 +9,8 @@ import { VoteMessage, ScoresByRatingMessage } from '../messages';
 import { BasicMessage } from '../../messages';
 import { VotingState } from './VotingState';
 import { IdleState, GameState } from '../../state';
+import { Timer } from '../../util';
+import { Duration } from '../../duration';
 
 /** Prompt decided, submissions being accepted */
 export class SubmissionState implements GameState<WittyRoundContext> {
@@ -16,10 +18,13 @@ export class SubmissionState implements GameState<WittyRoundContext> {
   constructor(
     readonly context: WittyRoundContext,
     readonly prompt: Prompt,
-    readonly submissions: Map<Discord.User, string>) { }
+    readonly submissions: Map<Discord.User, string>,
+    readonly timer: Timer) { }
+
+  remaining = () => this.context.timeout.subtract(this.timer.duration())
 
   withSubmission = (user: Discord.User, submission: string) =>
-    new SubmissionState(this.context, this.prompt, new Map(this.submissions).set(user, submission))
+    new SubmissionState(this.context, this.prompt, new Map(this.submissions).set(user, submission), this.timer)
 
   finish = (): Action => {
     if ((!this.context.inTestMode && this.submissions.size < this.context.minPlayers) || this.submissions.size < 1) {
@@ -32,14 +37,14 @@ export class SubmissionState implements GameState<WittyRoundContext> {
 
     const shuffled = shuffle(mt, Array.from(this.submissions).map(([user, submission]) => ({ user, submission })))
 
-    const voteDurationSec = this.submissions.size * 10
+    const voteDuration = Duration.seconds(this.submissions.size * 10)
 
     return CompositeAction(
       NewState(VotingState.begin(this.context, this.prompt, shuffled)),
-      DelayedAction(voteDurationSec * 1000, FromStateAction(this.context.guild, state => OptionalAction(state instanceof VotingState && state.context.sameRound(this.context) && state.finish()))),
-      Send(this.context.channel, new VoteMessage(this.context, this.prompt, shuffled, this.context.botUser, voteDurationSec))
+      DelayedAction(voteDuration, FromStateAction(this.context.guild, state => OptionalAction(state instanceof VotingState && state.context.sameRound(this.context) && state.finish()))),
+      Send(this.context.channel, new VoteMessage(this.context, this.prompt, shuffled, this.context.botUser, voteDuration))
     )
   }
 
-  static begin = (context: WittyRoundContext, prompt: Prompt) => new SubmissionState(context, prompt, new Map())
+  static begin = (context: WittyRoundContext, prompt: Prompt) => new SubmissionState(context, prompt, new Map(), Timer.begin())
 }

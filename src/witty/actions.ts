@@ -3,6 +3,7 @@ import { Case } from '../case'
 import { AnyGameState } from '../state';
 import { Destination, Message } from '../messages'
 import { Round } from './round';
+import { Duration } from '../duration';
 
 export const Send = Case('send-message', (destination: Destination, message: Message) => ({ destination, message }))
 export const NewState = Case('new-state', (newState: AnyGameState) => ({ newState }))
@@ -26,5 +27,5 @@ export type Action =
   | Case<'promise-action', { promise: Promise<Action> }>
 
 export const UpdateState = (guild: Discord.Guild, update: (state: AnyGameState) => AnyGameState) => FromStateAction(guild, state => NewState(update(state)))
-export const DelayedAction = (delayMs: number, action: Action) => PromiseAction(new Promise<Action>(resolve => setTimeout(() => resolve(action), delayMs)))
+export const DelayedAction = (delay: Duration, action: Action) => PromiseAction(new Promise<Action>(resolve => setTimeout(() => resolve(action), delay.milliseconds)))
 export const OptionalAction = (action: Action | undefined | null | false): Action => action || NullAction()

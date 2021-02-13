@@ -8,13 +8,15 @@ import { StartingState } from './StartingState';
 import { GuildContext } from '../../context/GuildContext';
 import * as Discord from 'discord.js';
 import { Id } from '../../id';
+import { Timer } from '../../util';
+import { Duration } from '../../duration';
 
-export function newGame(guildContext: GuildContext, channel: Discord.TextChannel, initiator: Discord.User, timeoutSec: number, minPlayers: number, race: number): Action {
-  const context = new WittyGameContext(guildContext, channel, Id.create(), initiator, [], timeoutSec, minPlayers, race)
+export function newGame(guildContext: GuildContext, channel: Discord.TextChannel, initiator: Discord.User, timeout: Duration, minPlayers: number, race: number): Action {
+  const context = new WittyGameContext(guildContext, channel, Id.create(), initiator, [], timeout, minPlayers, race)
   const gameStartedMessage = getNotifyRole(context.guild)
     .then(role => Send(context.channel, new GameStartedMessage(role, context)))
 
-  const timeout =
+  const onTimeout =
     FromStateAction(context.channel.guild, state =>
       OptionalAction(state instanceof StartingState && state.context.sameGame(context) &&
         (state.enoughInterest()
@@ -29,9 +31,9 @@ export function newGame(guildContext: GuildContext, channel: Discord.TextChannel
 
   return CompositeAction(
     PromiseAction(gameStartedMessage),
-    DelayedAction(StartingStateDelayMs, timeout),
-    NewState(new StartingState(context, [context.initiator])),
+    DelayedAction(StartingStateDelay, onTimeout),
+    NewState(new StartingState(context, [context.initiator], Timer.begin())),
   )
 }
 
-export const StartingStateDelayMs = 1000 * 60 * 3
+export const StartingStateDelay = Duration.minutes(3)
