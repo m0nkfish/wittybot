@@ -1,31 +1,19 @@
 import * as Discord from 'discord.js'
-import { Command, Interested, Uninterested } from '../commands';
+import { Command } from '../commands';
 import { Action, NewState, CompositeAction, Send, OptionalAction } from '../actions';
 import { WittyGameContext } from '../context';
 import { newRound } from './newRound';
 import { BasicMessage, mention } from '../../messages';
 import { IdleState, GameState } from '../../state';
+import { In, Out } from '../command-factory'
 
 /** Waiting for enough people to demonstrate interest */
 export class StartingState implements GameState<WittyGameContext> {
 
   constructor(readonly context: WittyGameContext, readonly interested: Discord.User[]) { }
 
-  interpreter(message: Discord.Message): Command | undefined {
-    if (!(message.channel instanceof Discord.TextChannel) || !message.member) {
-      return
-    }
-
-    if (message.content === '!in') {
-      return Interested(message.member)
-    }
-    if (message.content === '!out') {
-      return Uninterested(message.member)
-    }
-  }
-
   receive(command: Command): Action | undefined {
-    if (command.type === 'interested' && !this.interested.some(x => x === command.member.user)) {
+    if (command.type === In.type && !this.interested.some(x => x === command.member.user)) {
       const interested = [...this.interested, command.member.user]
       return CompositeAction(
         NewState(new StartingState(this.context, interested)),
@@ -33,7 +21,7 @@ export class StartingState implements GameState<WittyGameContext> {
       )
     }
 
-    if (command.type === 'uninterested' && this.interested.some(x => x === command.member.user)) {
+    if (command.type === Out.type && this.interested.some(x => x === command.member.user)) {
       const interested = this.interested.filter(x => x !== command.member.user)
       if (interested.length === 0) {
         return CompositeAction(

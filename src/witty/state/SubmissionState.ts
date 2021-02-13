@@ -21,9 +21,6 @@ export class SubmissionState implements GameState<WittyRoundContext> {
     readonly prompt: Prompt,
     readonly submissions: Map<Discord.User, string>) { }
 
-  interpreter = (message: Discord.Message): Command | undefined => 
-    SubmitFactory.combine(SkipFactory).process(this, message)
-
   receive(command: Command): Action | undefined {
     if (command.type === Submit.type) {
       if (command.submission.length > 280) {

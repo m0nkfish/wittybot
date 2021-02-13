@@ -15,7 +15,8 @@ import { ScoresByPointsMessage } from './messages/ScoresMessage';
 import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './loggable';
 import { beginTimer } from '../util';
 import { RoundDbView } from './db';
-import { Begin, Skip, Submit, Vote, GetScores, GetScoresFactory } from './command-factory';
+import { Begin, Skip, Submit, Vote, GetScores, GetScoresFactory, In, Out } from './command-factory';
+import { AllWittyCommands } from './command-factory/all';
 
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -54,12 +55,10 @@ export class Engine {
 
     if (message.channel instanceof Discord.TextChannel) {
       const state = this.getState(message.channel.guild)
-      const getScores = GetScoresFactory.process(state, message)
-      if (getScores) { 
-        return getScores
+      const command = AllWittyCommands.process(state, message)
+      if (command?.type === GetScores.type) { // TODO: remove this hack
+        return command
       }
-
-      const command = state.interpreter(message)
       if (command) {
         return new ScopedCommand(command, message.channel.guild)
       }
@@ -69,7 +68,7 @@ export class Engine {
         .map(g => {
           const state = this.getState(g)
           if (state) {
-            const command = state.interpreter(message)
+            const command = AllWittyCommands.process(state, message)
             if (command) {
               return new ScopedCommand(command, g)
             }
@@ -260,7 +259,8 @@ export class Engine {
         log(event, guild, logSource(command.source))
         break;
 
-      case 'interested':
+      case In.type:
+      case Out.type:
       case 'notify-me':
       case 'unnotify-me':
         log(event, guild, logMember(command.member))

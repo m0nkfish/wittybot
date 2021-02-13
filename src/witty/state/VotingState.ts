@@ -21,9 +21,6 @@ export class VotingState implements GameState<WittyRoundContext> {
     readonly submissions: Submission[],
     readonly votes: Map<Discord.User, number>) { }
 
-  interpreter = (message: Discord.Message): Command | undefined =>
-    VoteFactory.process(this, message)
-
   receive(command: Command): Action | undefined {
     if (command.type === Vote.type) {
       const { entry, user, message } = command

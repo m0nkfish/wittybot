@@ -10,10 +10,6 @@ import { Begin, BeginFactory } from '../witty/command-factory';
 export class IdleState implements GameState<GuildContext> {
   constructor(readonly context: GuildContext) { }
 
-  readonly interpreter = (message: Discord.Message): Command | undefined => {
-    return BeginFactory.process(this, message)
-  }
-
   receive(command: Command): Action | undefined {
     if (command.type === Begin.type) {
       return newGame(this.context, command.channel, command.user, command.timeoutSec, command.minPlayers, command.race)

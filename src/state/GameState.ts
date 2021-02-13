@@ -6,6 +6,5 @@ export type AnyGameState = GameState<any>
 
 export type GameState<Context> = {
   readonly context: Context
-  interpreter(message: Discord.Message): Command | undefined
   receive(command: Command): Action | undefined
 }
