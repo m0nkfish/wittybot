@@ -3,7 +3,7 @@ import { GlobalContext, GuildContext } from '../context'
 import { IdleState, AnyGameState } from '../state';
 import { Action, AddUserToRole, RemoveUserFromRole, CompositeAction, Send } from './actions';
 import * as Discord from 'discord.js';
-import { Command, Help, NotifyMe, UnnotifyMe } from './commands';
+import { Command, Help } from './commands';
 import { getNotifyRole } from './notify';
 import { ScoresByRatingMessage } from './messages';
 import { BasicMessage, HelpMessage } from '../messages';
@@ -15,7 +15,7 @@ import { ScoresByPointsMessage } from './messages/ScoresMessage';
 import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './loggable';
 import { beginTimer } from '../util';
 import { RoundDbView } from './db';
-import { Begin, Skip, Submit, Vote, GetScores, GetScoresFactory, In, Out } from './command-factory';
+import { Begin, Skip, Submit, Vote, GetScores, In, Out, Notify, Unnotify } from './command-factory';
 import { AllWittyCommands } from './command-factory/all';
 
 class ScopedCommand {
@@ -46,17 +46,11 @@ export class Engine {
     if (message.content === '!help') {
       return Help(source)
     }
-    if (message.content === '!notify' && message.member) {
-      return NotifyMe(message.member)
-    }
-    if (message.content === '!unnotify' && message.member) {
-      return UnnotifyMe(message.member)
-    }
 
     if (message.channel instanceof Discord.TextChannel) {
       const state = this.getState(message.channel.guild)
       const command = AllWittyCommands.process(state, message)
-      if (command?.type === GetScores.type) { // TODO: remove this hack
+      if ((<string[]>[GetScores.type, Notify.type, Unnotify.type]).includes(command?.type ?? '')) { // TODO: remove this hack
         return command
       }
       if (command) {
@@ -98,7 +92,7 @@ export class Engine {
         .receive(command.command)
     }
 
-    if (command.type === 'notify-me') {
+    if (command.type === Notify.type) {
       const role = await getNotifyRole(command.member.guild)
       if (role) {
         return CompositeAction(
@@ -108,7 +102,7 @@ export class Engine {
       }
     }
 
-    if (command.type === 'unnotify-me') {
+    if (command.type === Unnotify.type) {
       const role = await getNotifyRole(command.member.guild)
       if (role) {
         return CompositeAction(
@@ -261,8 +255,8 @@ export class Engine {
 
       case In.type:
       case Out.type:
-      case 'notify-me':
-      case 'unnotify-me':
+      case Notify.type:
+      case Unnotify.type:
         log(event, guild, logMember(command.member))
         break;
 

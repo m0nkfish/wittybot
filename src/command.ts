@@ -10,5 +10,5 @@ export class CommandFactory<C> {
         const c1 = this.process(state, event)
         return c1 !== undefined ? c1 : other.process(state, event)
       }
-    ) 
+    )
 }
