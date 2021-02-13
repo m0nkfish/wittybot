@@ -152,7 +152,7 @@ export class Engine {
   async getUser(id: string): Promise<Discord.User> {
     const t = beginTimer()
     const user = await this.context.client.users.fetch(id, true)
-    log.trace(`fetched_user`, logUser(user), { duration_ms: t.getMs() })
+    log(`fetched_user`, logUser(user), { duration_ms: t.getMs() })
     return user
   }
 
