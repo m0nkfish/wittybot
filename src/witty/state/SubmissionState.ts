@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { Command, Submit, Skip } from '../commands';
+import { Command } from '../commands';
 import { Action, CompositeAction, NewState, DelayedAction, FromStateAction, UpdateState, Send, SaveRound, OptionalAction } from '../actions';
 import { Prompt } from '../prompts';
 import { shuffle } from 'random-js';
@@ -11,7 +11,7 @@ import { BasicMessage, mention } from '../../messages';
 import { VotingState } from './VotingState';
 import { endRound } from './endRound';
 import { IdleState, GameState } from '../../state';
-import { log } from '../../log';
+import { SubmitFactory, Submit, SkipFactory, Skip } from '../command-factory';
 
 /** Prompt decided, submissions being accepted */
 export class SubmissionState implements GameState<RoundContext> {
@@ -21,29 +21,11 @@ export class SubmissionState implements GameState<RoundContext> {
     readonly prompt: Prompt,
     readonly submissions: Map<Discord.User, string>) { }
 
-  interpreter = (message: Discord.Message) => {
-    if (message.channel instanceof Discord.DMChannel) {
-      return Submit(message.content, message)
-    } else if (message.channel === this.context.channel) {
-      if (message.content === '!skip') {
-        return Skip()
-      }
-
-      const spoilered = message.content.match(/^\|\|(.*)\|\|$/)
-      if (spoilered && spoilered[1]) {
-        try {
-          message.delete({ reason: 'Message recognised as wittybot submission' })
-        } catch (e) {
-          const error = e instanceof Error ? e.message : 'unknown'
-          log.warn('delete_failed', { error })
-        }
-        return Submit(spoilered[1], message)
-      }
-    }
-  }
+  interpreter = (message: Discord.Message): Command | undefined => 
+    SubmitFactory.combine(SkipFactory).process(this, message)
 
   receive(command: Command): Action | undefined {
-    if (command.type === 'submit') {
+    if (command.type === Submit.type) {
       if (command.submission.length > 280) {
         return Send(command.user, new BasicMessage('Submissions cannot be more than 280 characters long'))
       }
@@ -55,7 +37,7 @@ export class SubmissionState implements GameState<RoundContext> {
         OptionalAction(!isReplacement && Send(this.context.channel, new BasicMessage(`Submission received from ${mention(command.user)}`))),
         UpdateState(this.context.guild, state => state instanceof SubmissionState && state.context.sameRound(this.context) ? state.withSubmission(command.user, command.submission) : state),
       )
-    } else if (command.type === 'skip') {
+    } else if (command.type === Skip.type) {
       if (this.submissions.size === 0) {
         const skippedRound = {
           id: this.context.roundId,

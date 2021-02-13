@@ -9,7 +9,7 @@ import { CommandFactory } from '../../command';
 
 export const Begin = Case('witty-begin', (user: Discord.User, channel: Discord.TextChannel, timeoutSec: number, minPlayers: number, race: number) => ({ channel, user, timeoutSec, minPlayers, race }))
 
-export const BeginFactory = new CommandFactory<ReturnType<typeof Begin>>((state, message) => {
+export const BeginFactory = new CommandFactory((state, message) => {
   if (state instanceof IdleState && message.channel instanceof Discord.TextChannel && /^!witty\b/.test(message.content)) {
     const timeout = pipe(
       /\btimeout (\d+)\b/.exec(message.content),
