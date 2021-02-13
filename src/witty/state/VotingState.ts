@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
 
-import { Command, Vote } from '../commands';
+import { Command } from '../commands';
 import { Action, CompositeAction, NewState, FromStateAction, NullAction, Send, SaveRound, OptionalAction } from '../actions';
 import { Prompt } from '../prompts';
 import { Round, RoundContext } from '../context';
@@ -8,8 +8,7 @@ import { VotingFinishedMessage, VoteAcceptedMessage } from '../messages';
 import { BasicMessage } from '../../messages';
 import { GameState } from '../../state';
 import { endRound } from './endRound';
-import { tryParseInt } from '../../util';
-import { log } from '../../log';
+import { VoteFactory, Vote } from '../command-factory';
 
 type Submission = { user: Discord.User, submission: string }
 
@@ -22,33 +21,11 @@ export class VotingState implements GameState<RoundContext> {
     readonly submissions: Submission[],
     readonly votes: Map<Discord.User, number>) { }
 
-  interpreter = (message: Discord.Message) => {
-    if (message.channel instanceof Discord.DMChannel) {
-      const entry = tryParseInt(message.content)
-      if (entry !== null) {
-        return Vote(entry, message)
-      }
-    }
-    if (message.channel === this.context.channel) {
-      const spoilered = message.content.match(/^\|\|(\d+)\|\|$/)
-      if (spoilered && spoilered[1]) {
-        const entry = tryParseInt(spoilered[1].trim())
-        if (entry !== null) {
-          try {
-            message.delete({ reason: 'Message recognised as wittybot submission' })
-          } catch (e) {
-            const error = e instanceof Error ? e.message : 'unknown'
-            log.warn('delete_failed', { error })
-          }
-          return Vote(entry, message)
-        }
-      }
-    }
-
-  }
+  interpreter = (message: Discord.Message): Command | undefined =>
+    VoteFactory.process(this, message)
 
   receive(command: Command): Action | undefined {
-    if (command.type === 'vote') {
+    if (command.type === Vote.type) {
       const { entry, user, message } = command
       if (entry < 1 || this.submissions.length < entry) {
         return Send(user, new BasicMessage(`You must vote between 1 and ${this.submissions.length}`))

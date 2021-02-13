@@ -15,7 +15,7 @@ import { ScoresByPointsMessage } from './messages/ScoresMessage';
 import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './loggable';
 import { beginTimer } from '../util';
 import { RoundDbView } from './db';
-import { Begin, Skip, Submit } from './command-factory';
+import { Begin, Skip, Submit, Vote } from './command-factory';
 
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -284,7 +284,7 @@ export class Engine {
         log(event, guild, logUser(command.user), { submission: command.submission })
         break;
 
-      case 'vote':
+      case Vote.type:
         log(event, guild, logUser(command.user), { entry: command.entry })
         break;
     

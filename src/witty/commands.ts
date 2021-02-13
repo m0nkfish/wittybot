@@ -1,9 +1,8 @@
 import * as Discord from 'discord.js'
 import { Case } from '../case'
 import { ScoreUnit } from './scores';
-import { Begin, Submit, Skip } from './command-factory';
+import { Begin, Submit, Skip, Vote } from './command-factory';
 
-export const Vote = Case('vote', (entry: number, message: Discord.Message) => ({ user: message.author, entry, message }))
 export const GetScores = Case('get-scores', (source: Discord.TextChannel, unit: ScoreUnit) => ({ source, unit }))
 export const NotifyMe = Case('notify-me', (member: Discord.GuildMember) => ({ member }))
 export const UnnotifyMe = Case('unnotify-me', (member: Discord.GuildMember) => ({ member }))

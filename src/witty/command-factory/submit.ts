@@ -2,7 +2,7 @@ import * as Discord from 'discord.js'
 import { Case } from '../../case'
 import { CommandFactory } from '../../command';
 import { log } from '../../log'
-import { SubmissionState } from '../state/SubmissionState';
+import { SubmissionState } from '../state';
 
 export const Submit = Case('witty-submit', (submission: string, message: Discord.Message) => ({ user: message.author, submission, message }))
 
