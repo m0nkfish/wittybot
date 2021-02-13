@@ -3,8 +3,8 @@ import { StartingState } from '../state';
 import { In } from '../commands';
 import { CompositeAction, NewState, OptionalAction } from '../actions'
 
-export const InHandler = CommandHandler.sync((state, command) => {
-  if (state instanceof StartingState && command.type === In.type && !state.isInterested(command.member.user)) {
+export const InHandler = CommandHandler.build.state(StartingState).command(In).sync((state, command) => {
+  if (!state.isInterested(command.member.user)) {
     const nextState = state.addInterested(command.member.user)
     return CompositeAction(
       NewState(nextState),

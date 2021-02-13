@@ -12,7 +12,7 @@ import { beginTimer } from '../../util'
 import * as Discord from 'discord.js';
 import { logUser } from '../loggable';
 
-export const GetScoresHandler = new CommandHandler(async (state, command) => {
+export const GetScoresHandler = CommandHandler.build.command(GetScores).async(async (state, command) => {
 
   async function getUser(id: string): Promise<Discord.User> {
     const t = beginTimer()
@@ -27,30 +27,28 @@ export const GetScoresHandler = new CommandHandler(async (state, command) => {
     return new Map(users.map((u, i) => [ids[i], u]))
   }
 
-  if (command.type === GetScores.type) {
-    if (command.unit === 'game') {
-      const message = state.context instanceof WittyGameContext
-        ? new ScoresByPointsMessage(Scores.fromRounds(state.context.rounds))
-        : new BasicMessage(`No game is running; start a game with \`!witty\``)
-      return Send(command.source, message)
-    }
-
-    const rounds = await db.scores(command.source.guild, command.unit)
-
-    const fetchUsersTime = beginTimer()
-    log(`fetching_user_cache`)
-    const users = await getUserLookup(rounds)
-    log(`fetched_user_cache`, { unit: command.unit, rounds: rounds.length, users: users.size, duration_ms: fetchUsersTime.getMs() })
-
-    const getScoresTime = beginTimer()
-    log(`building_scores`, { unit: command.unit, rounds: rounds.length })
-    const scoreView = rounds.map(round => RoundScoreView.fromDbView(round, users))
-    log(`built_scores`, { unit: command.unit, duration_ms: getScoresTime.getMs() })
-
-    const scores = Scores.fromRoundViews(scoreView)
-    const timeframe = command.unit === 'alltime' ? "since the dawn of time itself" : `from the last ${command.unit}`
-    return Send(command.source, new ScoresByRatingMessage(scores, timeframe))
+  if (command.unit === 'game') {
+    const message = state.context instanceof WittyGameContext
+      ? new ScoresByPointsMessage(Scores.fromRounds(state.context.rounds))
+      : new BasicMessage(`No game is running; start a game with \`!witty\``)
+    return Send(command.source, message)
   }
+
+  const rounds = await db.scores(command.source.guild, command.unit)
+
+  const fetchUsersTime = beginTimer()
+  log(`fetching_user_cache`)
+  const users = await getUserLookup(rounds)
+  log(`fetched_user_cache`, { unit: command.unit, rounds: rounds.length, users: users.size, duration_ms: fetchUsersTime.getMs() })
+
+  const getScoresTime = beginTimer()
+  log(`building_scores`, { unit: command.unit, rounds: rounds.length })
+  const scoreView = rounds.map(round => RoundScoreView.fromDbView(round, users))
+  log(`built_scores`, { unit: command.unit, duration_ms: getScoresTime.getMs() })
+
+  const scores = Scores.fromRoundViews(scoreView)
+  const timeframe = command.unit === 'alltime' ? "since the dawn of time itself" : `from the last ${command.unit}`
+  return Send(command.source, new ScoresByRatingMessage(scores, timeframe))
 })
 
 function getUniqueIds(rounds: db.RoundDbView[]): string[] {
