@@ -6,7 +6,7 @@ import { CompositeAction, FromStateAction, NewState, NullAction, OptionalAction,
 import { BasicMessage } from '../../messages';
 import { VoteAcceptedMessage } from '../messages';
 
-export const VoteHandler = new CommandHandler((state, command) => {
+export const VoteHandler = CommandHandler.sync((state, command) => {
   if (state instanceof VotingState && command.type === Vote.type) {
     const { entry, user, message } = command
     if (entry < 1 || state.submissions.length < entry) {

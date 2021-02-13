@@ -15,7 +15,7 @@ import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessag
 import { beginTimer } from '../util';
 import { RoundDbView } from './db';
 import { Command, Begin, Skip, Submit, Vote, GetScores, In, Out, Notify, Unnotify, AllWittyCommands, Help } from './commands';
-import { AllCommandHandlers } from './command-handlers/all';
+import { AllCommandHandlers } from './command-handlers';
 
 class ScopedCommand {
   constructor(readonly command: Command, readonly guild: Discord.Guild) {}
@@ -45,11 +45,11 @@ export class Engine {
     if (message.content === '!help') {
       return Help(source)
     }
-1
+
     if (message.channel instanceof Discord.TextChannel) {
       const state = this.getState(message.channel.guild)
       const command = AllWittyCommands.process(state, message)
-      if ((<string[]>[GetScores.type, Notify.type, Unnotify.type]).includes(command?.type ?? '')) { // TODO: remove this hack
+      if ((<string[]>[GetScores.type]).includes(command?.type ?? '')) { // TODO: remove this hack
         return command
       }
       if (command) {
@@ -87,28 +87,7 @@ export class Engine {
     this.logCommand(command)
 
     if (command instanceof ScopedCommand) {
-      const state = this.getState(command.guild)
-      return AllCommandHandlers.handle(state, command.command)
-    }
-
-    if (command.type === Notify.type) {
-      const role = await getNotifyRole(command.member.guild)
-      if (role) {
-        return CompositeAction(
-          AddUserToRole(command.member, role),
-          Send(command.member.user, new BasicMessage(`Wittybot will alert you when a new game is begun. **!unnotify** to remove`))
-        )
-      }
-    }
-
-    if (command.type === Unnotify.type) {
-      const role = await getNotifyRole(command.member.guild)
-      if (role) {
-        return CompositeAction(
-          RemoveUserFromRole(command.member, role),
-          Send(command.member.user, new BasicMessage(`Wittybot will no longer alert you when a new game is begun`))
-        )
-      }
+      return AllCommandHandlers.handle(this.getState(command.guild), command.command)
     }
 
     if (command.type === 'help') {

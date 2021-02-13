@@ -4,6 +4,8 @@ import { OutHandler } from './out';
 import { SkipHandler } from './skip';
 import { SubmitHandler } from './submit';
 import { VoteHandler } from './vote';
+import { NotifyHandler } from './notify';
+import { UnnotifyHandler } from './unnotify';
 
 export const AllCommandHandlers =
   BeginHandler
@@ -12,3 +14,5 @@ export const AllCommandHandlers =
     .orElse(SkipHandler)
     .orElse(SubmitHandler)
     .orElse(VoteHandler)
+    .orElse(NotifyHandler)
+    .orElse(UnnotifyHandler)

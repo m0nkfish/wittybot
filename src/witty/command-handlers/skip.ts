@@ -4,7 +4,7 @@ import { Skip } from '../commands';
 import { CompositeAction, SaveRound, Send } from '../actions';
 import { BasicMessage } from '../../messages';
 
-export const SkipHandler = new CommandHandler((state, command) => {
+export const SkipHandler = CommandHandler.sync((state, command) => {
   if (state instanceof SubmissionState && command.type === Skip.type) {
     if (state.submissions.size > 0) {
       return Send(state.context.channel, new BasicMessage(`Prompt already has submissions; won't skip`))

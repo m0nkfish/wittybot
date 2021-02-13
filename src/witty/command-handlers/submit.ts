@@ -6,7 +6,7 @@ import { CompositeAction, OptionalAction, Send, UpdateState } from '../actions';
 import { SubmissionAcceptedMessage } from '../messages';
 import { BasicMessage, mention } from '../../messages';
 
-export const SubmitHandler = new CommandHandler((state, command) => {
+export const SubmitHandler = CommandHandler.sync((state, command) => {
   if (state instanceof SubmissionState && command.type === Submit.type) {
     if (command.submission.length > 280) {
       return Send(command.user, new BasicMessage('Submissions cannot be more than 280 characters long'))

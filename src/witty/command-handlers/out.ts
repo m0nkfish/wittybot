@@ -5,7 +5,7 @@ import { Out } from '../commands';
 import { CompositeAction, NewState, Send } from '../actions'
 import { BasicMessage } from '../../messages';
 
-export const OutHandler = new CommandHandler((state, command) => {
+export const OutHandler = CommandHandler.sync((state, command) => {
   if (state instanceof StartingState && command.type === Out.type && state.isInterested(command.member.user)) {
     const nextState = state.removeInterested(command.member.user)
     return nextState.interested.length === 0
