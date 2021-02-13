@@ -3,6 +3,7 @@ import { InHandler } from './in';
 import { OutHandler } from './out';
 import { SkipHandler } from './skip';
 import { SubmitHandler } from './submit';
+import { VoteHandler } from './vote';
 
 export const AllCommandHandlers =
   BeginHandler
@@ -10,3 +11,4 @@ export const AllCommandHandlers =
     .orElse(OutHandler)
     .orElse(SkipHandler)
     .orElse(SubmitHandler)
+    .orElse(VoteHandler)

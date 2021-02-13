@@ -1,15 +1,14 @@
 import * as Discord from 'discord.js'
 
 import { Command } from '../commands';
-import { Action, CompositeAction, NewState, FromStateAction, NullAction, Send, SaveRound, OptionalAction } from '../actions';
+import { Action, CompositeAction, Send, SaveRound, OptionalAction } from '../actions';
 import { Prompt } from '../prompts';
 import { WittyRoundContext } from '../context';
 import { Round } from '../round'
-import { VotingFinishedMessage, VoteAcceptedMessage } from '../messages';
-import { BasicMessage } from '../../messages';
+import { VotingFinishedMessage } from '../messages';
 import { GameState } from '../../state';
 import { endRound } from './endRound';
-import { Vote } from '../commands';
+import { AllCommandHandlers } from '../command-handlers/all';
 
 type Submission = { user: Discord.User, submission: string }
 
@@ -22,40 +21,7 @@ export class VotingState implements GameState<WittyRoundContext> {
     readonly submissions: Submission[],
     readonly votes: Map<Discord.User, number>) { }
 
-  receive(command: Command): Action | undefined {
-    if (command.type === Vote.type) {
-      const { entry, user, message } = command
-      if (entry < 1 || this.submissions.length < entry) {
-        return Send(user, new BasicMessage(`You must vote between 1 and ${this.submissions.length}`))
-      }
-
-      if (!this.submissions.some(x => x.user === user)) {
-        return Send(user, new BasicMessage(`You must have submitted an entry in order to vote`))
-      }
-
-      const submission = this.submissions[entry - 1]
-      if (!submission) {
-        return
-      }
-      if (!this.context.inTestMode && submission.user === user) {
-        return Send(user, new BasicMessage(`You cannot vote for your own entry`))
-      }
-
-      return CompositeAction(
-        OptionalAction(message.channel instanceof Discord.DMChannel && Send(user, new VoteAcceptedMessage(this.prompt, entry, submission.submission))),
-        FromStateAction(this.context.guild, state => {
-          if (state instanceof VotingState && state.context.sameRound(this.context)) {
-            const newState = state.withVote(user, entry)
-            return newState.allVotesIn()
-              ? newState.finish()
-              : NewState(newState)
-          } else {
-            return NullAction()
-          }
-        })
-      )
-    }
-  }
+  receive = (command: Command): Action | undefined => AllCommandHandlers.handle(this, command)
 
   allVotesIn = () => this.votes.size === this.submissions.length
 
