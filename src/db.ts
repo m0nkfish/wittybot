@@ -34,7 +34,7 @@ export async function query<T>(validator: io.Type<T>, queryString: string, param
 
   return withClient(async client => {
     const init = process.hrtime()
-    log('db_query', { queryString: queryString.replace(/\n/g, ' '), params: params.join(',') })
+    log('db_query', { queryString: trimSql(queryString), params: params.join(',') })
     const res = await client.query({ name, text: queryString, values: params })
     const end = process.hrtime(init)
     log('db_query_finished', { count: res.rowCount, duration_ms: (end[0] * 1000) + (end[1] / 1000000) })
@@ -56,4 +56,8 @@ export function inserter<T extends io.Props>(table: string, validator: io.TypeC<
       values: fieldValues
     }
   }
+}
+
+function trimSql(sql: string) {
+  return sql.trim().replace(/\n|\s{2,}/g, ' ')
 }
