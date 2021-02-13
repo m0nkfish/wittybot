@@ -26,9 +26,9 @@ export const VoteHandler = CommandHandler.build.state(VotingState).command(Vote)
 
   return CompositeAction(
     OptionalAction(message.channel instanceof Discord.DMChannel && Send(user, new VoteAcceptedMessage(state.prompt, entry, submission.submission))),
-    FromStateAction(state.context.guild, s1 => {
-      if (s1 instanceof VotingState && s1.context.sameRound(state.context)) {
-        const newState = s1.withVote(user, entry)
+    FromStateAction(state.context.guild, s => {
+      if (s instanceof VotingState && s.context.sameRound(state.context)) {
+        const newState = s.withVote(user, entry)
         return newState.allVotesIn()
           ? newState.finish()
           : NewState(newState)

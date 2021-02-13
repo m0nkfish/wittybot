@@ -16,5 +16,5 @@ export const SubmitHandler = CommandHandler.build.state(SubmissionState).command
   return CompositeAction(
     OptionalAction(command.message.channel instanceof Discord.DMChannel && Send(command.user, new SubmissionAcceptedMessage(state.prompt, command.submission, isReplacement))),
     OptionalAction(!isReplacement && Send(state.context.channel, new BasicMessage(`Submission received from ${mention(command.user)}`))),
-    UpdateState(state.context.guild, newState => newState instanceof SubmissionState && newState.context.sameRound(state.context) ? newState.withSubmission(command.user, command.submission) : newState))
+    UpdateState(state.context.guild, s => s instanceof SubmissionState && s.context.sameRound(state.context) ? s.withSubmission(command.user, command.submission) : s))
 })
