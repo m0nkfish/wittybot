@@ -3,62 +3,28 @@ import * as O from 'rxjs'
 import { filter, map, mergeMap } from 'rxjs/operators';
 
 import { saveRound } from './witty/db'
-import { GlobalContext, GuildContext } from './context'
-import { IdleState, AnyGameState } from './state';
+import { GlobalContext } from './context'
 import { Action, CompositeAction, FromStateAction, NewState, PromiseAction, Send, AddUserToRole, RemoveUserFromRole, SaveRound, NullAction } from './actions';
 import { logAction, logCommand } from './engine-log';
-import { getOrSet, isNonNull } from './util';
+import { isNonNull } from './util';
 import { log, loggableError } from './log'
-import { AllCommandFactories, AllCommandHandlers, AllGlobalCommandHandlers, Command, Help, ScopedCommand } from './commands'
+import { AllScopedCommandFactories, AllScopedCommandHandlers, AllGlobalCommandFactories, AllGlobalCommandHandlers, Command, GlobalCommandFactory, ScopedGlobalCommandFactory, ScopedGlobalCommandHandler, GlobalCommandHandler } from './commands'
+import { GuildStates } from './guilds';
 
 export class Engine {
-  guildStates: Map<Discord.Guild, AnyGameState>
+  guilds: GuildStates
+  commandProcessor: GlobalCommandFactory
+  commandHandler: GlobalCommandHandler
 
   constructor(readonly context: GlobalContext) {
-    this.guildStates = new Map()
+    this.guilds = new GuildStates(context)
+    this.commandProcessor = AllGlobalCommandFactories.combine(new ScopedGlobalCommandFactory(this.guilds, AllScopedCommandFactories))
+    this.commandHandler = AllGlobalCommandHandlers.combine(new ScopedGlobalCommandHandler(this.guilds, AllScopedCommandHandlers))
   }
-
-  getState = (guild: Discord.Guild): AnyGameState =>
-    getOrSet(this.guildStates, guild, () => new IdleState(new GuildContext(this.context, guild)))
 
   getCommand(message: Discord.Message): Command | undefined {
     try {
-      if (message.channel instanceof Discord.NewsChannel) {
-        return 
-      }
-      const source = message.channel instanceof Discord.TextChannel ? message.channel : message.author
-      if (message.content === '!help') {
-        return Help(source)
-      }
-
-      if (message.channel instanceof Discord.TextChannel) {
-        const state = this.getState(message.channel.guild)
-        const command = AllCommandFactories.process(state, message)
-        if (command) {
-          return ScopedCommand(message.channel.guild, command)
-        }
-      } else if (message.channel instanceof Discord.DMChannel) {
-        const commands = this.context.client.guilds.cache
-          .filter(g => g.member(message.author) !== null)
-          .map(g => {
-            const state = this.getState(g)
-            if (state) {
-              const command = AllCommandFactories.process(state, message)
-              if (command) {
-                return ScopedCommand(g, command)
-              }
-            }
-          })
-          .filter(cmd => !!cmd) as Command[]
-
-        if (commands.length === 1) {
-          return commands[0]
-        }
-
-        if (commands.length > 1) {
-          message.reply(`Sorry, could not establish which server you meant to send this command to`)
-        }
-      }
+      return this.commandProcessor.process(message)
     } catch (err) {
       log.error('error:get_command', loggableError(err))
     }
@@ -67,13 +33,7 @@ export class Engine {
   async getAction(command: Command): Promise<Action | undefined> {
     try {
       logCommand(command)
-
-      if (command.type === ScopedCommand.type) {
-        return AllCommandHandlers.handle(this.getState(command.guild), command.command)
-      }
-      else {
-        return AllGlobalCommandHandlers(command)
-      }
+      return this.commandHandler.handle(command)
     } catch (err) {
       log.error('error:get_action', loggableError(err))
     }
@@ -109,11 +69,11 @@ export class Engine {
         return
 
       case FromStateAction.type:
-        this.interpret(action.getAction(this.getState(action.guild)))
+        this.interpret(action.getAction(this.guilds.getState(action.guild)))
         return
 
       case NewState.type:
-        this.guildStates.set(action.newState.context.guild, action.newState)
+        this.guilds.setState(action.newState.context.guild, action.newState)
         return
 
       case Send.type:
@@ -128,7 +88,7 @@ export class Engine {
           .then(msg => {
             const {guild} = msg
             if (guild) {
-              action.message.onSent?.(msg, () => this.getState(guild))
+              action.message.onSent?.(msg, () => this.guilds.getState(guild))
             }
           })
         return

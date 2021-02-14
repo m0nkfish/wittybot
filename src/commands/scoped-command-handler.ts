@@ -8,9 +8,7 @@ export class CommandHandler {
   constructor(public handle: (state: AnyGameState, command: ScopedCommand) => Promise<Action | undefined>) { }
 
   orElse = (other: CommandHandler) =>
-    new CommandHandler(async (state, command) => {
-      return await this.handle(state, command) ?? await other.handle(state, command)
-    })
+    new CommandHandler(async (state, command) => (await this.handle(state, command)) ?? other.handle(state, command))
 
   static sync = (handle: (state: AnyGameState, command: ScopedCommand) => Action | undefined) =>
     new CommandHandler(async (s, c) => handle(s, c))
