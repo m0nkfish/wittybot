@@ -4,7 +4,7 @@ import { CommandFactory } from '../../commands';
 
 export const Unnotify = Case('unnotify-me', (member: Discord.GuildMember) => ({ member }))
 
-export const UnnotifyFactory = new CommandFactory((state, message) => {
+export const UnnotifyFactory = () => new CommandFactory((state, message) => {
   if (message.content === '!unnotify' && message.member) {
     return Unnotify(message.member)
   }

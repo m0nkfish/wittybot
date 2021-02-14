@@ -12,7 +12,7 @@ import { Timer } from '../../util';
 import * as Discord from 'discord.js';
 import { logUser } from '../loggable';
 
-export const GetScoresHandler = CommandHandler.build.command(GetScores).async(async (state, command) => {
+export const GetScoresHandler = () => CommandHandler.build.command(GetScores).async(async (state, command) => {
 
   async function getUser(id: string): Promise<Discord.User> {
     const t = Timer.begin()

@@ -6,7 +6,7 @@ import { SubmissionState } from '../state';
 
 export const Submit = Case('witty-submit', (submission: string, message: Discord.Message) => ({ user: message.author, submission, message }))
 
-export const SubmitFactory = new CommandFactory((state, message) => {
+export const SubmitFactory = () => new CommandFactory((state, message) => {
   if (state instanceof SubmissionState) {
     if (message.channel instanceof Discord.DMChannel) {
       return Submit(message.content, message)

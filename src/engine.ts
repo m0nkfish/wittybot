@@ -18,8 +18,8 @@ export class Engine {
 
   constructor(readonly context: GlobalContext) {
     this.guilds = new GuildStates(context)
-    this.commandProcessor = AllGlobalCommandFactories.combine(new ScopedGlobalCommandFactory(this.guilds, AllScopedCommandFactories))
-    this.commandHandler = AllGlobalCommandHandlers.combine(new ScopedGlobalCommandHandler(this.guilds, AllScopedCommandHandlers))
+    this.commandProcessor = AllGlobalCommandFactories().combine(new ScopedGlobalCommandFactory(this.guilds, AllScopedCommandFactories()))
+    this.commandHandler = AllGlobalCommandHandlers().combine(new ScopedGlobalCommandHandler(this.guilds, AllScopedCommandHandlers()))
   }
 
   getCommand(message: Discord.Message): Command | undefined {

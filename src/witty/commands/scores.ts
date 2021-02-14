@@ -6,7 +6,7 @@ import { WittyGameContext } from '../context';
 
 export const GetScores = Case('witty-scores', (source: Discord.TextChannel, unit: ScoreUnit) => ({ source, unit }))
 
-export const GetScoresFactory = new CommandFactory((state, message) => {
+export const GetScoresFactory = () => new CommandFactory((state, message) => {
   if (message.channel instanceof Discord.TextChannel) {
     const scores = /^!scores(?: (game|day|week|month|year|alltime))?$/.exec(message.content)
     if (scores) {

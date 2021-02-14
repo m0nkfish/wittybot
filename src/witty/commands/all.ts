@@ -8,16 +8,16 @@ import { Vote, VoteFactory } from './vote';
 import { Notify, NotifyFactory } from './notify';
 import { Unnotify, UnnotifyFactory } from './unnotify';
 
-export const AllWittyCommands =
-  BeginFactory
-    .combine(NotifyFactory)
-    .combine(UnnotifyFactory)
-    .combine(InFactory)
-    .combine(OutFactory)
-    .combine(GetScoresFactory)
-    .combine(SkipFactory)
-    .combine(SubmitFactory)
-    .combine(VoteFactory)
+export const AllWittyCommands = () =>
+  BeginFactory()
+    .combine(NotifyFactory())
+    .combine(UnnotifyFactory())
+    .combine(InFactory())
+    .combine(OutFactory())
+    .combine(GetScoresFactory())
+    .combine(SkipFactory())
+    .combine(SubmitFactory())
+    .combine(VoteFactory())
 
 export type WittyCommand =
   | ReturnType<typeof Begin>

@@ -7,7 +7,7 @@ import { VotingState } from '../state';
 
 export const Vote = Case('witty-vote', (entry: number, message: Discord.Message) => ({ user: message.author, entry, message }))
 
-export const VoteFactory = new CommandFactory((state, message) => {
+export const VoteFactory = () => new CommandFactory((state, message) => {
   if (state instanceof VotingState) {
     if (message.channel instanceof Discord.DMChannel) {
       const entry = tryParseInt(message.content)

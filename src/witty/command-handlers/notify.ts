@@ -4,7 +4,7 @@ import { AddUserToRole, CompositeAction, Send } from '../../actions'
 import { BasicMessage } from '../../messages';
 import { getNotifyRole } from '../notify';
 
-export const NotifyHandler = CommandHandler.build.command(Notify).async(async (state, command) => {
+export const NotifyHandler = () => CommandHandler.build.command(Notify).async(async (state, command) => {
   const role = await getNotifyRole(command.member.guild)
   if (role) {
     return CompositeAction(
