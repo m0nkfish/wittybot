@@ -105,6 +105,8 @@ export function logAction(action: Action) {
       log(event, logSource(destination), { message: getName(message) }, logMessage(message))
     } else if (action.type === 'save-round') {
       log(event, logChannel(action.round.channel), { round: action.round.id })
+    } else if (action.type === RegisterCommand.type) {
+      log(event, { command: action.command.type })
     }
   } catch { }
 }
