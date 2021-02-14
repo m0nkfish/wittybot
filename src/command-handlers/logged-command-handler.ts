@@ -14,7 +14,7 @@ export const LoggedCommandHandler = (handler: GlobalCommandHandler) =>
   })
 
 export function logCommand(input: Command) {
-  const command = input.type === ScopedCommand.type ? input.command : input
+  const command = input.type === ScopedCommand.type ? input.scopedCommand : input
   const guild = input.type === ScopedCommand.type ? logGuild(input.guild) : undefined
   const event = `command:${command.type}`
   switch (command.type) {

@@ -12,7 +12,7 @@ export class ScopedGlobalCommandHandler extends GlobalCommandHandler {
     super(async command => {
       if (command.type === ScopedCommand.type) {
         const state = guilds.getState(command.guild)
-        return scopedFactory.handle(state, command.command)
+        return scopedFactory.handle(state, command.scopedCommand)
       }
     })
   }

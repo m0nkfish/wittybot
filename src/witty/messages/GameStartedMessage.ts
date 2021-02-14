@@ -8,9 +8,13 @@ import { Message, mention } from '../../messages'
 import { WittyGameContext } from '../context';
 import { StartingStateDelay } from '../state/newGame';
 import { Duration } from '../../duration';
+import { ScopedCommand, Command } from '../../commands/command';
+import { In, WittyCommand } from '../commands';
 
 export class GameStartedMessage implements Message {
   constructor(readonly notifyRole: Discord.Role | undefined, readonly context: WittyGameContext) { }
+
+  private readonly inReact = ':thumbsup:'
 
   get startedBy() { return this.context.initiator }
 
@@ -29,7 +33,7 @@ export class GameStartedMessage implements Message {
     const embed = new Discord.MessageEmbed()
       .setTitle(title)
       .setDescription([
-        `A new game was started by ${mention(this.startedBy)}; type \`!in\` to register interest. The game will begin after ${Math.max(this.context.minPlayers, 5)} people are interested, or after three minutes (whichever comes first)`,
+        `A new game was started by ${mention(this.startedBy)}; type \`!in\` or react with :thumbsup: to register interest. The game will begin after ${Math.max(this.context.minPlayers, 5)} people are interested, or after three minutes (whichever comes first)`,
         ``,
         `In:`,
         ...interested.map(x => `• ${mention(x)}`)
@@ -45,6 +49,8 @@ export class GameStartedMessage implements Message {
   }
 
   onSent = (msg: Discord.Message, getState: () => AnyGameState) => {
+    msg.react(this.inReact)
+
     interval(5000)
       .pipe(
         map(_ => getState()),
@@ -55,5 +61,11 @@ export class GameStartedMessage implements Message {
         s => msg.edit(this.message(s.remaining(), s.interested)),
         () => msg.edit({ embed: msg.embeds[0].setFooter('') }),
         () => msg.edit({ embed: msg.embeds[0].setFooter('') }))
+  }
+
+  onReact = (reaction: Discord.MessageReaction, user: Discord.User, member?: Discord.GuildMember): Command | undefined => {
+    if (reaction.emoji.name === this.inReact && member) {
+      return ScopedCommand(member.guild, In(member))
+    }
   }
 }

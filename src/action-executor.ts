@@ -1,12 +1,18 @@
-import { Action, AddUserToRole, CompositeAction, FromStateAction, NewState, PromiseAction, RemoveUserFromRole, SaveRound, Send, NullAction } from './actions';
+import { Action, AddUserToRole, CompositeAction, FromStateAction, NewState, PromiseAction, RemoveUserFromRole, SaveRound, Send, NullAction, RegisterCommand } from './actions';
 import { log } from './log'
 import { logSource, logGuild, logChannel, getName, logMessage, logState } from './witty/loggable';
 import * as Discord from 'discord.js';
 import { saveRound } from "./witty/db";
 import { GuildStates } from './guilds';
+import { Subject } from 'rxjs';
+import { Command } from './commands';
 
 export class ActionExecutor {
   constructor(private readonly guilds: GuildStates) {}
+
+  private readonly commandSubject = new Subject<Command>()
+
+  public readonly commandStream = this.commandSubject.asObservable()
 
   execute = (action: Action) => {
     logAction(action)
@@ -42,7 +48,24 @@ export class ActionExecutor {
             if (guild) {
               action.message.onSent?.(msg, () => this.guilds.getState(guild))
             }
+
+            const {onReact} = action.message
+
+            if (onReact) {
+              msg.client.on('messageReactionAdd', async (reaction, user) => {
+                if (reaction.message.id === msg.id) {
+                  const fullUser = await msg.client.users.fetch(user.id, true)
+                  const member = guild?.member(user.id) ?? undefined
+                  const command = onReact(reaction, fullUser, member)
+                  if (command) {
+                    this.execute(RegisterCommand(command))
+                  }
+                }
+              })
+            }
           })
+
+        action.message.onReact
         return
 
       case AddUserToRole.type:
@@ -55,6 +78,10 @@ export class ActionExecutor {
 
       case SaveRound.type:
         saveRound(action.round)
+        return
+
+      case RegisterCommand.type:
+        this.commandSubject.next(action.command)
         return
 
       case NullAction.type:

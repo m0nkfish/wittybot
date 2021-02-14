@@ -7,5 +7,5 @@ export type Destination = Discord.TextChannel | Discord.User
 export interface Message {
   content: string | Discord.MessageEmbed | { content: string, embed: Discord.MessageEmbed }
   onSent?: (msg: Discord.Message, getState: () => AnyGameState) => void
-  onReact?: () => Command
+  readonly onReact?: (reaction: Discord.MessageReaction, user: Discord.User, member?: Discord.GuildMember) => Command | undefined
 }
