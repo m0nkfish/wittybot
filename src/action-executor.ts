@@ -53,7 +53,7 @@ export class ActionExecutor {
 
             if (onReact) {
               msg.client.on('messageReactionAdd', async (reaction, user) => {
-                if (reaction.message.id === msg.id) {
+                if (reaction.message.id === msg.id && user !== msg.client.user) {
                   try {
                     const fullUser = await msg.client.users.fetch(user.id, true)
                     const member = guild?.member(user.id) ?? undefined
