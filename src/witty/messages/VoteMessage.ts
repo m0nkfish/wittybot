@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { interval } from 'rxjs'
+import { interval, Observable, combineLatest } from 'rxjs';
 import { map, takeWhile } from 'rxjs/operators'
 
 import  { Duration } from '../../duration'
@@ -51,10 +51,10 @@ export class VoteMessage implements Message {
     return this.message(this.voteDuration, [])
   }
 
-  onSent = (msg: Discord.Message, getState: () => AnyGameState) => {
-    interval(5000)
+  onSent = (msg: Discord.Message, stateStream: Observable<AnyGameState>) => {
+    combineLatest([stateStream, interval(5000)])
       .pipe(
-        map(_ => getState()),
+        map(([s]) => s),
         takeWhile(s => s instanceof VotingState && s.context.sameRound(this.context) && s.remaining().isGreaterThan(0)),
         map(s => s as VotingState)
       )

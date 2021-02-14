@@ -6,7 +6,7 @@ import { GlobalContext } from './context'
 import { isNonNull } from './util';
 import { log, loggableError } from './log'
 import { GlobalCommandFactory, ScopedGlobalCommandFactory, ScopedGlobalCommandHandler, GlobalCommandHandler, Command } from './commands'
-import { GuildStates } from './guilds';
+import { GuildStates } from './GuildStates';
 import { AllGlobalCommandFactories, AllScopedCommandFactories, LoggedCommandFactory } from './command-factories';
 import { AllGlobalCommandHandlers, AllScopedCommandHandlers, LoggedCommandHandler } from './command-handlers';
 import { ActionExecutor } from './action-executor';

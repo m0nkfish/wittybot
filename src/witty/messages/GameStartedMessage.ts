@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { interval } from 'rxjs'
+import { interval, Observable, combineLatest } from 'rxjs';
 import { map, takeWhile } from 'rxjs/operators'
 
 import { AnyGameState } from '../../state';
@@ -49,15 +49,15 @@ export class GameStartedMessage implements Message {
       : embed
   }
 
-  onSent = (msg: Discord.Message, getState: () => AnyGameState) => {
+  onSent = (msg: Discord.Message, stateStream: Observable<AnyGameState>) => {
     msg.react(this.inReact)
       .catch(err => {
         log.error('message:on-sent', loggableError(err))
       })
 
-    interval(5000)
+    combineLatest([stateStream, interval(5000)])
       .pipe(
-        map(_ => getState()),
+        map(([s]) => s),
         takeWhile(s => s instanceof StartingState && s.context.sameGame(this.context) && s.remaining().isGreaterThan(0)),
         map(s => s as StartingState)
       )

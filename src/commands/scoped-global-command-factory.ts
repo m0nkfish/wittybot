@@ -2,7 +2,7 @@ import { AnyGameState } from "../state";
 import * as Discord from 'discord.js';
 import { GlobalCommandFactory } from './global-command-factory';
 import { ScopedCommand } from "./command";
-import { GuildStates } from "../guilds";
+import { GuildStates } from "../GuildStates";
 import { CommandFactory } from "./scoped-command-factory";
 import { isNonNull } from '../util';
 

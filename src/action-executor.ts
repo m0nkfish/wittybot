@@ -3,7 +3,7 @@ import { log, loggableError } from './log';
 import { logSource, logGuild, logChannel, getName, logMessage, logState } from './witty/loggable';
 import * as Discord from 'discord.js';
 import { saveRound } from "./witty/db";
-import { GuildStates } from './guilds';
+import { GuildStates } from './GuildStates';
 import { Subject } from 'rxjs';
 import { Command } from './commands';
 
@@ -46,7 +46,7 @@ export class ActionExecutor {
           .then(msg => {
             const { guild } = msg
             if (guild) {
-              action.message.onSent?.(msg, () => this.guilds.getState(guild))
+              action.message.onSent?.(msg, this.guilds.getStream(guild))
             }
 
             const {onReact} = action.message

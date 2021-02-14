@@ -1,7 +1,5 @@
-import { AnyGameState } from "../state";
-import * as Discord from 'discord.js';
 import { ScopedCommand } from "./command";
-import { GuildStates } from "../guilds";
+import { GuildStates } from "../GuildStates";
 import { CommandHandler } from "./scoped-command-handler";
 import { GlobalCommandHandler } from "./global-command-handler";
 
