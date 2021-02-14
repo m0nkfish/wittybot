@@ -1,4 +1,3 @@
-export * from './all'
 export * from './command'
 export * from './help'
 export * from './scoped-command-factory'

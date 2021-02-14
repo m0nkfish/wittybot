@@ -8,8 +8,10 @@ import { Action, CompositeAction, FromStateAction, NewState, PromiseAction, Send
 import { logAction, logCommand } from './engine-log';
 import { isNonNull } from './util';
 import { log, loggableError } from './log'
-import { AllScopedCommandFactories, AllScopedCommandHandlers, AllGlobalCommandFactories, AllGlobalCommandHandlers, Command, GlobalCommandFactory, ScopedGlobalCommandFactory, ScopedGlobalCommandHandler, GlobalCommandHandler } from './commands'
+import { Command, GlobalCommandFactory, ScopedGlobalCommandFactory, ScopedGlobalCommandHandler, GlobalCommandHandler } from './commands'
 import { GuildStates } from './guilds';
+import { AllGlobalCommandFactories, AllScopedCommandFactories } from './command-factories';
+import { AllGlobalCommandHandlers, AllScopedCommandHandlers } from './command-handlers';
 
 export class Engine {
   guilds: GuildStates
