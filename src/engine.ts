@@ -9,11 +9,7 @@ import * as O from 'rxjs'
 import { filter, map, mergeMap } from 'rxjs/operators';
 import { getOrSet, isNonNull } from './util';
 import { log, loggableError } from './log'
-import { AllCommandFactories, AllCommandHandlers, Command, Help } from './commands'
-
-export class ScopedCommand {
-  constructor(readonly command: Command, readonly guild: Discord.Guild) {}
-}
+import { AllCommandFactories, AllCommandHandlers, Command, Help, ScopedCommand } from './commands'
 
 export class Engine {
   guildStates: Map<Discord.Guild, AnyGameState>
@@ -25,7 +21,7 @@ export class Engine {
   getState = (guild: Discord.Guild): AnyGameState =>
     getOrSet(this.guildStates, guild, () => new IdleState(new GuildContext(this.context, guild)))
 
-  getCommand(message: Discord.Message): Command | ScopedCommand | undefined {
+  getCommand(message: Discord.Message): Command | undefined {
     try {
       if (message.channel instanceof Discord.NewsChannel) {
         return 
@@ -39,7 +35,7 @@ export class Engine {
         const state = this.getState(message.channel.guild)
         const command = AllCommandFactories.process(state, message)
         if (command) {
-          return new ScopedCommand(command, message.channel.guild)
+          return ScopedCommand(message.channel.guild, command)
         }
       } else if (message.channel instanceof Discord.DMChannel) {
         const commands = this.context.client.guilds.cache
@@ -49,33 +45,30 @@ export class Engine {
             if (state) {
               const command = AllCommandFactories.process(state, message)
               if (command) {
-                return new ScopedCommand(command, g)
+                return ScopedCommand(g, command)
               }
             }
           })
-          .filter(cmd => !!cmd) as ScopedCommand[]
+          .filter(cmd => !!cmd) as Command[]
 
-        if (commands.length === 0) {
-          return
+        if (commands.length === 1) {
+          return commands[0]
         }
 
         if (commands.length > 1) {
           message.reply(`Sorry, could not establish which server you meant to send this command to`)
-          return
         }
-
-        return commands[0]
       }
     } catch (err) {
       log.error('error:get_command', loggableError(err))
     }
   }
 
-  async getAction(command: Command | ScopedCommand): Promise<Action | undefined> {
+  async getAction(command: Command): Promise<Action | undefined> {
     try {
       logCommand(command)
 
-      if (command instanceof ScopedCommand) {
+      if (command.type === ScopedCommand.type) {
         return AllCommandHandlers.handle(this.getState(command.guild), command.command)
       }
 

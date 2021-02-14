@@ -1,5 +1,5 @@
 export * from './all'
 export * from './command'
 export * from './help'
-export * from './command-factory'
-export * from './command-handler'
+export * from './scoped-command-factory'
+export * from './scoped-command-handler'

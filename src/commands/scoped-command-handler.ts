@@ -2,27 +2,27 @@ import { Case } from '../case';
 import { log } from '../log';
 import { AnyGameState } from '../state';
 import { Action } from '../actions';
-import { Command } from './command';
+import { ScopedCommand } from './command';
 
 export class CommandHandler {
-  constructor(public handle: (state: AnyGameState, command: Command) => Promise<Action | undefined>) { }
+  constructor(public handle: (state: AnyGameState, command: ScopedCommand) => Promise<Action | undefined>) { }
 
   orElse = (other: CommandHandler) =>
     new CommandHandler(async (state, command) => {
       return await this.handle(state, command) ?? await other.handle(state, command)
     })
 
-  static sync = (handle: (state: AnyGameState, command: Command) => Action | undefined) =>
+  static sync = (handle: (state: AnyGameState, command: ScopedCommand) => Action | undefined) =>
     new CommandHandler(async (s, c) => handle(s, c))
 
-  static get build() { return new CommandHandlerBuilder(isAnyGameState, null, isAnyCommand, null) }
+  static get build() { return new CommandHandlerBuilder(isAny, null, isAny, null) }
 }
 
-export class CommandHandlerBuilder<State extends AnyGameState, Cmd extends Command> {
+export class CommandHandlerBuilder<State extends AnyGameState, Cmd extends ScopedCommand> {
   constructor(
     private readonly checkState: (state: AnyGameState) => state is State,
     private readonly stateName: string | null,
-    private readonly checkCommand: (command: Command) => command is Cmd,
+    private readonly checkCommand: (command: ScopedCommand) => command is Cmd,
     private readonly commandName: string | null) {}
 
   sync = (handle: (state: State, command: Cmd) => Action | undefined) =>
@@ -35,7 +35,7 @@ export class CommandHandlerBuilder<State extends AnyGameState, Cmd extends Comma
     }
   })
 
-  command = <Key extends string, Cmd extends Command>(commandType: CommandType<Key, Cmd>) =>
+  command = <Key extends string, Cmd extends ScopedCommand>(commandType: CommandType<Key, Cmd>) =>
     new CommandHandlerBuilder<State, Cmd>(this.checkState, this.stateName, isCommand(commandType), commandType.type)
 
   state = <State extends AnyGameState>(state: Constructor<State>) =>
@@ -49,18 +49,14 @@ function isType<T>(ctor: Constructor<T>) {
   }
 }
 
-function isAnyGameState(state: AnyGameState): state is AnyGameState {
-  return true
-}
-
-type CommandType<Key extends string, Cmd extends Command> = ((...args: any) => Case<Key, Cmd>) & { type: Key }
-function isCommand<Key extends string, Cmd extends Command>(type: CommandType<Key, Cmd>) {
-  return function (command: Command): command is Cmd {
+type CommandType<Key extends string, Cmd extends ScopedCommand> = ((...args: any) => Case<Key, Cmd>) & { type: Key }
+function isCommand<Key extends string, Cmd extends ScopedCommand>(type: CommandType<Key, Cmd>) {
+  return function (command: ScopedCommand): command is Cmd {
     return command.type === type.type
   }
 }
 
-function isAnyCommand(command: Command): command is Command {
+function isAny<T>(x: T): x is T {
   return true
 }
 

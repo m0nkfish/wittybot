@@ -2,8 +2,7 @@ import { Action } from './actions';
 import { log } from './log';
 import { logUser, logMember, logSource, logGuild, logChannel, getName, logMessage, logState } from './witty/loggable';
 import { Begin, Skip, Submit, Vote, GetScores, In, Out, Notify, Unnotify } from './witty/commands';
-import { ScopedCommand } from './engine';
-import { Command } from './commands';
+import { Command, Help, ScopedCommand } from './commands';
 
 export function logAction(action: Action) {
   const event = `action:${action.type}`
@@ -18,9 +17,9 @@ export function logAction(action: Action) {
   }
 }
 
-export function logCommand(input: Command | ScopedCommand) {
-  const command = input instanceof ScopedCommand ? input.command : input
-  const guild = input instanceof ScopedCommand ? logGuild(input.guild) : undefined
+export function logCommand(input: Command) {
+  const command = input.type === ScopedCommand.type ? input.command : input
+  const guild = input.type === ScopedCommand.type ? logGuild(input.guild) : undefined
   const event = `command:${command.type}`
   switch (command.type) {
     case Begin.type:
@@ -31,7 +30,7 @@ export function logCommand(input: Command | ScopedCommand) {
       log(event, guild, { unit: command.unit }, logSource(command.source))
       break;
 
-    case 'help':
+    case Help.type:
       log(event, guild, logSource(command.source))
       break;
 
