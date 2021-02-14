@@ -9,7 +9,7 @@ import { WittyGameContext } from '../context';
 import { StartingStateDelay } from '../state/newGame';
 import { Duration } from '../../duration';
 import { ScopedCommand, Command } from '../../commands/command';
-import { In, WittyCommand } from '../commands';
+import { In } from '../commands';
 import { log, loggableError } from '../../log';
 
 export class GameStartedMessage implements Message {
@@ -68,6 +68,7 @@ export class GameStartedMessage implements Message {
   }
 
   onReact = (reaction: Discord.MessageReaction, user: Discord.User, member?: Discord.GuildMember): Command | undefined => {
+    log.info('message-react', { name: reaction.emoji.name, id: reaction.emoji.id, identifier: reaction.emoji.identifier })
     if (reaction.emoji.name === this.inReact && member) {
       return ScopedCommand(member.guild, In(member))
     }
