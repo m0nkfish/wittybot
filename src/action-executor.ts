@@ -6,13 +6,16 @@ import { saveRound } from "./witty/db";
 import { GuildStates } from './GuildStates';
 import { Subject } from 'rxjs';
 import { Command } from './commands';
+import { Message } from './messages';
 
 export class ActionExecutor {
   constructor(private readonly guilds: GuildStates) {}
 
   private readonly commandSubject = new Subject<Command>()
+  private readonly messageSubject = new Subject<[Discord.Message, Message]>()
 
   public readonly commandStream = this.commandSubject.asObservable()
+  public readonly messageStream = this.messageSubject.asObservable()
 
   execute = (action: Action) => {
     logAction(action)
@@ -44,6 +47,15 @@ export class ActionExecutor {
         }
         action.destination.send(content)
           .then(msg => {
+            const {reacts} = action.message
+            if (reacts) {
+              reacts
+                .reduce((res, emoji) => res.then(async () => { await msg.react(emoji) }), Promise.resolve())
+                .catch(err => {
+                  log.error('message:on-sent', loggableError(err))
+                })
+            }
+
             const { guild } = msg
             if (guild) {
               action.message.onSent?.(msg, this.guilds.getStream(guild))

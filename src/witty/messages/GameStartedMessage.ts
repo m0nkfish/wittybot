@@ -10,12 +10,14 @@ import { StartingStateDelay } from '../state/newGame';
 import { Duration } from '../../duration';
 import { ScopedCommand, Command } from '../../commands/command';
 import { In } from '../commands';
-import { log, loggableError } from '../../log';
+import { log } from '../../log';
 
 export class GameStartedMessage implements Message {
   constructor(readonly notifyRole: Discord.Role | undefined, readonly context: WittyGameContext) { }
 
   private readonly inReact = '👍'
+
+  reacts = [this.inReact]
 
   get startedBy() { return this.context.initiator }
 
@@ -50,11 +52,6 @@ export class GameStartedMessage implements Message {
   }
 
   onSent = (msg: Discord.Message, stateStream: Observable<AnyGameState>) => {
-    msg.react(this.inReact)
-      .catch(err => {
-        log.error('message:on-sent', loggableError(err))
-      })
-
     combineLatest([stateStream, interval(5000)])
       .pipe(
         map(([s]) => s),
