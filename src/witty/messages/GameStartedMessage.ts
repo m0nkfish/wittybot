@@ -15,7 +15,7 @@ import { log, loggableError } from '../../log';
 export class GameStartedMessage implements Message {
   constructor(readonly notifyRole: Discord.Role | undefined, readonly context: WittyGameContext) { }
 
-  private readonly inReact = ':thumbsup:'
+  private readonly inReact = '👍'
 
   get startedBy() { return this.context.initiator }
 
@@ -34,7 +34,7 @@ export class GameStartedMessage implements Message {
     const embed = new Discord.MessageEmbed()
       .setTitle(title)
       .setDescription([
-        `A new game was started by ${mention(this.startedBy)}; type \`!in\` or react with :thumbsup: to register interest. The game will begin after ${Math.max(this.context.minPlayers, 5)} people are interested, or after three minutes (whichever comes first)`,
+        `A new game was started by ${mention(this.startedBy)}; type \`!in\` or react with ${this.inReact} to register interest. The game will begin after ${Math.max(this.context.minPlayers, 5)} people are interested, or after three minutes (whichever comes first)`,
         ``,
         `In:`,
         ...interested.map(x => `• ${mention(x)}`)
