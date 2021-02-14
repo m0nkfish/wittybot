@@ -1,9 +1,7 @@
-import { Command, ScopedCommand } from './command';
-import { GlobalCommandHandler } from './global-command-handler';
+import { Command, ScopedCommand, GlobalCommandHandler, Help } from '../commands';
 import { log, loggableError } from '../log';
 import { logUser, logMember, logSource, logGuild } from '../witty/loggable';
 import { Begin, Skip, Submit, Vote, GetScores, In, Out, Notify, Unnotify } from '../witty/commands';
-import { Help } from './help';
 
 export const LoggedCommandHandler = (handler: GlobalCommandHandler) =>
   new GlobalCommandHandler(async command => {

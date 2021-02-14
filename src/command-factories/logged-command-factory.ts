@@ -1,5 +1,5 @@
 import { log, loggableError } from '../log';
-import { GlobalCommandFactory } from './global-command-factory';
+import { GlobalCommandFactory } from '../commands';
 
 export const LoggedCommandFactory = (factory: GlobalCommandFactory) =>
   new GlobalCommandFactory(message => {
