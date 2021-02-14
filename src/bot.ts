@@ -29,7 +29,7 @@ client.on('ready', () => {
   process.on('SIGTERM', () => {
     log.error('sigterm')
     engine.guilds.all.forEach(([_, state]) => {
-      if (!(state.context instanceof IdleState)) {
+      if (!(state instanceof IdleState) && state.context.channel instanceof Discord.Channel) {
         engine.executor.execute(Send(state.context.channel, new BasicMessage(`Sorry! The bot has to shut down, it should be back momentarily but you will have to restart the game`)))
       }
     })
