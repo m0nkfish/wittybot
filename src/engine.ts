@@ -5,10 +5,10 @@ import { filter, map, mergeMap } from 'rxjs/operators';
 import { saveRound } from './witty/db'
 import { GlobalContext } from './context'
 import { Action, CompositeAction, FromStateAction, NewState, PromiseAction, Send, AddUserToRole, RemoveUserFromRole, SaveRound, NullAction } from './actions';
-import { logAction, logCommand } from './engine-log';
+import { logAction } from './engine-log';
 import { isNonNull } from './util';
 import { log, loggableError } from './log'
-import { Command, GlobalCommandFactory, ScopedGlobalCommandFactory, ScopedGlobalCommandHandler, GlobalCommandHandler } from './commands'
+import { GlobalCommandFactory, ScopedGlobalCommandFactory, ScopedGlobalCommandHandler, GlobalCommandHandler, LoggedCommandHandler, LoggedCommandFactory } from './commands'
 import { GuildStates } from './guilds';
 import { AllGlobalCommandFactories, AllScopedCommandFactories } from './command-factories';
 import { AllGlobalCommandHandlers, AllScopedCommandHandlers } from './command-handlers';
@@ -20,25 +20,8 @@ export class Engine {
 
   constructor(readonly context: GlobalContext) {
     this.guilds = new GuildStates(context)
-    this.commandProcessor = AllGlobalCommandFactories().combine(new ScopedGlobalCommandFactory(this.guilds, AllScopedCommandFactories()))
-    this.commandHandler = AllGlobalCommandHandlers().combine(new ScopedGlobalCommandHandler(this.guilds, AllScopedCommandHandlers()))
-  }
-
-  getCommand(message: Discord.Message): Command | undefined {
-    try {
-      return this.commandProcessor.process(message)
-    } catch (err) {
-      log.error('error:get_command', loggableError(err))
-    }
-  }
-
-  async getAction(command: Command): Promise<Action | undefined> {
-    try {
-      logCommand(command)
-      return this.commandHandler.handle(command)
-    } catch (err) {
-      log.error('error:get_action', loggableError(err))
-    }
+    this.commandProcessor = LoggedCommandFactory(AllGlobalCommandFactories().combine(new ScopedGlobalCommandFactory(this.guilds, AllScopedCommandFactories())))
+    this.commandHandler = LoggedCommandHandler(AllGlobalCommandHandlers().combine(new ScopedGlobalCommandHandler(this.guilds, AllScopedCommandHandlers())))
   }
 
   run() {
@@ -46,9 +29,9 @@ export class Engine {
     O.fromEvent<Discord.Message>(this.context.client, 'message')
       .pipe(
         filter(m => !m.author.bot),
-        map(m => this.getCommand(m)),
+        map(m => this.commandProcessor.process(m)),
         filter(isNonNull),
-        mergeMap(c => this.getAction(c)),
+        mergeMap(c => this.commandHandler.handle(c)),
         filter(isNonNull)
       ).subscribe(
         a => this.interpret(a),
