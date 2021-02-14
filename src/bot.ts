@@ -30,7 +30,7 @@ client.on('ready', () => {
     log.error('sigterm')
     engine.guilds.all.forEach(([_, state]) => {
       if (!(state.context instanceof IdleState)) {
-        engine.interpret(Send(state.context.channel, new BasicMessage(`Sorry! The bot has to shut down, it should be back momentarily but you will have to restart the game`)))
+        engine.executor.execute(Send(state.context.channel, new BasicMessage(`Sorry! The bot has to shut down, it should be back momentarily but you will have to restart the game`)))
       }
     })
   })
