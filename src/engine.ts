@@ -1,15 +1,15 @@
+import * as Discord from 'discord.js';
+import * as O from 'rxjs'
+import { filter, map, mergeMap } from 'rxjs/operators';
+
+import { saveRound } from './witty/db'
 import { GlobalContext, GuildContext } from './context'
 import { IdleState, AnyGameState } from './state';
 import { Action, CompositeAction, FromStateAction, NewState, PromiseAction, Send, AddUserToRole, RemoveUserFromRole, SaveRound, NullAction } from './actions';
-import * as Discord from 'discord.js';
-import { HelpMessage } from './messages';
-import * as db from './witty/db'
 import { logAction, logCommand } from './engine-log';
-import * as O from 'rxjs'
-import { filter, map, mergeMap } from 'rxjs/operators';
 import { getOrSet, isNonNull } from './util';
 import { log, loggableError } from './log'
-import { AllCommandFactories, AllCommandHandlers, Command, Help, ScopedCommand } from './commands'
+import { AllCommandFactories, AllCommandHandlers, AllGlobalCommandHandlers, Command, Help, ScopedCommand } from './commands'
 
 export class Engine {
   guildStates: Map<Discord.Guild, AnyGameState>
@@ -71,9 +71,8 @@ export class Engine {
       if (command.type === ScopedCommand.type) {
         return AllCommandHandlers.handle(this.getState(command.guild), command.command)
       }
-
-      if (command.type === 'help') {
-        return Send(command.source, new HelpMessage())
+      else {
+        return AllGlobalCommandHandlers(command)
       }
     } catch (err) {
       log.error('error:get_action', loggableError(err))
@@ -143,7 +142,7 @@ export class Engine {
         return
 
       case SaveRound.type:
-        db.saveRound(action.round)
+        saveRound(action.round)
         return
 
       case NullAction.type:
