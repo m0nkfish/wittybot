@@ -1,5 +1,5 @@
 import { Action, AddUserToRole, CompositeAction, FromStateAction, NewState, PromiseAction, RemoveUserFromRole, SaveRound, Send, NullAction, RegisterCommand } from './actions';
-import { log } from './log'
+import { log, loggableError } from './log';
 import { logSource, logGuild, logChannel, getName, logMessage, logState } from './witty/loggable';
 import * as Discord from 'discord.js';
 import { saveRound } from "./witty/db";
@@ -54,11 +54,15 @@ export class ActionExecutor {
             if (onReact) {
               msg.client.on('messageReactionAdd', async (reaction, user) => {
                 if (reaction.message.id === msg.id) {
-                  const fullUser = await msg.client.users.fetch(user.id, true)
-                  const member = guild?.member(user.id) ?? undefined
-                  const command = onReact(reaction, fullUser, member)
-                  if (command) {
-                    this.execute(RegisterCommand(command))
+                  try {
+                    const fullUser = await msg.client.users.fetch(user.id, true)
+                    const member = guild?.member(user.id) ?? undefined
+                    const command = onReact(reaction, fullUser, member)
+                    if (command) {
+                      this.execute(RegisterCommand(command))
+                    }
+                  } catch (err) {
+                    log.error('error:on-react', loggableError(err))
                   }
                 }
               })
