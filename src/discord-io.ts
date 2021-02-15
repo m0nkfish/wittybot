@@ -39,7 +39,7 @@ export class DiscordIO {
       }
 
       msg.client.on('messageReactionAdd', async (reaction, user) => {
-        if (reaction.message.id === msg.id && user !== msg.client.user) {
+        if (reaction.message.id === msg.id && user !== msg.client.user && reacts.includes(reaction.emoji.name)) {
           try {
             const fullUser = await msg.client.users.fetch(user.id, true)
             this.reactionSubject.next(ReactionAdded(reaction, fullUser, message))
@@ -50,7 +50,7 @@ export class DiscordIO {
       })
 
       msg.client.on('messageReactionRemove', async (reaction, user) => {
-        if (reaction.message.id === msg.id && user !== msg.client.user) {
+        if (reaction.message.id === msg.id && user !== msg.client.user && reacts.includes(reaction.emoji.name)) {
           try {
             const fullUser = await msg.client.users.fetch(user.id, true)
             this.reactionSubject.next(ReactionRemoved(reaction, fullUser, message))
