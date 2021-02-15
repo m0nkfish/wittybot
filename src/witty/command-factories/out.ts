@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js';
 import { CommandFactory } from '../../commands';
 import { MessageReceived, ReactionRemoved } from '../../discord-events';
-import { Out } from '../commands';
+import { Out } from '../../commands';
 import { GameStartedMessage } from '../messages';
 import { StartingState } from '../state';
 

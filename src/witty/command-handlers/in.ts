@@ -1,6 +1,5 @@
-import { CommandHandler } from '../../commands';
+import { CommandHandler, In } from '../../commands';
 import { StartingState } from '../state';
-import { In } from '../commands';
 import { CompositeAction, NewState, OptionalAction } from '../../actions'
 
 export const InHandler = () => CommandHandler.build.state(StartingState).command(In).sync((state, command) => {

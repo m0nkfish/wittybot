@@ -1,7 +1,6 @@
-import { CommandHandler } from '../../commands';
+import { CommandHandler, Out } from '../../commands';
 import { StartingState } from '../state';
 import { IdleState } from '../../state'
-import { Out } from '../commands';
 import { CompositeAction, NewState, Send } from '../../actions'
 import { BasicMessage } from '../../messages';
 

@@ -1,6 +1,5 @@
+import { In, Out } from '../../commands';
 import { Begin } from './begin';
-import { In } from './in';
-import { Out } from './out';
 import { GetScores } from './scores';
 import { Skip } from './skip';
 import { Submit } from './submit';
