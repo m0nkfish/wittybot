@@ -1,16 +1,27 @@
-import { Message, Destination } from "./messages";
 import * as Discord from 'discord.js';
+import { Observable } from 'rxjs'
+import * as O from 'rxjs'
+import { filter, map } from 'rxjs/operators'
+import { Message, Destination } from "./messages";
 import { log, loggableError } from "./log";
 import { GuildStates } from './GuildStates';
 import { Subject } from 'rxjs';
-import { DiscordEvent, ReactionAdded, ReactionRemoved } from './discord-events';
+import { DiscordEvent, MessageReceived, ReactionAdded, ReactionRemoved } from './discord-events';
 
 export class DiscordIO {
 
   private readonly reactionSubject = new Subject<DiscordEvent>()
-  readonly reactionStream = this.reactionSubject.asObservable()
+  readonly eventStream: Observable<DiscordEvent>;
 
-  constructor(readonly guilds: GuildStates) {}
+  constructor(readonly guilds: GuildStates, readonly client: Discord.Client) {
+    const messageStream =
+      O.fromEvent<Discord.Message>(client, 'message')
+        .pipe(
+          filter(m => !m.author.bot),
+          map(MessageReceived))
+
+    this.eventStream = O.merge(this.reactionSubject, messageStream)
+  }
 
   send = async (destination: Destination, message: Message) => {
     const embedColor = '#A4218A'
