@@ -12,6 +12,7 @@ import { AllGlobalCommandHandlers, AllScopedCommandHandlers, LoggedCommandHandle
 import { ActionExecutor } from './action-executor';
 import { Observable } from 'rxjs';
 import { Action } from './actions';
+import { DiscordEvent, MessageReceived } from './discord-events';
 
 export class Engine {
   guilds: GuildStates
@@ -19,6 +20,7 @@ export class Engine {
   commandHandler: GlobalCommandHandler
   executor: ActionExecutor
 
+  inputEventStream: Observable<DiscordEvent>
   commandStream: Observable<Command>
   actionStream: Observable<Action>
 
@@ -28,10 +30,15 @@ export class Engine {
     this.commandHandler = LoggedCommandHandler(AllGlobalCommandHandlers().combine(new ScopedGlobalCommandHandler(this.guilds, AllScopedCommandHandlers())))
     this.executor = new ActionExecutor(this.guilds)
 
+    this.inputEventStream = O.fromEvent<Discord.Message>(this.context.client, 'message')
+      .pipe(
+        filter(m => !m.author.bot),
+        map(MessageReceived)
+      )
+
     this.commandStream = O.merge(
-      O.fromEvent<Discord.Message>(this.context.client, 'message')
+      this.inputEventStream
         .pipe(
-          filter(m => !m.author.bot),
           map(m => this.commandProcessor.process(m)),
           filter(isNonNull)),
       this.executor.commandStream)

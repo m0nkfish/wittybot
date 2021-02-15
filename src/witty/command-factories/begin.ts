@@ -7,9 +7,10 @@ import { pipe } from 'fp-ts/function'
 import { CommandFactory } from '../../commands';
 import { Duration } from '../../duration';
 import { Begin } from '../commands';
+import { MessageReceived } from '../../discord-events';
 
-export const BeginFactory = () => new CommandFactory((state, message) => {
-  if (state instanceof IdleState && message.channel instanceof Discord.TextChannel && /^!witty\b/.test(message.content)) {
+export const BeginFactory = () => CommandFactory.build.state(IdleState).event(MessageReceived).process(((state, { message }) => {
+  if (message.channel instanceof Discord.TextChannel && /^!witty\b/.test(message.content)) {
     const timeout = pipe(
       /\btimeout (\d+)\b/.exec(message.content),
       O.fromNullable,
@@ -37,4 +38,4 @@ export const BeginFactory = () => new CommandFactory((state, message) => {
 
     return Begin(message.author, message.channel, timeout, minPlayers, race)
   }
-})
+}))

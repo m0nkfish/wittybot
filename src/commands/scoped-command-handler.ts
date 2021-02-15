@@ -1,8 +1,9 @@
-import { Case } from '../case';
+import { CaseFactory, isCase } from '../case';
 import { log } from '../log';
 import { AnyGameState } from '../state';
 import { Action } from '../actions';
 import { ScopedCommand } from './command';
+import { Constructor, isAny, isType } from '../util';
 
 export class CommandHandler {
   constructor(public handle: (state: AnyGameState, command: ScopedCommand) => Promise<Action | undefined>) { }
@@ -33,28 +34,9 @@ export class CommandHandlerBuilder<State extends AnyGameState, Cmd extends Scope
     }
   })
 
-  command = <Key extends string, Cmd extends ScopedCommand>(commandType: CommandType<Key, Cmd>) =>
-    new CommandHandlerBuilder<State, Cmd>(this.checkState, this.stateName, isCommand(commandType), commandType.type)
+  command = <Key extends string, Cmd extends ScopedCommand>(commandType: CaseFactory<Key, Cmd>) =>
+    new CommandHandlerBuilder<State, Cmd>(this.checkState, this.stateName, isCase(commandType), commandType.type)
 
   state = <State extends AnyGameState>(state: Constructor<State>) =>
     new CommandHandlerBuilder<State, Cmd>(isType(state), state.name, this.checkCommand, this.commandName)
 }
-
-type Constructor<T> = { new(...args: any[]): T }
-function isType<T>(ctor: Constructor<T>) {
-  return function (item: any): item is T {
-    return item instanceof ctor
-  }
-}
-
-type CommandType<Key extends string, Cmd extends ScopedCommand> = ((...args: any) => Case<Key, Cmd>) & { type: Key }
-function isCommand<Key extends string, Cmd extends ScopedCommand>(type: CommandType<Key, Cmd>) {
-  return function (command: ScopedCommand): command is Cmd {
-    return command.type === type.type
-  }
-}
-
-function isAny<T>(x: T): x is T {
-  return true
-}
-

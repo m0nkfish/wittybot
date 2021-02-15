@@ -1,3 +1,4 @@
+import { Case } from "./case"
 import { Duration } from "./duration"
 
 export const tryParseInt = (str: string) => {
@@ -85,3 +86,15 @@ export function beginTimer(): Timer {
 export function isNonNull<T>(value: T): value is NonNullable<T> {
   return value !== null && value !== undefined;
 }
+
+export type Constructor<T> = { new(...args: any[]): T }
+export function isType<T>(ctor: Constructor<T>) {
+  return function (item: any): item is T {
+    return item instanceof ctor
+  }
+}
+
+export function isAny<T>(x: T): x is T {
+  return true
+}
+
