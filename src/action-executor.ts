@@ -7,9 +7,10 @@ import { GuildStates } from './GuildStates';
 import { Subject } from 'rxjs';
 import { Command } from './commands';
 import { Message } from './messages';
+import { DiscordIO } from './discord-io';
 
 export class ActionExecutor {
-  constructor(private readonly guilds: GuildStates) {}
+  constructor(private readonly guilds: GuildStates, private readonly io: DiscordIO) {}
 
   private readonly commandSubject = new Subject<Command>()
   private readonly messageSubject = new Subject<[Discord.Message, Message]>()
@@ -38,50 +39,7 @@ export class ActionExecutor {
         return
 
       case Send.type:
-        const embedColor = '#A4218A'
-        const content = action.message.content
-        if (content instanceof Discord.MessageEmbed) {
-          content.setColor(embedColor)
-        } else if (typeof content !== "string") {
-          content.embed.setColor(embedColor)
-        }
-        action.destination.send(content)
-          .then(msg => {
-            const {reacts} = action.message
-            if (reacts) {
-              reacts
-                .reduce((res, emoji) => res.then(async () => { await msg.react(emoji) }), Promise.resolve())
-                .catch(err => {
-                  log.error('message:on-sent', loggableError(err))
-                })
-            }
-
-            const { guild } = msg
-            if (guild) {
-              action.message.onSent?.(msg, this.guilds.getStream(guild))
-            }
-
-            const {onReact} = action.message
-
-            if (onReact) {
-              msg.client.on('messageReactionAdd', async (reaction, user) => {
-                if (reaction.message.id === msg.id && user !== msg.client.user) {
-                  try {
-                    const fullUser = await msg.client.users.fetch(user.id, true)
-                    const member = guild?.member(user.id) ?? undefined
-                    const command = onReact(reaction, fullUser, member)
-                    if (command) {
-                      this.execute(RegisterCommand(command))
-                    }
-                  } catch (err) {
-                    log.error('error:on-react', loggableError(err))
-                  }
-                }
-              })
-            }
-          })
-
-        action.message.onReact
+        this.io.send(action.destination, action.message)
         return
 
       case AddUserToRole.type:

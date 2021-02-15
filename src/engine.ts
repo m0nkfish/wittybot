@@ -13,11 +13,13 @@ import { ActionExecutor } from './action-executor';
 import { Observable } from 'rxjs';
 import { Action } from './actions';
 import { DiscordEvent, MessageReceived } from './discord-events';
+import { DiscordIO } from './discord-io';
 
 export class Engine {
   guilds: GuildStates
   commandProcessor: GlobalCommandFactory
   commandHandler: GlobalCommandHandler
+  io: DiscordIO
   executor: ActionExecutor
 
   inputEventStream: Observable<DiscordEvent>
@@ -28,13 +30,17 @@ export class Engine {
     this.guilds = new GuildStates(context)
     this.commandProcessor = LoggedCommandFactory(AllGlobalCommandFactories().combine(new ScopedGlobalCommandFactory(this.guilds, AllScopedCommandFactories())))
     this.commandHandler = LoggedCommandHandler(AllGlobalCommandHandlers().combine(new ScopedGlobalCommandHandler(this.guilds, AllScopedCommandHandlers())))
-    this.executor = new ActionExecutor(this.guilds)
+    this.io = new DiscordIO(this.guilds)
+    this.executor = new ActionExecutor(this.guilds, this.io)
 
-    this.inputEventStream = O.fromEvent<Discord.Message>(this.context.client, 'message')
-      .pipe(
-        filter(m => !m.author.bot),
-        map(MessageReceived)
-      )
+    this.inputEventStream = O.merge(
+      O.fromEvent<Discord.Message>(this.context.client, 'message')
+        .pipe(
+          filter(m => !m.author.bot),
+          map(MessageReceived)
+        ),
+      this.io.reactionStream
+    )
 
     this.commandStream = O.merge(
       this.inputEventStream

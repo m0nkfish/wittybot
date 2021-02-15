@@ -1,4 +1,3 @@
-import { AnyGameState } from "../state";
 import * as Discord from 'discord.js';
 import { GlobalCommandFactory } from './global-command-factory';
 import { ScopedCommand } from "./command";
@@ -43,6 +42,14 @@ export class ScopedGlobalCommandFactory extends GlobalCommandFactory {
 
           if (commands.length > 1) {
             message.reply(`Sorry, could not establish which server you meant to send this command to`)
+          }
+        }
+      } else {
+        const context = event.message.context
+        if (context) {
+          const command = scopedFactory.process(guilds.getState(context.guild), event)
+          if (command) {
+            return ScopedCommand(context.guild, command)
           }
         }
       }

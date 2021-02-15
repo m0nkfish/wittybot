@@ -8,16 +8,15 @@ import { Message, mention } from '../../messages'
 import { WittyGameContext } from '../context';
 import { StartingStateDelay } from '../state/newGame';
 import { Duration } from '../../duration';
-import { ScopedCommand, Command } from '../../commands/command';
-import { In } from '../commands';
-import { log } from '../../log';
 
 export class GameStartedMessage implements Message {
   constructor(readonly notifyRole: Discord.Role | undefined, readonly context: WittyGameContext) { }
 
-  private readonly inReact = '👍'
+  readonly inReact = '👍'
 
-  reacts = [this.inReact]
+  readonly reactable = {
+    reacts: [this.inReact]
+  }
 
   get startedBy() { return this.context.initiator }
 
@@ -62,12 +61,5 @@ export class GameStartedMessage implements Message {
         s => msg.edit(this.message(s.remaining(), s.interested)),
         () => msg.edit({ embed: msg.embeds[0].setFooter('') }),
         () => msg.edit({ embed: msg.embeds[0].setFooter('') }))
-  }
-
-  onReact = (reaction: Discord.MessageReaction, user: Discord.User, member?: Discord.GuildMember): Command | undefined => {
-    log.info('message-react', { name: reaction.emoji.name, id: reaction.emoji.id, identifier: reaction.emoji.identifier })
-    if (reaction.emoji.name === this.inReact && member) {
-      return ScopedCommand(member.guild, In(member))
-    }
   }
 }
