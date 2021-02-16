@@ -34,7 +34,7 @@ export class CommandHandlerBuilder<State extends AnyGameState, Cmd extends Scope
     }
   })
 
-  command = <Key extends string, Cmd extends ScopedCommand>(commandType: CaseFactory<Key, Cmd>) =>
+  command = <Cmd extends ScopedCommand>(commandType: CaseFactory<Cmd>) =>
     new CommandHandlerBuilder<State, Cmd>(this.checkState, this.stateName, isCase(commandType), commandType.type)
 
   state = <State extends AnyGameState>(state: Constructor<State>) =>

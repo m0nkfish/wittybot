@@ -10,8 +10,10 @@ export const Case = <Key extends string, Args extends any[], Res>(type: Key, f: 
   return ff
 }
 
-export type CaseFactory<Key extends string, C extends { type: string }> = ((...args: any) => Case<Key, C>) & { type: Key }
-export function isCase<Key extends string, C extends { type: string }>(type: CaseFactory<Key, C>) {
+export type CaseFactory<C> =
+  C extends { type: infer K } ? K extends string ? ((...args: any) => Case<K, C>) & { type: K } : never : never
+
+export function isCase<C extends { type: string }>(type: CaseFactory<C>) {
   return function (command: { type: string }): command is C {
     return command.type === type.type
   }

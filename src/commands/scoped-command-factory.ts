@@ -1,5 +1,4 @@
-import * as Discord from 'discord.js';
-import { isCase, CaseFactory } from '../case';
+import { CaseFactory, isCase } from '../case';
 import { DiscordEvent } from '../discord-events';
 import { AnyGameState } from '../state/GameState';
 import { Constructor, isAny, isType } from '../util';
@@ -26,7 +25,7 @@ export class CommandFactoryBuilder<State extends AnyGameState, E extends Discord
     private readonly checkEvent: (event: DiscordEvent) => event is E,
     private readonly eventName: string | null) { }
 
-  event = <Key extends string, E extends DiscordEvent>(eventType: CaseFactory<Key, E>) =>
+  event = <E extends DiscordEvent>(eventType: CaseFactory<E>) =>
     new CommandFactoryBuilder<State, E>(this.checkState, this.stateName, isCase(eventType), eventType.type)
 
   state = <State extends AnyGameState>(state: Constructor<State>) =>

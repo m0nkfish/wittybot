@@ -1,10 +1,16 @@
 import * as Discord from 'discord.js'
-import { CompositeAction, NewState, Send } from '../../actions';
+import wu from 'wu'
+import { shuffle } from '../../random'
+
+import { CompositeAction } from '../../actions';
 import { MafiaGameContext } from '../context';
-import { BasicMessage, mention } from '../../messages';
-import { GameState, IdleState } from '../../state';
+import { GameState } from '../../state';
 import { Timer } from '../../util';
 import { MinPlayers, StartingStateDelay } from '../constants';
+import { PlayerStatuses, PlayerStatus } from '../PlayerStatuses';
+import { Role } from '../Role';
+import { NightState } from './NightState';
+import { notifyRoles } from './notifyRoles';
 
 /** Waiting for people to sign up to the game */
 export class StartingState implements GameState<MafiaGameContext> {
@@ -28,8 +34,36 @@ export class StartingState implements GameState<MafiaGameContext> {
   enoughInterest() { return this.interested.length >= MinPlayers }
 
   begin() {
+    const statuses = allocate(this.interested)
     return CompositeAction(
-      Send(this.context.channel, new BasicMessage(`Let's go! ` + this.interested.map(x => mention(x)).join(' '))),
-      NewState(new IdleState(this.context)))
+      notifyRoles(this.context, statuses),
+      NightState.enter(this.context, statuses, 0))
+  }
+}
+
+function allocate(users: Discord.User[]): PlayerStatuses {
+  if (users.length < MinPlayers) {
+    throw new Error(`At least ${MinPlayers} required`)
+  }
+
+  const map = wu.zip(shuffle(users), roles())
+    .reduce((map, [user, role]) => map.set(user, { role, isAlive: true }), new Map<Discord.User, PlayerStatus>())
+
+  return new PlayerStatuses(map)
+}
+
+function* roles(): Generator<Role, void, undefined> {
+  yield* [
+    Role.Villager,
+    Role.Villager,
+    Role.Inspector,
+    Role.Mafia,
+    Role.Mafia,
+    Role.Hooker,
+    Role.Werewolf,
+    Role.Bodyguard
+  ]
+  while (true) {
+    yield Role.Villager
   }
 }
