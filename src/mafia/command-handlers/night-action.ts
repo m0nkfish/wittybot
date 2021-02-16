@@ -32,7 +32,7 @@ export const NightActionHandler = (action: MafiaRoleCommandFactory) => CommandHa
     return CompositeAction(
       OptionalAction(partner && Send(partner, new BasicMessage(`Your partner, ${mention(user)}, has chosen to ${actionText(action)} ${mention(target)}`))),
       Send(user, new BasicMessage(`You have chosen to ${actionText(action)} ${mention(target)}`)),
-      NewState(state.withIntention(user, { target, action }))
+      NewState(state.withIntention(user, state.players.role(command.user), action, target))
     )
   })
 

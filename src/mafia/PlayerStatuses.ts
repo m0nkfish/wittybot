@@ -1,22 +1,19 @@
 import * as Discord from 'discord.js';
 import { Role } from "./role";
-import wu from 'wu';
 import { MafiaRoleCommandFactory } from './commands/all';
 import { roleCommands } from './Role';
 
 export type PlayerStatus = {
+  player: Discord.User
   role: Role
   isAlive: boolean
 }
 
 export class PlayerStatuses {
-  constructor(readonly players: Map<Discord.User, PlayerStatus>) { }
-
-  update = (user: Discord.User, status: Partial<PlayerStatus>) =>
-    new PlayerStatuses(new Map(this.players).set(user, { ...this.players.get(user)!, ...status }))
+  constructor(readonly players: PlayerStatus[]) { }
 
   checkAction = (user: Discord.User, command: MafiaRoleCommandFactory) =>{
-    const status = this.players.get(user)
+    const status = this.players.find(x => x.player === user)
     if (!status || !status.isAlive) {
       return false
     }
@@ -25,39 +22,41 @@ export class PlayerStatuses {
     return [commands.day, commands.night].includes(command)
   }
 
+  kill = (users: Discord.User[]) =>
+    new PlayerStatuses(this.players.map(x => users.includes(x.player) ? {...x, isAlive: false } : x))
+
+  role = (player: Discord.User) =>
+    this.players.find(x => x.player === player)!.role
+
+  roles = () =>
+    new Map(this.players.map(x => [x.player, x.role] as const))
+
   isAlive = (user: Discord.User) =>
-    this.players.get(user)?.isAlive ?? false
+    this.players.find(x => x.player === user)?.isAlive ?? false
 
   alive = () =>
-    wu(this.players)
-      .filter(isAlive)
-      .toArray()
+    this.players.filter(x => x.isAlive)
 
   findPartner = (user: Discord.User): Discord.User | undefined =>
-    this.players.get(user)!.role === Role.Mafia
-    ? wu(this.players)
-        .filter(([u, { role }]) => role === Role.Mafia && u !== user)
-        .map(getUser)
-        .toArray()[0]
+    this.role(user) === Role.Mafia
+    ? this.players
+        .filter(x => x.role === Role.Mafia && x.player !== user)
+        .map(x => x.player)[0]
     : undefined
 
   aliveRoleCounts = () =>
-    Array.from(wu(this.players)
-      .filter(isAlive)
-      .reduce((map, [_, { role }]) => map.set(role, 1 + (map.get(role) ?? 0)), new Map<Role, number>())
+    Array.from(this.players
+      .filter(x => x.isAlive)
+      .reduce((map, x) => map.set(x.role, 1 + (map.get(x.role) ?? 0)), new Map<Role, number>())
       .entries())
 
   aliveCount = () =>
-    wu(this.players)
-      .filter(isAlive)
-      .reduce((a, _) => a + 1, 0)
+    this.players
+      .filter(x => x.isAlive)
+      .length
 
   alivePlayers = () =>
-    wu(this.players)
-      .filter(isAlive)
-      .map(getUser)
-      .toArray()
+    this.players
+      .filter(x => x.isAlive)
+      .map(x => x.player)
 }
-
-const isAlive = ([_, { isAlive }]: [Discord.User, PlayerStatus]) => isAlive
-const getUser = ([user]: [Discord.User, PlayerStatus]) => user

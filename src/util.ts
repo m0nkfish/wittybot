@@ -1,4 +1,3 @@
-import { Case } from "./case"
 import { Duration } from "./duration"
 
 export const tryParseInt = (str: string) => {
@@ -98,3 +97,4 @@ export function isAny<T>(x: T): x is T {
   return true
 }
 
+export type Values<T> = T extends { [key: string]: infer V } ? V : never

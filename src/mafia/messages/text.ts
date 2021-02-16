@@ -53,7 +53,7 @@ export const roleDescriptions = new Map<Role, RoleFlavour>([
   [Role.Inspector, { emoji: Emojis.detective, desc: `You are the Inspector. ${townDescription}` }],
   [Role.Bodyguard, { emoji: Emojis.shield, desc: `You are the Bodyguard. ${townDescription}` }],
   [Role.Hooker, { emoji: Emojis.kiss, desc: `You are the Hooker. ${townDescription}` }],
-  [Role.Mafia, { emoji: Emojis.dagger, desc: `You are a member of the Mafia. You must work with your partner to kill off all of the townsfolk and you rival killers.` }],
+  [Role.Mafia, { emoji: Emojis.dagger, desc: `You are a member of the Mafia. You must work with your partner to kill off all of the townsfolk and your rival killers.` }],
   [Role.Werewolf, { emoji: Emojis.wolf, desc: `You are the Werewolf. You must be cunning, and kill off all of the townsfolk and your rival killers.` }]
 ])
 

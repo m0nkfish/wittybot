@@ -46,10 +46,11 @@ function allocate(users: Discord.User[]): PlayerStatuses {
     throw new Error(`At least ${MinPlayers} required`)
   }
 
-  const map = wu.zip(shuffle(users), roles())
-    .reduce((map, [user, role]) => map.set(user, { role, isAlive: true }), new Map<Discord.User, PlayerStatus>())
+  const statuses = wu.zip(shuffle(users), roles())
+    .map(([player, role]) => ({ player, role, isAlive: true }))
+    .toArray()
 
-  return new PlayerStatuses(map)
+  return new PlayerStatuses(statuses)
 }
 
 function* roles(): Generator<Role, void, undefined> {
