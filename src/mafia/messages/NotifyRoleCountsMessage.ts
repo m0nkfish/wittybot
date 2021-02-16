@@ -3,7 +3,7 @@ import { Role } from "../role";
 import * as Discord from 'discord.js';
 import { PlayerStatuses } from "../PlayerStatuses";
 import { shuffle } from "../../random";
-import { roleDescriptions } from "./text";
+import { roleText } from "./text";
 
 export class NotifyRoleCountsMessage implements Message {
   constructor(readonly statuses: PlayerStatuses) { }
@@ -14,7 +14,7 @@ export class NotifyRoleCountsMessage implements Message {
       .join(', ')
 
     const roles = this.statuses.aliveRoleCounts()
-      .map(([role, count]) => `${roleDescriptions.get(role)!.emoji} ${count} ${pluralise(role, count)}`)
+      .map(([role, count]) => `${roleText.get(role)!.emoji} ${count} ${pluralise(role, count)}`)
 
     return new Discord.MessageEmbed()
       .setTitle(`The game begins with ${this.statuses.aliveCount()} players:`)

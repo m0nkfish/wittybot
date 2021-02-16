@@ -1,5 +1,5 @@
 import { Action, CompositeAction, Send, NewState, DelayedAction, FromStateAction, OptionalAction } from '../../actions';
-import { GameState } from "../../state";
+import { GameState, IdleState } from "../../state";
 import { Timer, isNonNull } from '../../util';
 import { NightDuration } from '../constants';
 import { MafiaGameContext } from '../context';
@@ -11,6 +11,7 @@ import * as Discord from 'discord.js';
 import { MafiaRoleCommandFactory } from '../commands';
 import { BasicMessage, mention } from '../../messages';
 import { DayState } from './DayState';
+import { WinnersMessage } from '../messages/WinnersMessage';
 
 export class NightState implements GameState<MafiaGameContext> {
   
@@ -42,20 +43,26 @@ export class NightState implements GameState<MafiaGameContext> {
             : `${Emojis.dagger} You met a slick and business-like end: "Say hello to my little friend..."`
           return Send(f.target, new BasicMessage(flavour + `\nYou are now **dead**, please refrain from talking until the game is over`))
         case PlayerFate.Tracked.type:
-          return Send(f.player, new BasicMessage(`You tracked ${mention(f.target)} and discovered their role: **${this.players.role(f.target)}**`))
+          return Send(f.player, new BasicMessage(`You tracked ${mention(f.target)} and discovered their role: **${this.players.role(f.target).type}**`))
       }
     })
 
     const deaths = fates.map(f => f.type === PlayerFate.Killed.type ? f.target : undefined)
       .filter(isNonNull)
 
-    const newState = new DayState(
-      this.context,
-      this.players.kill(deaths),
-      this.round + 1)
+    const newStatus = this.players.kill(deaths)
+
+    const winners = newStatus.winners()
+    const newState = winners
+      ? new IdleState(this.context.guildCtx)
+      : new DayState(
+        this.context,
+        this.players.kill(deaths),
+        this.round + 1)
 
     return CompositeAction(
       ...messages,
+      OptionalAction(winners && Send(this.context.channel, new WinnersMessage(winners, newStatus))),
       NewState(newState)
     )
   }

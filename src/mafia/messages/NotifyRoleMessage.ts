@@ -1,14 +1,14 @@
 import { mention, Message } from "../../messages";
 import { Role } from "../role";
 import * as Discord from 'discord.js';
-import { commandDescriptions, roleDescriptions } from './text';
+import { commandDescriptions, roleText } from './text';
 
 export class NotifyRoleMessage implements Message {
 
   constructor(readonly role: Role, readonly partner?: Discord.User) { }
 
   get content() {
-    const role = roleDescriptions.get(this.role)!
+    const role = roleText.get(this.role)!
     const { day, night } = this.role.commands
     return new Discord.MessageEmbed()
       .setTitle(`${role.emoji} ${role.desc}`)

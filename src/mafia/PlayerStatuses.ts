@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { Role } from "./role";
+import { Role, Team } from "./role";
 import { MafiaRoleCommandFactory } from './commands/all';
 
 export type PlayerStatus = {
@@ -11,12 +11,14 @@ export type PlayerStatus = {
 export class PlayerStatuses {
   constructor(readonly players: PlayerStatus[]) { }
 
-  winners = () => {
-    let town = 0
-    let wolf = 0
-    let mafia = 0
-    
-    this.alive()
+  winners = (): Team | undefined => {
+    const counts = this.alive()
+      .reduce((acc, {role}) => ({ ...acc, [role.team]: (acc[role.team] ?? 0) + 1}), {} as Record<Team, number>)
+
+    const aliveTeams = Object.entries(counts).filter(([_, count]) => count > 0)
+    if (aliveTeams.length === 1) {
+      return aliveTeams[0][0] as Team
+    }
   }
 
   checkAction = (user: Discord.User, command: MafiaRoleCommandFactory) =>{

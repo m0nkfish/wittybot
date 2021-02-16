@@ -3,7 +3,7 @@ import * as Discord from 'discord.js';
 import { Role } from "../role";
 import { PlayerStatuses } from "../PlayerStatuses";
 import { MafiaRoleCommandFactory } from "../commands";
-import { actionText, nightNumber, roleDescriptions, CommandReacts } from './text';
+import { actionText, nightNumber, roleText, CommandReacts } from './text';
 import { shuffle } from "../../random";
 import wu from 'wu';
 import { Duration } from "../../duration";
@@ -36,7 +36,7 @@ export class NightRoleMessage implements Message {
 
   get content() {
     return new Discord.MessageEmbed()
-      .setTitle(`${roleDescriptions.get(this.role)!.emoji} Night ${nightNumber(this.round)} - Choose someone to ${actionText(this.command)}`)
+      .setTitle(`${roleText.get(this.role)!.emoji} Night ${nightNumber(this.round)} - Choose someone to ${actionText(this.command)}`)
       .setDescription(
         this.options.map(([emoji, user]) => `${emoji} - ${mention(user)}`)
       )

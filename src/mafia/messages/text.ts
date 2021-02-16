@@ -15,6 +15,7 @@ export const Emojis = {
   kiss: '💋',
   dagger: '🗡️',
   wolf: '🐺',
+  tada: '🎉',
 
   zero: '0️⃣',
   one: '1️⃣',
@@ -48,7 +49,7 @@ export const CommandReacts = [
 ]
 
 const townDescription = `Together with the other townsfolk you must work together to identify and execute the killers (Mafia/Werewolf).`
-export const roleDescriptions = new Map<Role, RoleFlavour>([
+export const roleText = new Map<Role, RoleFlavour>([
   [Role.Villager, { emoji: Emojis.villager , desc: `You are a humble Villager. ${townDescription}` }],
   [Role.Inspector, { emoji: Emojis.detective, desc: `You are the Inspector. ${townDescription}` }],
   [Role.Bodyguard, { emoji: Emojis.shield, desc: `You are the Bodyguard. ${townDescription}` }],
