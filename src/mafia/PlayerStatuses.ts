@@ -10,6 +10,14 @@ export type PlayerStatus = {
 export class PlayerStatuses {
   constructor(readonly players: Map<Discord.User, PlayerStatus>) { }
 
+  update = (user: Discord.User, status: Partial<PlayerStatus>) =>
+    new PlayerStatuses(new Map(this.players).set(user, { ...this.players.get(user)!, ...status }))
+
+  alive = () =>
+    wu(this.players)
+      .filter(isAlive)
+      .toArray()
+
   findPartner = (user: Discord.User): Discord.User | undefined =>
     this.players.get(user)!.role === Role.Mafia
     ? wu(this.players)

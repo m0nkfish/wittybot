@@ -10,6 +10,7 @@ export const Case = <Key extends string, Args extends any[], Res>(type: Key, f: 
   return ff
 }
 
+
 export type CaseFactory<C> =
   C extends { type: infer K } ? K extends string ? ((...args: any) => Case<K, C>) & { type: K } : never : never
 

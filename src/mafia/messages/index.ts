@@ -1,3 +1,5 @@
 export * from './GameStartedMessage'
 export * from './NotifyRoleCountsMessage'
 export * from './NotifyRoleMessage'
+export * from './NightBeginsPublicMessage'
+export * from './NightRoleMessage'

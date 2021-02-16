@@ -1,7 +1,6 @@
-import { CaseFactory } from "../case";
-import { MafiaRoleCommand } from "./commands";
+import { MafiaRoleCommandFactory } from "./commands";
 import { Distract } from "./commands/distract";
-import { Inspect } from "./commands/inspect";
+import { Track } from "./commands/inspect";
 import { Kill } from "./commands/kill";
 import { Protect } from "./commands/protect";
 import { Vote } from "./commands/vote";
@@ -15,11 +14,16 @@ export enum Role {
   Bodyguard = 'bodyguard'
 }
 
-export const roleCommands = new Map<Role, CaseFactory<MafiaRoleCommand>[]>([
-  [Role.Villager, [Vote]],
-  [Role.Inspector, [Vote, Inspect]],
-  [Role.Mafia, [Vote, Kill]],
-  [Role.Hooker, [Vote, Distract]],
-  [Role.Werewolf, [Vote, Kill]],
-  [Role.Bodyguard, [Vote, Protect]]
+type RoleCommands = {
+  day?: MafiaRoleCommandFactory
+  night?: MafiaRoleCommandFactory
+}
+
+export const roleCommands = new Map<Role, RoleCommands>([
+  [Role.Villager, { day: Vote }],
+  [Role.Inspector, { day: Vote, night: Track }],
+  [Role.Mafia, { day: Vote, night: Kill }],
+  [Role.Hooker, { day: Vote, night: Distract }],
+  [Role.Werewolf, { day: Vote, night: Kill }],
+  [Role.Bodyguard, { day: Vote, night: Protect }]
 ])
