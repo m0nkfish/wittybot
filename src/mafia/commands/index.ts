@@ -1,2 +1,7 @@
 export * from './all'
 export * from './begin'
+export * from './kill'
+export * from './distract'
+export * from './track'
+export * from './protect'
+export * from './vote'

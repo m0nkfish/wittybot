@@ -12,12 +12,14 @@ import { Observable, interval, combineLatest } from 'rxjs';
 import { map, takeWhile } from 'rxjs/operators';
 import { NightState } from '../state/NightState';
 import { NightDuration } from "../constants";
+import { MafiaGameContext } from '../context';
 
 export class NightRoleMessage implements Message {
   readonly options: [string, Discord.User][]
   readonly reactable: Message['reactable']
 
   constructor(
+    readonly context: MafiaGameContext,
     readonly role: Role,
     readonly command: MafiaRoleCommandFactory,
     readonly statuses: PlayerStatuses,
@@ -26,6 +28,10 @@ export class NightRoleMessage implements Message {
       this.reactable = {
         reacts: this.options.map(r => r[0])
       }
+  }
+
+  findTarget(emoji: string): Discord.User | undefined {
+    return this.options.find(([e]) => emoji === e)?.[1]
   }
 
   get content() {

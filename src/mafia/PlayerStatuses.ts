@@ -1,6 +1,8 @@
 import * as Discord from 'discord.js';
 import { Role } from "./role";
 import wu from 'wu';
+import { MafiaRoleCommandFactory } from './commands/all';
+import { roleCommands } from './Role';
 
 export type PlayerStatus = {
   role: Role
@@ -12,6 +14,19 @@ export class PlayerStatuses {
 
   update = (user: Discord.User, status: Partial<PlayerStatus>) =>
     new PlayerStatuses(new Map(this.players).set(user, { ...this.players.get(user)!, ...status }))
+
+  checkAction = (user: Discord.User, command: MafiaRoleCommandFactory) =>{
+    const status = this.players.get(user)
+    if (!status || !status.isAlive) {
+      return false
+    }
+
+    const commands = roleCommands.get(status.role)!;
+    return [commands.day, commands.night].includes(command)
+  }
+
+  isAlive = (user: Discord.User) =>
+    this.players.get(user)?.isAlive ?? false
 
   alive = () =>
     wu(this.players)

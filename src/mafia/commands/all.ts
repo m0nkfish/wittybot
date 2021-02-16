@@ -1,7 +1,7 @@
 import { In, Out } from '../../commands';
 import { Begin } from './begin';
 import { Distract } from './distract';
-import { Track } from './inspect';
+import { Track } from './track';
 import { Kill } from './kill';
 import { Protect } from './protect';
 import { Vote } from './vote';

@@ -1,10 +1,5 @@
 import { Role } from "../role"
-import { MafiaRoleCommandFactory } from '../commands/all';
-import { Vote } from "../commands/vote";
-import { Kill } from "../commands/kill";
-import { Track } from "../commands/inspect";
-import { Distract } from "../commands/distract";
-import { Protect } from "../commands/protect";
+import { MafiaRoleCommandFactory, Vote, Kill, Track, Distract, Protect } from "../commands";
 
 export type RoleFlavour = {
   emoji: string

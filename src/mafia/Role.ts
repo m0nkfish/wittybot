@@ -1,9 +1,4 @@
-import { MafiaRoleCommandFactory } from "./commands";
-import { Distract } from "./commands/distract";
-import { Track } from "./commands/inspect";
-import { Kill } from "./commands/kill";
-import { Protect } from "./commands/protect";
-import { Vote } from "./commands/vote";
+import { MafiaRoleCommandFactory, Distract, Track, Kill, Protect, Vote } from "./commands";
 
 export enum Role {
   Villager = 'villager',
