@@ -4,12 +4,13 @@ import { Timer, isNonNull } from '../../util';
 import { NightDuration } from '../constants';
 import { MafiaGameContext } from '../context';
 import { PlayerStatuses } from "../PlayerStatuses";
-import { Role, roleCommands } from '../role';
+import { Role } from '../role';
 import { Emojis, NightBeginsPublicMessage, NightRoleMessage } from '../messages';
 import { PlayerIntentions, PlayerFate } from '../PlayerIntentions';
 import * as Discord from 'discord.js';
 import { MafiaRoleCommandFactory } from '../commands';
 import { BasicMessage, mention } from '../../messages';
+import { DayState } from './DayState';
 
 export class NightState implements GameState<MafiaGameContext> {
   
@@ -48,10 +49,14 @@ export class NightState implements GameState<MafiaGameContext> {
     const deaths = fates.map(f => f.type === PlayerFate.Killed.type ? f.target : undefined)
       .filter(isNonNull)
 
-    const newState = this.players.kill(deaths)
+    const newState = new DayState(
+      this.context,
+      this.players.kill(deaths),
+      this.round + 1)
 
     return CompositeAction(
-      ...messages
+      ...messages,
+      NewState(newState)
     )
   }
 
@@ -59,7 +64,7 @@ export class NightState implements GameState<MafiaGameContext> {
     const nightRolePMs = statuses
       .alive()
       .map(({ player, role }) => {
-        const command = roleCommands.get(role)?.night
+        const command = role.commands.night
         if (command) {
           return Send(player, new NightRoleMessage(context, role, command, statuses, round))
         }

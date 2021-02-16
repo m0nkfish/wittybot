@@ -1,7 +1,6 @@
 import * as Discord from 'discord.js';
 import { Role } from "./role";
 import { MafiaRoleCommandFactory } from './commands/all';
-import { roleCommands } from './Role';
 
 export type PlayerStatus = {
   player: Discord.User
@@ -12,13 +11,21 @@ export type PlayerStatus = {
 export class PlayerStatuses {
   constructor(readonly players: PlayerStatus[]) { }
 
+  winners = () => {
+    let town = 0
+    let wolf = 0
+    let mafia = 0
+    
+    this.alive()
+  }
+
   checkAction = (user: Discord.User, command: MafiaRoleCommandFactory) =>{
     const status = this.players.find(x => x.player === user)
     if (!status || !status.isAlive) {
       return false
     }
 
-    const commands = roleCommands.get(status.role)!;
+    const {commands} = status.role
     return [commands.day, commands.night].includes(command)
   }
 
@@ -51,12 +58,10 @@ export class PlayerStatuses {
       .entries())
 
   aliveCount = () =>
-    this.players
-      .filter(x => x.isAlive)
+    this.alive()
       .length
 
   alivePlayers = () =>
-    this.players
-      .filter(x => x.isAlive)
+    this.alive()
       .map(x => x.player)
 }

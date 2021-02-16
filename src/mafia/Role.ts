@@ -1,24 +1,41 @@
+import { Values } from "../util";
 import { MafiaRoleCommandFactory, Distract, Track, Kill, Protect, Vote } from "./commands";
 
-export enum Role {
-  Villager = 'villager',
-  Inspector = 'inspector',
-  Mafia = 'mafia',
-  Hooker = 'hooker',
-  Werewolf = 'werewolf',
-  Bodyguard = 'bodyguard'
+export type Role = {
+  type: Values<typeof Role>['type']
+  commands: {
+    day?: MafiaRoleCommandFactory
+    night?: MafiaRoleCommandFactory
+  }
 }
+export const Role = {
+  Villager: {
+    type: 'villager' as const,
+    commands: { day: Vote }
+  },
 
-type RoleCommands = {
-  day?: MafiaRoleCommandFactory
-  night?: MafiaRoleCommandFactory
+  Inspector: {
+    type: 'inpector' as const,
+    commands: { day: Vote, night: Track }
+  },
+
+  Mafia: {
+    type: 'mafia' as const,
+    commands: { day: Vote, night: Kill }
+  },
+
+  Hooker: { 
+    type: 'hooker' as const,
+    commands: { day: Vote, night: Distract }
+  },
+
+  Werewolf: {
+    type: 'werewolf' as const,
+    commands: { day: Vote, night: Kill }
+  },
+
+  Bodyguard: {
+    type: 'bodyguard' as const, 
+    commands: { day: Vote, night: Protect }
+  },
 }
-
-export const roleCommands = new Map<Role, RoleCommands>([
-  [Role.Villager, { day: Vote }],
-  [Role.Inspector, { day: Vote, night: Track }],
-  [Role.Mafia, { day: Vote, night: Kill }],
-  [Role.Hooker, { day: Vote, night: Distract }],
-  [Role.Werewolf, { day: Vote, night: Kill }],
-  [Role.Bodyguard, { day: Vote, night: Protect }]
-])

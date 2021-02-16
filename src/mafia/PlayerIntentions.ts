@@ -80,7 +80,7 @@ function protections(intentions: PlayerIntention[]): [PlayerIntention[], PlayerF
   return [intentions, fates]
 }
 
-const kills =(role: Role) => function(intentions: PlayerIntention[]): [PlayerIntention[], PlayerFate[]] {
+const kills = (role: Role) => function(intentions: PlayerIntention[]): [PlayerIntention[], PlayerFate[]] {
   const fates: PlayerFate[] = []
   const kills = intentions.filter(x => x.action === Kill && x.role === role)
   for (const { role, target } of kills) {

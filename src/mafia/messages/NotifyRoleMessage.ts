@@ -1,5 +1,5 @@
 import { mention, Message } from "../../messages";
-import { Role, roleCommands } from "../role";
+import { Role } from "../role";
 import * as Discord from 'discord.js';
 import { commandDescriptions, roleDescriptions } from './text';
 
@@ -9,7 +9,7 @@ export class NotifyRoleMessage implements Message {
 
   get content() {
     const role = roleDescriptions.get(this.role)!
-    const { day, night } = roleCommands.get(this.role)!
+    const { day, night } = this.role.commands
     return new Discord.MessageEmbed()
       .setTitle(`${role.emoji} ${role.desc}`)
       .setDescription([
