@@ -1,7 +1,9 @@
 import * as Discord from 'discord.js'
-import { Message } from '../../messages'
+import { Message, StaticMessage } from '../../messages'
 
-export class WittyHelpMessage implements Message {
+export class WittyHelpMessage implements StaticMessage {
+  readonly type = 'static'
+  
   constructor() { }
 
   get content() {

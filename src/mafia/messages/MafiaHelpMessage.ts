@@ -2,8 +2,11 @@ import * as Discord from 'discord.js'
 import { Message } from '../../messages'
 import { Role } from '../Role'
 import { roleText } from './text'
+import { StaticMessage } from '../../messages';
 
-export class MafiaHelpMessage implements Message {
+export class MafiaHelpMessage implements StaticMessage {
+  readonly type = 'static'
+
   constructor() { }
 
   get content() {

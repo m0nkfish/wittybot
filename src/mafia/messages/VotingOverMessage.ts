@@ -1,8 +1,10 @@
-import { mention, Message } from "../../messages";
+import { mention, StaticMessage } from "../../messages";
 import { MafiaGameContext } from '../context';
 import * as Discord from 'discord.js';
 
-export class VotingOverMessage implements Message {
+export class VotingOverMessage implements StaticMessage {
+  readonly type = 'static'
+  
   constructor(
     readonly context: MafiaGameContext,
     readonly killed: Discord.User | undefined) {}

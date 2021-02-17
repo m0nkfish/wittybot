@@ -4,10 +4,12 @@ import { pipe } from 'fp-ts/function'
 
 import { Prompt } from '../prompts';
 import { pairs, arrayEq } from '../../util';
-import { Message, mention, memberName } from '../../messages'
+import { Message, mention, memberName, StaticMessage } from '../../messages'
 import { WittyGameContext } from '../context';
 
-export class VotingFinishedMessage implements Message {
+export class VotingFinishedMessage implements StaticMessage {
+  readonly type = 'static'
+  
   constructor(
     readonly context: WittyGameContext,
     readonly prompt: Prompt,
@@ -35,7 +37,6 @@ export class VotingFinishedMessage implements Message {
   }
 
   memberName = (user: Discord.User) => memberName(this.context.guild, user)
-
 
   get content() {
     let title = `The votes are in!`

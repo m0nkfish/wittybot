@@ -1,8 +1,10 @@
 import * as Discord from 'discord.js'
 import { Scores } from '../scores';
-import { Message, mention } from '../../messages'
+import { Message, mention, StaticMessage } from '../../messages'
 
-export class ScoresByRatingMessage implements Message {
+export class ScoresByRatingMessage implements StaticMessage {
+  readonly type = 'static'
+
   constructor(readonly scores: Scores, readonly timeframe: string) { }
 
   positiveScoresInOrder = this.scores.byRatingDescending()
@@ -30,7 +32,9 @@ export class ScoresByRatingMessage implements Message {
   }
 }
 
-export class ScoresByPointsMessage implements Message {
+export class ScoresByPointsMessage implements StaticMessage {
+  readonly type = 'static'
+
   constructor(readonly scores: Scores) { }
 
   get content() {

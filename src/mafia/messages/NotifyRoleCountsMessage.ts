@@ -4,8 +4,11 @@ import * as Discord from 'discord.js';
 import { PlayerStatuses } from "../PlayerStatuses";
 import { shuffle } from "../../random";
 import { roleText } from "./text";
+import { StaticMessage } from '../../messages/Message';
 
-export class NotifyRoleCountsMessage implements Message {
+export class NotifyRoleCountsMessage implements StaticMessage {
+  readonly type = 'static'
+  
   constructor(readonly statuses: PlayerStatuses) { }
 
   get content() {

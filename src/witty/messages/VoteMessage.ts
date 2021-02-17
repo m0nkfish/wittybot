@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
 import { interval, Observable, combineLatest, concat, of } from 'rxjs';
-import { map, takeWhile } from 'rxjs/operators'
+import { map, scan, takeWhile } from 'rxjs/operators'
 
 import  { Duration } from '../../duration'
 import { Prompt } from '../prompts';
@@ -10,8 +10,11 @@ import { mt } from '../../random';
 import { Message, memberName } from '../../messages'
 import { WittyRoundContext } from '../context';
 import { AnyGameState } from '../../state';
+import { MessageContent, StateStreamMessage, setFooter, EmbedContent } from '../../messages/Message';
 
-export class VoteMessage implements Message {
+export class VoteMessage implements StateStreamMessage {
+  readonly type = 'state-stream'
+
   constructor(
     readonly context: WittyRoundContext,
     readonly prompt: Prompt,
@@ -24,7 +27,7 @@ export class VoteMessage implements Message {
 
   private readonly users: Discord.User[]
 
-  get content() {
+  get content(): EmbedContent {
     const msg = new Discord.MessageEmbed()
       .setTitle(`:timer: Time's up!`)
       .setDescription([
@@ -47,15 +50,14 @@ export class VoteMessage implements Message {
   footer = (remaining: Duration, voters: Discord.User[]) =>
     `You have ${remaining.seconds} seconds. Still left to vote: ${this.users.filter(u => !voters.some(v => v == u)).map(u => memberName(this.context.guild, u)).join(', ')}`
 
-  reactiveMessage = (stateStream?: Observable<AnyGameState>) =>
+  content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
     combineLatest([stateStream!, interval(5000)])
       .pipe(
         map(([s]) => s),
         takeWhile(s => s instanceof VotingState && s.context.sameRound(this.context) && s.remaining().isGreaterThan(0)),
         map(s => s as VotingState),
-        map(s => ({
-          footer: this.footer(s.remaining(), Array.from(s.votes.keys()))
-        })),
-        o => concat(o, of({ footer: `Time's up!` }))
+        map(s => setFooter(this.footer(s.remaining(), Array.from(s.votes.keys())))),
+        o => concat(o, of(setFooter(`Time's up!`))),
+        scan((content, update) => update(content), this.content)
       )
 }

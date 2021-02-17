@@ -1,4 +1,5 @@
 import { Duration } from "./duration"
+import { Observable } from 'rxjs';
 
 export const tryParseInt = (str: string) => {
   try {
@@ -98,3 +99,24 @@ export function isAny<T>(x: T): x is T {
 }
 
 export type Values<T> = T extends { [key: string]: infer V } ? V : never
+
+export const chain = <A>(...functions: ((a: A) => A)[]) => (a: A) => functions.reduce((a, f) => f(a), a)
+
+const nothing = Symbol()
+export const buildScan = <A, Acc>(onFirst: (a: A) => Acc, onNext: (acc: Acc, a: A) => Acc) =>
+  (input: Observable<A>) => 
+    new Observable<Acc>(sub => {
+      let acc: Acc | typeof nothing = nothing
+      input.subscribe(
+        x => {
+          if (acc === nothing) {
+            acc = onFirst(x)
+          } else {
+            acc = onNext(acc, x)
+          }
+          sub.next(acc)
+        },
+        e => sub.error(e),
+        () => sub.complete()
+      )
+    })

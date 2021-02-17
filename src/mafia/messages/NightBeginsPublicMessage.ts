@@ -1,18 +1,20 @@
-import { Message } from "../../messages";
 import * as Discord from 'discord.js';
-import { Emojis, nightNumber } from "./text";
 import { Observable, combineLatest, interval, concat, of } from 'rxjs';
+import { map, scan, takeWhile } from 'rxjs/operators';
+
+import { Emojis, nightNumber } from "./text";
 import { AnyGameState } from "../../state";
-import { map, takeWhile } from 'rxjs/operators';
 import { NightState } from "../state";
 import { Duration } from "../../duration";
 import { NightDuration } from "../constants";
 import { MafiaGameContext } from "../context";
+import { MessageContent, StateStreamMessage, setFooter, EmbedContent } from '../../messages';
 
-export class NightBeginsPublicMessage implements Message {
+export class NightBeginsPublicMessage implements StateStreamMessage {
+  readonly type = 'state-stream'
   constructor(readonly context: MafiaGameContext, readonly round: number) { }
 
-  get content() {
+  get content(): EmbedContent {
     return new Discord.MessageEmbed()
       .setTitle(`${Emojis.night} Night ${nightNumber(this.round)} Begins!`)
       .setDescription([
@@ -24,15 +26,15 @@ export class NightBeginsPublicMessage implements Message {
 
   footer = (remaining: Duration) => `${remaining.seconds} seconds remaining`
 
-  reactiveMessage = (stateStream?: Observable<AnyGameState>) =>
+  content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
     combineLatest([stateStream!, interval(5000)])
       .pipe(
         map(([s]) => s),
         takeWhile(s => s instanceof NightState && s.remaining().isGreaterThan(0)),
         map(s => s as NightState),
-        map(s => ({
-          footer: this.footer(s.remaining())
-        })),
-        o => concat(o, of({ footer: '' }))
+        map(s => setFooter(this.footer(s.remaining()))),
+        o => concat(o, of(setFooter(''))),
+        scan((content, update) => update(content), this.content)
       )
+
 }

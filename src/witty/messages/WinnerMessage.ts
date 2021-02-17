@@ -1,9 +1,11 @@
 import * as Discord from 'discord.js'
 import { WittyGameContext } from '../context';
-import { Message, mention } from '../../messages'
+import { Message, mention, StaticMessage } from '../../messages'
 import { Scores } from '../scores';
 
-export class WinnerMessage implements Message {
+export class WinnerMessage implements StaticMessage {
+  readonly type = 'static'
+  
   constructor(readonly context: WittyGameContext, readonly score: number, readonly winners: Discord.User[]) {}
 
   get content() {

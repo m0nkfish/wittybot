@@ -2,29 +2,39 @@ import * as Discord from 'discord.js'
 import { AnyGameState } from '../state';
 import { Observable } from 'rxjs';
 import { GuildContext } from '../context';
+import { MessageEmbed } from 'discord.js';
 
 export type Destination = Discord.TextChannel | Discord.User
 
-export interface Message {
-  content: string | Discord.MessageEmbed | { content: string, embed: Discord.MessageEmbed }
+export type EmbedContent = Discord.MessageEmbed | { content: string, embed: Discord.MessageEmbed }
+export type MessageContent = string | EmbedContent
 
-  context?: GuildContext // context is used to route reactions to the correct guild scope
+type Common = {
   reactable?: {
     reacts: Discord.EmojiResolvable[]
   }
-
-  reactiveMessage?: (stateStream: Observable<AnyGameState> | undefined) => Observable<MessageUpdate>
 }
 
-export type MessageUpdate = {
-  footer?: string
-  description?: string | string[]
-  title?: string
+export type StaticMessage = Common & {
+  type: 'static'
+  context?: GuildContext
+  content: MessageContent
 }
 
-export const MessageUpdate = {
-  equal: (a: MessageUpdate, b: MessageUpdate): boolean =>
-    a.title === b.title && a.footer === b.footer && descText(a.description) === descText(b.description)
+export type StateStreamMessage = Common & {
+  type: 'state-stream'
+  context: GuildContext
+  content$: (stateStream: Observable<AnyGameState>) => Observable<MessageContent>
 }
 
-const descText = (desc: string | string[] | undefined) => typeof desc === "string" ? desc : desc === undefined ? '' : desc.join('\n')
+export type Message =
+| StaticMessage
+| StateStreamMessage
+
+const update = (f: (embed: MessageEmbed) => MessageEmbed) => (content: EmbedContent) =>
+  content instanceof Discord.MessageEmbed ? f(content) : { ...content, embed: f(content.embed) }
+
+export const setFooter = (footer: string) =>
+  update((embed: MessageEmbed) => embed.setFooter(footer))
+export const setDescription = (description: string | string[]) =>
+  update((embed: MessageEmbed) => embed.setDescription(description))

@@ -1,8 +1,10 @@
 import * as Discord from 'discord.js'
 import { Prompt } from '../prompts';
-import { Message } from '../../messages'
+import { Message, StaticMessage } from '../../messages'
 
-export class SubmissionAcceptedMessage implements Message {
+export class SubmissionAcceptedMessage implements StaticMessage {
+  readonly type = 'static'
+
   constructor(readonly prompt: Prompt, readonly submission: string, readonly isReplacement: boolean) { }
 
   get content() {

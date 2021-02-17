@@ -1,9 +1,10 @@
-import { mention, Message } from "../../messages";
+import { mention, StaticMessage } from "../../messages";
 import { Role } from "../Role";
 import * as Discord from 'discord.js';
 import { commandDescriptions, roleText } from './text';
 
-export class NotifyRoleMessage implements Message {
+export class NotifyRoleMessage implements StaticMessage {
+  readonly type = 'static'
 
   constructor(readonly role: Role, readonly partner?: Discord.User) { }
 

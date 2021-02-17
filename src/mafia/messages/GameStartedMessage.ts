@@ -1,15 +1,18 @@
 import * as Discord from 'discord.js'
 import { interval, Observable, combineLatest, concat, of } from 'rxjs';
-import { map, takeWhile } from 'rxjs/operators'
+import { map, scan, takeWhile } from 'rxjs/operators'
 
 import { AnyGameState } from '../../state';
 import { StartingState } from '../state/StartingState';
-import { Message, mention } from '../../messages'
+import { mention, StateStreamMessage, MessageContent, setFooter, setDescription } from '../../messages'
 import { MafiaGameContext } from '../context';
 import { Duration } from '../../duration';
 import { MinPlayers, StartingStateDelay } from '../constants';
+import { chain } from '../../util';
 
-export class GameStartedMessage implements Message {
+export class GameStartedMessage implements StateStreamMessage {
+  readonly type = 'state-stream'
+
   constructor(readonly notifyRole: Discord.Role | undefined, readonly context: MafiaGameContext) { }
 
   readonly inReact = '👍'
@@ -48,17 +51,18 @@ export class GameStartedMessage implements Message {
       ? `${remaining.minutes} minutes remaining`
       : `${remaining.seconds} seconds remaining`
 
-  reactiveMessage = (stateStream?: Observable<AnyGameState>) =>
+  content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
     combineLatest([stateStream!, interval(5000)])
       .pipe(
         map(([s]) => s),
         takeWhile(s => s instanceof StartingState && s.context.sameGame(this.context) && s.remaining().isGreaterThan(0)),
         map(s => s as StartingState),
-        map(s => ({
-          description: this.description(s.interested),
-          footer: this.footer(s.remaining())
-        })),
-        o => concat(o, of({ footer: '' }))
+        map(s => chain(
+          setFooter(this.footer(s.remaining())),
+          setDescription(this.description(s.interested))
+        )),
+        o => concat(o, of(setFooter(''))),
+        scan((content, update) => update(content), this.content)
       )
   
 }

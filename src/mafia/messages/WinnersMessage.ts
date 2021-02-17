@@ -1,10 +1,12 @@
-import { mention, Message } from "../../messages";
+import { mention, Message, StaticMessage } from "../../messages";
 import { Team } from "../Role";
 import * as Discord from 'discord.js';
 import { Emojis, roleText } from './text'
 import { PlayerStatuses } from '../PlayerStatuses';
 
-export class WinnersMessage implements Message {
+export class WinnersMessage implements StaticMessage {
+  readonly type = 'static'
+  
   constructor(readonly team: Team, readonly players: PlayerStatuses) { }
 
   get content() {

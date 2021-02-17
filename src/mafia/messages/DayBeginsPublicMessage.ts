@@ -1,19 +1,22 @@
 import { MessageEmbed } from "discord.js";
-import { mention, Message } from "../../messages";
+import wu from 'wu';
+import * as Discord from 'discord.js';
+import { Observable, interval, combineLatest, concat, of } from 'rxjs';
+import { takeWhile, map, scan } from 'rxjs/operators';
+import { StateStreamMessage, mention, Message, MessageContent, setDescription, setFooter, EmbedContent } from "../../messages";
 import { dayNumber, Emojis, CommandReacts } from './text';
 import { MafiaGameContext } from '../context';
 import { PlayerStatuses } from '../PlayerStatuses';
-import * as Discord from 'discord.js';
-import { Observable, interval, combineLatest, concat, of } from 'rxjs';
 import { AnyGameState } from "../../state";
-import { takeWhile, map } from 'rxjs/operators';
 import { DayState } from '../state/DayState';
 import { Duration } from "../../duration";
-import wu from 'wu';
 import { shuffle } from '../../random';
 import { PlayerVotes } from "../PlayerVotes";
+import { chain } from "../../util";
 
-export class DayBeginsPublicMessage implements Message {
+export class DayBeginsPublicMessage implements StateStreamMessage {
+  readonly type = 'state-stream'
+
   readonly options: [string, Discord.User][]
   readonly reactable: Message['reactable']
 
@@ -32,7 +35,7 @@ export class DayBeginsPublicMessage implements Message {
     return this.options.find(([e]) => emoji === e)?.[1]
   }
 
-  get content() {
+  get content(): EmbedContent {
     return new MessageEmbed()
       .setTitle(`${Emojis.day} Day ${dayNumber(this.round)} Begins!`)
       .setDescription(this.description(new PlayerVotes(new Map)))
@@ -45,22 +48,26 @@ export class DayBeginsPublicMessage implements Message {
       deaths,
       ``,
       `Vote to kill any player - if the vote results in a tie, nobody will die.`,
-      ...this.options.map(([emoji, user]) => `${emoji} - ${mention(user)}`)
+      ...this.options.map(([emoji, user]) => {
+        const voters = votesByPlayer.get(user) ?? []
+        return `${emoji} - ${mention(user)} (${voters.length} votes: ${voters.map(mention).join(', ')})`
+      })
     ]
   }
 
   footer = (remaining: Duration) => `${remaining.seconds} seconds remaining`
 
-  reactiveMessage = (stateStream?: Observable<AnyGameState>) =>
+  content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
     combineLatest([stateStream!, interval(5000)])
       .pipe(
         map(([s]) => s),
         takeWhile(s => s instanceof DayState && s.remaining().isGreaterThan(0)),
         map(s => s as DayState),
-        map(s => ({
-          description: this.description(s.playerVotes),
-          footer: this.footer(s.remaining())
-        })),
-        o => concat(o, of({ footer: '' }))
+        map(s => chain(
+          setFooter(this.footer(s.remaining())),
+          setDescription(this.description(s.playerVotes))
+        )),
+        o => concat(o, of(setFooter(''))),
+        scan((content, update) => update(content), this.content)
       )
 }
