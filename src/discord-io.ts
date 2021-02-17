@@ -43,11 +43,16 @@ export class DiscordIO {
       }
     }
 
+    log('reactive-message', { type: typeof message, isReactive: !!message.reactiveMessage })
     if (message.reactiveMessage) {
       const guild = message.context?.guild
       const stateStream = guild && this.guilds.getStream(guild)
+      log('reactive-message-subscribe', { guild: !!guild, stream: !!stateStream })
       message.reactiveMessage(stateStream)
-        .subscribe(updates => msg.edit({ embeds: update(msg.embeds[0], updates) }))
+        .subscribe(updates => {
+          log('reactive-message-update', { footer: updates.footer, desc: !!updates.description })
+          msg.edit({ embeds: update(msg.embeds[0], updates) })
+        })
     }
 
     const guild = message.context?.guild
