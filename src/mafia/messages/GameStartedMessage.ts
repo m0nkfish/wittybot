@@ -55,9 +55,7 @@ export class GameStartedMessage implements StateStreamMessage {
   content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
     pulse(stateStream, Duration.seconds(5))
       .pipe(
-        tap(x => log.debug(`pulse 1`)),
         takeWhile(s => s instanceof StartingState && s.context.sameGame(this.context) && s.remaining().isGreaterThan(0)),
-        tap(x => log.debug(`pulse 2`)),
         map(s => s as StartingState),
         map(s => chain(
           setFooter(this.footer(s.remaining())),

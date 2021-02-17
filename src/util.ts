@@ -1,6 +1,7 @@
 import { Duration } from "./duration"
 import { Observable, combineLatest, interval, concat, of } from 'rxjs';
-import { startWith, map } from 'rxjs/operators';
+import { startWith, map, tap } from 'rxjs/operators';
+import { log } from './log';
 
 export const tryParseInt = (str: string) => {
   try {
@@ -122,8 +123,15 @@ export const buildScan = <A, Acc>(onFirst: (a: A) => Acc, onNext: (acc: Acc, a: 
       )
     })
 
+const immediateInterval = (duration: Duration): Observable<number> =>
+  interval(duration.milliseconds)
+    .pipe(
+      startWith(0),
+      tap(n => log.debug('immediate-interval', { n })))
 
 export const pulse = <A>(obs: Observable<A>, freq: Duration) =>
-  combineLatest([obs, concat(of(0), interval(freq.milliseconds))])
-    .pipe(map(([x]) => x))
+  combineLatest([obs.pipe(tap(_ => log.debug(`pulse-input-change`))), immediateInterval(freq)])
+    .pipe(
+      map(([x]) => x),
+      tap(_ => log.debug(`pulse-output`)))
     
