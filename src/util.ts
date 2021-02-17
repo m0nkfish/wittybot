@@ -124,9 +124,8 @@ export const buildScan = <A, Acc>(onFirst: (a: A) => Acc, onNext: (acc: Acc, a: 
     })
 
 const immediateInterval = (duration: Duration): Observable<number> =>
-  interval(duration.milliseconds)
+  concat(of(0), interval(duration.milliseconds))
     .pipe(
-      startWith(0),
       logTap('immediate-interval'))
 
 export const pulse = <A>(obs: Observable<A>, freq: Duration) =>
