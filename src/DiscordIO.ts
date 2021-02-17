@@ -48,11 +48,16 @@ export class DiscordIO {
               .setDescription(updates.description ?? content.description)
               .setFooter(updates.footer ?? content.footer)
               .setTitle(updates.title ?? content.title)
-
-            log.debug('reactive-msg-edit', { footer: updates.footer, title: updates.title, desc: !!updates.description })
-            msg.edit(content)
-              .catch(e => log.error('reactive-msg-error', loggableError(e)))
+          } else if (typeof content !== "string") {
+            content.embed.setColor(embedColor)
+              .setDescription(updates.description ?? content.embed.description)
+              .setFooter(updates.footer ?? content.embed.footer)
+              .setTitle(updates.title ?? content.embed.title)
           }
+
+          log.debug('reactive-msg-edit', { footer: updates.footer, title: updates.title, desc: !!updates.description })
+          msg.edit(content)
+            .catch(e => log.error('reactive-msg-error', loggableError(e)))
         })
     }
 
