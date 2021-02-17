@@ -5,16 +5,15 @@ import { map, takeWhile } from 'rxjs/operators'
 import { Prompt } from '../prompts';
 import { SubmissionState } from '../state';
 import { AnyGameState } from '../../state';
-import { Id } from '../../id';
 import { Message } from '../../messages'
 import { Duration } from '../../duration';
+import { WittyRoundContext } from '../context';
 
 export class NewRoundMessage implements Message {
   constructor(
-    readonly roundId: Id,
+    readonly context: WittyRoundContext,
     readonly prompt: Prompt,
-    readonly botUser: Discord.User,
-    readonly submitDuration: Duration
+    readonly submitDuration: Duration,
   ) { }
 
   get content() {
@@ -40,7 +39,7 @@ export class NewRoundMessage implements Message {
     combineLatest([stateStream!, interval(5000)])
       .pipe(
         map(([s]) => s),
-        takeWhile(s => s instanceof SubmissionState && s.context.roundId === this.roundId && s.remaining().isGreaterThan(0)),
+        takeWhile(s => s instanceof SubmissionState && s.context.sameRound(this.context) && s.remaining().isGreaterThan(0)),
         map(s => s as SubmissionState),
         map(s => ({
           footer: this.footer(s.remaining())

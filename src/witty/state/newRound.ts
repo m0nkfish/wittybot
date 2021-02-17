@@ -16,7 +16,7 @@ export function newRound(context: WittyGameContext) {
       CompositeAction(
         NewState(SubmissionState.begin(roundCtx, prompt)),
         DelayedAction(context.timeout, FromStateAction(context.guild, state => OptionalAction(state instanceof SubmissionState && state.context.sameRound(roundCtx) && state.finish()))),
-        Send(context.channel, new NewRoundMessage(roundCtx.roundId, prompt, roundCtx.botUser, context.timeout))
+        Send(context.channel, new NewRoundMessage(roundCtx, prompt, context.timeout))
       )))
   )
 }
