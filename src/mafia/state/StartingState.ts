@@ -7,7 +7,7 @@ import { MafiaGameContext } from '../context';
 import { GameState } from '../../state';
 import { Timer } from '../../util';
 import { MinPlayers, StartingStateDelay } from '../constants';
-import { PlayerStatuses, PlayerStatus } from '../PlayerStatuses';
+import { PlayerStatuses } from '../PlayerStatuses';
 import { Role } from '../Role';
 import { NightState } from './NightState';
 import { notifyRoles } from './notifyRoles';

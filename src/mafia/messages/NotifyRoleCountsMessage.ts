@@ -1,5 +1,5 @@
 import { mention, Message } from "../../messages";
-import { Role } from "../role";
+import { Role } from "../Role";
 import * as Discord from 'discord.js';
 import { PlayerStatuses } from "../PlayerStatuses";
 import { shuffle } from "../../random";

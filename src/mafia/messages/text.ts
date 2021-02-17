@@ -1,4 +1,4 @@
-import { Role } from "../role"
+import { Role } from "../Role"
 import { MafiaRoleCommandFactory, Vote, Kill, Track, Distract, Protect } from "../commands";
 
 export type RoleFlavour = {

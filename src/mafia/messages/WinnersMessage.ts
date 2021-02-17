@@ -1,5 +1,5 @@
 import { mention, Message } from "../../messages";
-import { Team } from "../role";
+import { Team } from "../Role";
 import * as Discord from 'discord.js';
 import { Emojis, roleText } from './text'
 import { PlayerStatuses } from '../PlayerStatuses';

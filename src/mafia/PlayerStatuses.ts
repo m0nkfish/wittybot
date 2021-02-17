@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { Role, Team } from "./role";
+import { Role, Team } from "./Role";
 import { MafiaRoleCommandFactory } from './commands/all';
 
 export type PlayerStatus = {

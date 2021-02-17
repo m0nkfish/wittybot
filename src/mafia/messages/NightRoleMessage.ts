@@ -1,6 +1,6 @@
 import { mention, Message } from "../../messages";
 import * as Discord from 'discord.js';
-import { Role } from "../role";
+import { Role } from "../Role";
 import { PlayerStatuses } from "../PlayerStatuses";
 import { MafiaRoleCommandFactory } from "../commands";
 import { actionText, nightNumber, roleText, CommandReacts } from './text';

@@ -4,7 +4,7 @@ import { Timer, isNonNull } from '../../util';
 import { NightDuration, DayDuration } from '../constants';
 import { MafiaGameContext } from '../context';
 import { PlayerStatuses } from "../PlayerStatuses";
-import { Role } from '../role';
+import { Role } from '../Role';
 import { Emojis, NightBeginsPublicMessage, NightRoleMessage } from '../messages';
 import { PlayerIntentions, PlayerFate } from '../PlayerIntentions';
 import * as Discord from 'discord.js';
