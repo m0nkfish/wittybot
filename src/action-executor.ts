@@ -7,7 +7,7 @@ import { GuildStates } from './GuildStates';
 import { Subject } from 'rxjs';
 import { Command } from './commands';
 import { Message } from './messages';
-import { DiscordIO } from './discord-io';
+import { DiscordIO } from './DiscordIO';
 
 export class ActionExecutor {
   constructor(private readonly guilds: GuildStates, private readonly io: DiscordIO) {}
