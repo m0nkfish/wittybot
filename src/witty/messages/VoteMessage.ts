@@ -24,7 +24,7 @@ export class VoteMessage implements Message {
 
   private readonly users: Discord.User[]
 
-  private get baseContent() {
+  get content() {
     const msg = new Discord.MessageEmbed()
       .setTitle(`:timer: Time's up!`)
       .setDescription([
@@ -35,6 +35,7 @@ export class VoteMessage implements Message {
         `Vote for your favourite by sending a spoiler message to this channel`,
         `**or** by DMing the bot with the entry number`
       ])
+      .setFooter(this.footer(this.voteDuration, []))
 
     if (this.prompt.type === 'caption') {
       msg.setImage(this.prompt.prompt)
@@ -43,13 +44,8 @@ export class VoteMessage implements Message {
     return msg
   }
 
-  private message = (remaining: Duration, voters: Discord.User[]) =>
-    this.baseContent
-      .setFooter(`You have ${remaining.seconds} seconds. Still left to vote: ${this.users.filter(u => !voters.some(v => v == u)).map(u => memberName(this.context.guild, u)).join(', ')}`)
-
-  get content() {
-    return this.message(this.voteDuration, [])
-  }
+  footer = (remaining: Duration, voters: Discord.User[]) =>
+    `You have ${remaining.seconds} seconds. Still left to vote: ${this.users.filter(u => !voters.some(v => v == u)).map(u => memberName(this.context.guild, u)).join(', ')}`
 
   onSent = (msg: Discord.Message, stateStream: Observable<AnyGameState>) => {
     combineLatest([stateStream, interval(5000)])
@@ -59,8 +55,8 @@ export class VoteMessage implements Message {
         map(s => s as VotingState)
       )
       .subscribe(
-        s => msg.edit(this.message(s.remaining(), Array.from(s.votes.keys()))),
-        () => this.baseContent.setFooter(`Voting over!`),
-        () => this.baseContent.setFooter(`Voting over!`))
-  }
+        s => msg.edit({ embeds: msg.embeds[0].setFooter(this.footer(s.remaining(), Array.from(s.votes.keys()))) }),
+        () => msg.edit({ embeds: msg.embeds[0].setFooter(`Time's up!`) }),
+        () => msg.edit({ embeds: msg.embeds[0].setFooter(`Time's up!`) }))
+    }
 }

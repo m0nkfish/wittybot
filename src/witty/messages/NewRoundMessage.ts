@@ -17,28 +17,24 @@ export class NewRoundMessage implements Message {
     readonly submitDuration: Duration
   ) { }
 
-  private get baseContent() {
+  get content() {
     const msg = new Discord.MessageEmbed()
       .setTitle(this.prompt.formatted)
       .setDescription([
         `Submit by sending a spoiler message (\`||whatever||\`, or \`/spoiler whatever\` on desktop) to this channel`,
         `**or** by DMing the bot (:point_up: on desktop just click the sender name)`
       ])
+      .setFooter(this.footer(this.submitDuration))
 
     if (this.prompt.type === 'caption') {
       msg.setImage(this.prompt.prompt)
     }
-
+    
     return msg
   }
 
-  private message = (remaining: Duration) =>
-    this.baseContent
-      .setFooter(`You have ${remaining.seconds} seconds to come up with an answer`)
-
-  get content() {
-    return this.message(this.submitDuration)
-  }
+  footer = (remaining: Duration) =>
+    `You have ${remaining.seconds} seconds to come up with an answer`
 
   onSent = (msg: Discord.Message, stateStream: Observable<AnyGameState>) => {
     combineLatest([stateStream, interval(5000)])
@@ -48,8 +44,8 @@ export class NewRoundMessage implements Message {
         map(s => s as SubmissionState)
       )
       .subscribe(
-        s => msg.edit(this.message(s.remaining())),
-        () => msg.edit(this.baseContent.setFooter(`Time's up!`)),
-        () => msg.edit(this.baseContent.setFooter(`Time's up!`)))
+        s => msg.edit({ embeds: msg.embeds[0].setFooter(this.footer(s.remaining())) }),
+        () => msg.edit({ embeds: msg.embeds[0].setFooter(`Time's up!`) }),
+        () => msg.edit({ embeds: msg.embeds[0].setFooter(`Time's up!`) }))
   }
 }
