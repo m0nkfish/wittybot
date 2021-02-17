@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js';
 import { Observable } from 'rxjs'
 import * as O from 'rxjs'
-import { distinctUntilChanged, filter, map } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, tap } from 'rxjs/operators'
 import { Message, Destination, MessageUpdate } from "./messages";
 import { log, loggableError } from "./log";
 import { GuildStates } from './GuildStates';
@@ -48,7 +48,11 @@ export class DiscordIO {
       const guild = message.context?.guild
       const stateStream = guild && this.guilds.getStream(guild)
       message.reactiveMessage(stateStream)
-        .pipe(distinctUntilChanged(MessageUpdate.equal))
+        .pipe(
+          tap(u => log.debug('reactive-msg-pre-distinct', { footer: u.footer, desc: !!u.description })),
+          distinctUntilChanged(MessageUpdate.equal),
+          tap(u => log.debug('reactive-msg-post-distinct', { footer: u.footer, desc: !!u.description }))
+        )
         .subscribe(updates => {
           msg.edit({ embeds: update(msg.embeds[0], updates) })
         })
