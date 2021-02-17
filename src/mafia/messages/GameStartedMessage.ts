@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { interval, Observable, combineLatest } from 'rxjs';
+import { interval, Observable, combineLatest, concat, of } from 'rxjs';
 import { map, takeWhile } from 'rxjs/operators'
 
 import { AnyGameState } from '../../state';
@@ -21,26 +21,12 @@ export class GameStartedMessage implements Message {
   get startedBy() { return this.context.initiator }
 
   get content() {
-    return this.message(StartingStateDelay, [this.startedBy])
-  }
-
-  message(remaining: Duration, interested: Discord.User[]) {
-    const footer =
-      remaining.isGreaterThan(Duration.minutes(1))
-        ? `${remaining.minutes} minutes remaining`
-        : `${remaining.seconds} seconds remaining`
-
     const title = `:detective: A game of Mafia has begun!`
 
     const embed = new Discord.MessageEmbed()
       .setTitle(title)
-      .setDescription([
-        `A new game was started by ${mention(this.startedBy)}; type \`!in\` or react with ${this.inReact} to join. The game will begin in ${StartingStateDelay.minutes} minutes (${MinPlayers} players minimum)`,
-        ``,
-        `In:`,
-        ...interested.map(x => `• ${mention(x)}`)
-      ])
-      .setFooter(footer)
+      .setDescription(this.description([this.startedBy]))
+      .setFooter(this.footer(StartingStateDelay))
 
     return this.notifyRole
       ? {
@@ -50,16 +36,29 @@ export class GameStartedMessage implements Message {
       : embed
   }
 
-  onSent = (msg: Discord.Message, stateStream: Observable<AnyGameState>) => {
-    combineLatest([stateStream, interval(5000)])
+  description = (interested: Discord.User[]) => [
+    `A new game was started by ${mention(this.startedBy)}; type \`!in\` or react with ${this.inReact} to join. The game will begin in ${StartingStateDelay.minutes} minutes (${MinPlayers} players minimum)`,
+    ``,
+    `In:`,
+    ...interested.map(x => `• ${mention(x)}`)
+  ]
+
+  footer = (remaining: Duration) =>
+    remaining.isGreaterThan(Duration.minutes(1))
+      ? `${remaining.minutes} minutes remaining`
+      : `${remaining.seconds} seconds remaining`
+
+  reactiveMessage = (stateStream?: Observable<AnyGameState>) =>
+    combineLatest([stateStream!, interval(5000)])
       .pipe(
         map(([s]) => s),
         takeWhile(s => s instanceof StartingState && s.context.sameGame(this.context) && s.remaining().isGreaterThan(0)),
-        map(s => s as StartingState)
+        map(s => s as StartingState),
+        map(s => ({
+          description: this.description(s.interested),
+          footer: this.footer(s.remaining())
+        })),
+        o => concat(o, of({ footer: '' }))
       )
-      .subscribe(
-        s => msg.edit(this.message(s.remaining(), s.interested)),
-        () => msg.edit({ embed: msg.embeds[0].setFooter('') }),
-        () => msg.edit({ embed: msg.embeds[0].setFooter('') }))
-  }
+  
 }

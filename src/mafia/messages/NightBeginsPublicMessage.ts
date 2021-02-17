@@ -1,7 +1,7 @@
 import { Message } from "../../messages";
 import * as Discord from 'discord.js';
 import { Emojis, nightNumber } from "./text";
-import { Observable, combineLatest, interval } from 'rxjs';
+import { Observable, combineLatest, interval, concat, of } from 'rxjs';
 import { AnyGameState } from "../../state";
 import { map, takeWhile } from 'rxjs/operators';
 import { NightState } from "../state";
@@ -24,16 +24,15 @@ export class NightBeginsPublicMessage implements Message {
 
   footer = (remaining: Duration) => `${remaining.seconds} seconds remaining`
 
-  onSent = (msg: Discord.Message, stateStream: Observable<AnyGameState>) => {
-    combineLatest([stateStream, interval(5000)])
+  reactiveMessage = (stateStream?: Observable<AnyGameState>) =>
+    combineLatest([stateStream!, interval(5000)])
       .pipe(
         map(([s]) => s),
         takeWhile(s => s instanceof NightState && s.remaining().isGreaterThan(0)),
-        map(s => s as NightState)
+        map(s => s as NightState),
+        map(s => ({
+          footer: this.footer(s.remaining())
+        })),
+        o => concat(o, of({ footer: '' }))
       )
-      .subscribe(
-        s => msg.edit({ embed: msg.embeds[0].setFooter(this.footer(s.remaining())) }),
-        () => msg.edit({ embed: msg.embeds[0].setFooter('') }),
-        () => msg.edit({ embed: msg.embeds[0].setFooter('') }))
-  }
 }

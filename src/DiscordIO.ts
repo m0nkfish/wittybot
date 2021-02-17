@@ -54,11 +54,6 @@ export class DiscordIO {
         })
     }
 
-    const guild = message.context?.guild
-    if (guild) {
-      message.onSent?.(msg, this.guilds.getStream(guild))
-    }
-
     if (message.reactable) {
       const { reacts } = message.reactable
       if (reacts) {

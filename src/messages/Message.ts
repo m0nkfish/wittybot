@@ -13,8 +13,6 @@ export interface Message {
     reacts: Discord.EmojiResolvable[]
   }
 
-  onSent?: (msg: Discord.Message, stateStream: Observable<AnyGameState>) => void
-
   reactiveMessage?: (stateStream: Observable<AnyGameState> | undefined) => Observable<MessageUpdate>
 }
 

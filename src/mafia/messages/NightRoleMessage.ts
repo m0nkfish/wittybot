@@ -8,7 +8,7 @@ import { shuffle } from "../../random";
 import wu from 'wu';
 import { Duration } from "../../duration";
 import { AnyGameState } from "../../state";
-import { Observable, interval, combineLatest } from 'rxjs';
+import { Observable, interval, combineLatest, concat, of } from 'rxjs';
 import { map, takeWhile } from 'rxjs/operators';
 import { NightState } from '../state/NightState';
 import { NightDuration } from "../constants";
@@ -45,16 +45,15 @@ export class NightRoleMessage implements Message {
 
   footer = (remaining: Duration) => `${remaining.seconds} seconds remaining`
 
-  onSent = (msg: Discord.Message, stateStream: Observable<AnyGameState>) => {
-    combineLatest([stateStream, interval(5000)])
+  reactiveMessage = (stateStream?: Observable<AnyGameState>) =>
+    combineLatest([stateStream!, interval(5000)])
       .pipe(
         map(([s]) => s),
         takeWhile(s => s instanceof NightState && s.remaining().isGreaterThan(0)),
-        map(s => s as NightState)
+        map(s => s as NightState),
+        map(s => ({
+          footer: this.footer(s.remaining())
+        })),
+        o => concat(o, of({ footer: '' }))
       )
-      .subscribe(
-        s => msg.edit({ embed: msg.embeds[0].setFooter(this.footer(s.remaining())) }),
-        () => msg.edit({ embed: msg.embeds[0].setFooter('') }),
-        () => msg.edit({ embed: msg.embeds[0].setFooter('') }))
-  }
 }

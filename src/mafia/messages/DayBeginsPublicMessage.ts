@@ -4,7 +4,7 @@ import { dayNumber, Emojis, CommandReacts } from './text';
 import { MafiaGameContext } from '../context';
 import { PlayerStatuses } from '../PlayerStatuses';
 import * as Discord from 'discord.js';
-import { Observable, interval, combineLatest } from 'rxjs';
+import { Observable, interval, combineLatest, concat, of } from 'rxjs';
 import { AnyGameState } from "../../state";
 import { takeWhile, map } from 'rxjs/operators';
 import { DayState } from '../state/DayState';
@@ -51,18 +51,16 @@ export class DayBeginsPublicMessage implements Message {
 
   footer = (remaining: Duration) => `${remaining.seconds} seconds remaining`
 
-  onSent = (msg: Discord.Message, stateStream: Observable<AnyGameState>) => {
-    combineLatest([stateStream, interval(5000)])
+  reactiveMessage = (stateStream?: Observable<AnyGameState>) =>
+    combineLatest([stateStream!, interval(5000)])
       .pipe(
         map(([s]) => s),
         takeWhile(s => s instanceof DayState && s.remaining().isGreaterThan(0)),
-        map(s => s as DayState)
+        map(s => s as DayState),
+        map(s => ({
+          description: this.description(s.playerVotes),
+          footer: this.footer(s.remaining())
+        })),
+        o => concat(o, of({ footer: '' }))
       )
-      .subscribe(
-        s => msg.edit({ embed: msg.embeds[0]
-          .setDescription(this.description(s.playerVotes))
-          .setFooter(this.footer(s.remaining())) }),
-        () => msg.edit({ embed: msg.embeds[0].setFooter('') }),
-        () => msg.edit({ embed: msg.embeds[0].setFooter('') }))
-  }
 }

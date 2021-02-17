@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { interval, Observable, combineLatest } from 'rxjs';
+import { interval, Observable, combineLatest, concat, of } from 'rxjs';
 import { map, takeWhile } from 'rxjs/operators'
 
 import  { Duration } from '../../duration'
@@ -47,16 +47,15 @@ export class VoteMessage implements Message {
   footer = (remaining: Duration, voters: Discord.User[]) =>
     `You have ${remaining.seconds} seconds. Still left to vote: ${this.users.filter(u => !voters.some(v => v == u)).map(u => memberName(this.context.guild, u)).join(', ')}`
 
-  onSent = (msg: Discord.Message, stateStream: Observable<AnyGameState>) => {
-    combineLatest([stateStream, interval(5000)])
+  reactiveMessage = (stateStream?: Observable<AnyGameState>) =>
+    combineLatest([stateStream!, interval(5000)])
       .pipe(
         map(([s]) => s),
         takeWhile(s => s instanceof VotingState && s.context.sameRound(this.context) && s.remaining().isGreaterThan(0)),
-        map(s => s as VotingState)
+        map(s => s as VotingState),
+        map(s => ({
+          footer: this.footer(s.remaining(), Array.from(s.votes.keys()))
+        })),
+        o => concat(o, of({ footer: `Time's up!` }))
       )
-      .subscribe(
-        s => msg.edit({ embeds: msg.embeds[0].setFooter(this.footer(s.remaining(), Array.from(s.votes.keys()))) }),
-        () => msg.edit({ embeds: msg.embeds[0].setFooter(`Time's up!`) }),
-        () => msg.edit({ embeds: msg.embeds[0].setFooter(`Time's up!`) }))
-    }
 }

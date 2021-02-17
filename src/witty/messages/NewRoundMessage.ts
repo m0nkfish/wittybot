@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { interval, Observable, combineLatest } from 'rxjs';
+import { interval, Observable, combineLatest, concat, of } from 'rxjs';
 import { map, takeWhile } from 'rxjs/operators'
 
 import { Prompt } from '../prompts';
@@ -36,16 +36,15 @@ export class NewRoundMessage implements Message {
   footer = (remaining: Duration) =>
     `You have ${remaining.seconds} seconds to come up with an answer`
 
-  onSent = (msg: Discord.Message, stateStream: Observable<AnyGameState>) => {
-    combineLatest([stateStream, interval(5000)])
+  reactiveMessage = (stateStream?: Observable<AnyGameState>) =>
+    combineLatest([stateStream!, interval(5000)])
       .pipe(
         map(([s]) => s),
         takeWhile(s => s instanceof SubmissionState && s.context.roundId === this.roundId && s.remaining().isGreaterThan(0)),
-        map(s => s as SubmissionState)
+        map(s => s as SubmissionState),
+        map(s => ({
+          footer: this.footer(s.remaining())
+        })),
+        o => concat(o, of({ footer: `Time's up!` }))
       )
-      .subscribe(
-        s => msg.edit({ embeds: msg.embeds[0].setFooter(this.footer(s.remaining())) }),
-        () => msg.edit({ embeds: msg.embeds[0].setFooter(`Time's up!`) }),
-        () => msg.edit({ embeds: msg.embeds[0].setFooter(`Time's up!`) }))
-  }
 }
