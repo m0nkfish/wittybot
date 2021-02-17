@@ -45,7 +45,7 @@ export class DayBeginsPublicMessage implements Message {
       deaths,
       ``,
       `Vote to kill any player - if the vote results in a tie, nobody will die.`,
-      this.options.map(([emoji, user]) => `${emoji} - ${mention(user)}`)
+      ...this.options.map(([emoji, user]) => `${emoji} - ${mention(user)}`)
     ]
   }
 

@@ -33,7 +33,7 @@ export class DiscordIO {
     }
     const msg = await destination.send(content)
 
-    const { guild } = msg
+    const guild = message.context?.guild
     if (guild) {
       message.onSent?.(msg, this.guilds.getStream(guild))
     }

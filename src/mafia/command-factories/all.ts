@@ -3,6 +3,7 @@ import { InFactory } from './in';
 import { OutFactory } from './out';
 import { NightActionsFactory } from './night-actions';
 import { VoteFactory } from './vote';
+import { StartFactory } from './start';
 
 export const AllMafiaCommandFactories = () =>
   BeginFactory()
@@ -10,3 +11,4 @@ export const AllMafiaCommandFactories = () =>
     .combine(OutFactory())
     .combine(NightActionsFactory())
     .combine(VoteFactory())
+    .combine(StartFactory())

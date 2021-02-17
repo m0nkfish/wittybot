@@ -1,4 +1,4 @@
-import { In, Out } from '../../commands';
+import { In, Out, Start } from '../../commands';
 import { Begin } from './begin';
 import { Distract } from './distract';
 import { Track } from './track';
@@ -17,4 +17,5 @@ export type MafiaCommand =
   | ReturnType<typeof Begin>
   | ReturnType<typeof In>
   | ReturnType<typeof Out>
+  | ReturnType<typeof Start>
   | ReturnType<MafiaRoleCommandFactory>
