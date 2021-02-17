@@ -39,9 +39,7 @@ export class DiscordIO {
       const stateStream = guild && this.guilds.getStream(guild)
       message.reactiveMessage(stateStream)
         .pipe(
-          tap(u => log.debug('reactive-msg-pre-distinct', { footer: u.footer, desc: !!u.description })),
           distinctUntilChanged(MessageUpdate.equal),
-          tap(u => log.debug('reactive-msg-post-distinct', { footer: u.footer, desc: !!u.description }))
         )
         .subscribe(updates => {
           msg.edit({
@@ -50,6 +48,7 @@ export class DiscordIO {
               .setFooter(updates.footer ?? msg.embeds[0].footer)
               .setTitle(updates.title ?? msg.embeds[0].title)
             })
+            .catch(e => log.error('reactive-msg-error', loggableError(e)))
         })
     }
 
