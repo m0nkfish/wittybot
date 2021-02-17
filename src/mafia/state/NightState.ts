@@ -1,7 +1,7 @@
 import { Action, CompositeAction, Send, NewState, DelayedAction, FromStateAction, OptionalAction } from '../../actions';
 import { GameState, IdleState } from "../../state";
 import { Timer, isNonNull } from '../../util';
-import { NightDuration } from '../constants';
+import { NightDuration, DayDuration } from '../constants';
 import { MafiaGameContext } from '../context';
 import { PlayerStatuses } from "../PlayerStatuses";
 import { Role } from '../role';
@@ -12,6 +12,8 @@ import { MafiaRoleCommandFactory } from '../commands';
 import { BasicMessage, mention } from '../../messages';
 import { DayState } from './DayState';
 import { WinnersMessage } from '../messages/WinnersMessage';
+import { DayBeginsPublicMessage } from '../messages/DayBeginsPublicMessage';
+import { PlayerVotes } from '../PlayerVotes';
 
 export class NightState implements GameState<MafiaGameContext> {
   
@@ -40,7 +42,7 @@ export class NightState implements GameState<MafiaGameContext> {
         case PlayerFate.Killed.type:
           const flavour = f.role === Role.Werewolf
             ? `${Emojis.wolf} In a flurry of gnashing teeth and razor sharp claws, you met a grizzly end...`
-            : `${Emojis.dagger} You met a slick and business-like end: "Say hello to my little friend..."`
+            : `${Emojis.dagger} "Say hello to my little friend..." - You met a quick, sharp end.`
           return Send(f.target, new BasicMessage(flavour + `\nYou are now **dead**, please refrain from talking until the game is over`))
         case PlayerFate.Tracked.type:
           return Send(f.player, new BasicMessage(`You tracked ${mention(f.target)} and discovered their role: **${this.players.role(f.target).type}**`))
@@ -52,18 +54,19 @@ export class NightState implements GameState<MafiaGameContext> {
 
     const newStatus = this.players.kill(deaths)
 
-    const winners = newStatus.winners()
-    const newState = winners
-      ? new IdleState(this.context.guildCtx)
-      : new DayState(
-        this.context,
-        this.players.kill(deaths),
-        this.round + 1)
+    const winners = newStatus.checkWinners()
+
+
+    const nextState = winners
+      ? CompositeAction(
+        NewState(new IdleState(this.context.guildCtx)),
+        Send(this.context.channel, new WinnersMessage(winners, newStatus)))
+      : DayState.enter(this.context, deaths, newStatus, this.round + 1)
+
 
     return CompositeAction(
       ...messages,
-      OptionalAction(winners && Send(this.context.channel, new WinnersMessage(winners, newStatus))),
-      NewState(newState)
+      nextState,
     )
   }
 

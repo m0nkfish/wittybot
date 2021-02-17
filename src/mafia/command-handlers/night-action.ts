@@ -16,6 +16,10 @@ export const NightActionHandler = (action: MafiaRoleCommandFactory) => CommandHa
       return
     }
 
+    if (user === target) {
+      return Send(user, new BasicMessage(`You cannot ${actionText(action)} or yourself`))
+    }
+
     const existingIntention = state.intentions.getIntention(user)
     if (existingIntention) {
       return Send(user, new BasicMessage(`You have already chosen to ${actionText(existingIntention.action)} ${mention(existingIntention.target)}`))

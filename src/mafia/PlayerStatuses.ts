@@ -11,7 +11,7 @@ export type PlayerStatus = {
 export class PlayerStatuses {
   constructor(readonly players: PlayerStatus[]) { }
 
-  winners = (): Team | undefined => {
+  checkWinners = (): Team | undefined => {
     const counts = this.alive()
       .reduce((acc, {role}) => ({ ...acc, [role.team]: (acc[role.team] ?? 0) + 1}), {} as Record<Team, number>)
 

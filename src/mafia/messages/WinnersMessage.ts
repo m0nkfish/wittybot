@@ -1,7 +1,7 @@
 import { mention, Message } from "../../messages";
 import { Team } from "../role";
 import * as Discord from 'discord.js';
-import { Emojis } from './text'
+import { Emojis, roleText } from './text'
 import { PlayerStatuses } from '../PlayerStatuses';
 
 export class WinnersMessage implements Message {
@@ -12,7 +12,7 @@ export class WinnersMessage implements Message {
       .setTitle(`${Emojis.tada} The ${this.team} win the game!`)
       .setDescription([
         `End game state:`,
-        this.players.players.map(p => `${mention(p.player)}: ${p.role.type} (${p.isAlive ? 'alive' : 'dead'})`)
+        this.players.players.map(p => `${roleText.get(p.role)!.emoji} ${mention(p.player)}: ${p.role.type} (${p.isAlive ? 'alive' : 'dead'})`)
       ])
   }
 }
