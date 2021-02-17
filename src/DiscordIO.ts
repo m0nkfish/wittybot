@@ -34,16 +34,6 @@ export class DiscordIO {
     }
     const msg = await destination.send(content)
 
-    function update(embed: MessageEmbed, partial: MessageUpdate) {
-      if (partial.description !== undefined) {
-        embed = embed.setDescription(partial.description)
-      }
-      if (partial.footer !== undefined) {
-        embed = embed.setFooter(partial.footer)
-      }
-      return embed
-    }
-
     if (message.reactiveMessage) {
       const guild = message.context?.guild
       const stateStream = guild && this.guilds.getStream(guild)
@@ -54,7 +44,12 @@ export class DiscordIO {
           tap(u => log.debug('reactive-msg-post-distinct', { footer: u.footer, desc: !!u.description }))
         )
         .subscribe(updates => {
-          msg.edit({ embeds: update(msg.embeds[0], updates) })
+          msg.edit({
+            embeds: msg.embeds[0]
+              .setDescription(updates.description ?? msg.embeds[0].description)
+              .setFooter(updates.footer ?? msg.embeds[0].footer)
+              .setTitle(updates.title ?? msg.embeds[0].title)
+            })
         })
     }
 
