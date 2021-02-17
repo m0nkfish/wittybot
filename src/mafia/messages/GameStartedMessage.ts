@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { Observable } from 'rxjs';
+import { Observable, concat, of } from 'rxjs';
 import { endWith, map, scan, takeWhile } from 'rxjs/operators'
 
 import { AnyGameState } from '../../state';
@@ -60,7 +60,7 @@ export class GameStartedMessage implements StateStreamMessage {
           setFooter(this.footer(s.remaining())),
           setDescription(this.description(s.interested))
         )),
-        endWith(setFooter('')),
+        o => concat(o, of(setFooter(''))),
         scan((content, update) => update(content), this.content)
       )
   
