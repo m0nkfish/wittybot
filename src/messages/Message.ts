@@ -23,3 +23,10 @@ export type MessageUpdate = {
   description?: string | string[]
   title?: string
 }
+
+export const MessageUpdate = {
+  equal: (a: MessageUpdate, b: MessageUpdate): boolean =>
+    a.title === b.title && a.footer === b.footer && descText(a.description) === descText(b.description)
+}
+
+const descText = (desc: string | string[] | undefined) => typeof desc === "string" ? desc : desc === undefined ? '' : desc.join('\n')

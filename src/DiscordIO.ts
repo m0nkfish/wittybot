@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js';
 import { Observable } from 'rxjs'
 import * as O from 'rxjs'
-import { filter, map } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map } from 'rxjs/operators'
 import { Message, Destination, MessageUpdate } from "./messages";
 import { log, loggableError } from "./log";
 import { GuildStates } from './GuildStates';
@@ -35,22 +35,21 @@ export class DiscordIO {
     const msg = await destination.send(content)
 
     function update(embed: MessageEmbed, partial: MessageUpdate) {
-      if (partial.description) {
-        embed.setDescription(partial.description)
+      if (partial.description !== undefined) {
+        embed = embed.setDescription(partial.description)
       }
-      if (partial.footer) {
-        embed.setFooter(partial.footer)
+      if (partial.footer !== undefined) {
+        embed = embed.setFooter(partial.footer)
       }
+      return embed
     }
 
-    log('reactive-message', { type: typeof message, isReactive: !!message.reactiveMessage })
     if (message.reactiveMessage) {
       const guild = message.context?.guild
       const stateStream = guild && this.guilds.getStream(guild)
-      log('reactive-message-subscribe', { guild: !!guild, stream: !!stateStream })
       message.reactiveMessage(stateStream)
+        .pipe(distinctUntilChanged(MessageUpdate.equal))
         .subscribe(updates => {
-          log('reactive-message-update', { footer: updates.footer, desc: !!updates.description })
           msg.edit({ embeds: update(msg.embeds[0], updates) })
         })
     }

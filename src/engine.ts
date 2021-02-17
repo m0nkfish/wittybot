@@ -11,7 +11,7 @@ import { AllGlobalCommandHandlers, AllScopedCommandHandlers, LoggedCommandHandle
 import { ActionExecutor } from './action-executor';
 import { Observable } from 'rxjs';
 import { Action } from './actions';
-import { DiscordIO } from './discord-io';
+import { DiscordIO } from './DiscordIO';
 
 export class Engine {
   readonly guilds: GuildStates
