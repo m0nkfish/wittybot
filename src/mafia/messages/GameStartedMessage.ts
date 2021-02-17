@@ -9,7 +9,7 @@ import { MafiaGameContext } from '../context';
 import { Duration } from '../../duration';
 import { MinPlayers, StartingStateDelay } from '../constants';
 import { chain, pulse } from '../../util';
-import { log } from '../../log';
+import { log, logTap } from '../../log';
 
 export class GameStartedMessage implements StateStreamMessage {
   readonly type = 'state-stream'
@@ -55,13 +55,14 @@ export class GameStartedMessage implements StateStreamMessage {
   content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
     pulse(stateStream, Duration.seconds(5))
       .pipe(
+        logTap('pre-takewhile'),
         takeWhile(s => s instanceof StartingState && s.context.sameGame(this.context) && s.remaining().isGreaterThan(0)),
         map(s => s as StartingState),
         map(s => chain(
           setFooter(this.footer(s.remaining())),
           setDescription(this.description(s.interested))
         )),
-        o => concat(o, of(setFooter(''))),
+        // o => concat(o, of(setFooter(''))),
         scan((content, update) => update(content), this.content)
       )
   
