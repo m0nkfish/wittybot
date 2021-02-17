@@ -1,14 +1,14 @@
 import * as Discord from 'discord.js'
-import { interval, Observable, combineLatest, concat, of } from 'rxjs';
+import { Observable, concat, of } from 'rxjs';
 import { map, scan, takeWhile } from 'rxjs/operators'
 
 import { Prompt } from '../prompts';
 import { SubmissionState } from '../state';
 import { AnyGameState } from '../../state';
-import { Message } from '../../messages'
 import { Duration } from '../../duration';
 import { WittyRoundContext } from '../context';
 import { EmbedContent, MessageContent, setFooter, StateStreamMessage } from '../../messages/Message';
+import { pulse } from '../../util';
 
 export class NewRoundMessage implements StateStreamMessage {
   readonly type = 'state-stream'
@@ -39,9 +39,8 @@ export class NewRoundMessage implements StateStreamMessage {
     `You have ${remaining.seconds} seconds to come up with an answer`
 
   content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
-    combineLatest([stateStream!, interval(5000)])
+    pulse(stateStream, Duration.seconds(5))
       .pipe(
-        map(([s]) => s),
         takeWhile(s => s instanceof SubmissionState && s.context.sameRound(this.context) && s.remaining().isGreaterThan(0)),
         map(s => s as SubmissionState),
         map(s => setFooter(this.footer(s.remaining()))),

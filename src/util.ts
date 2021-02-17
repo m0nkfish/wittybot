@@ -1,5 +1,6 @@
 import { Duration } from "./duration"
-import { Observable } from 'rxjs';
+import { Observable, combineLatest, interval } from 'rxjs';
+import { startWith, map } from 'rxjs/operators';
 
 export const tryParseInt = (str: string) => {
   try {
@@ -120,3 +121,8 @@ export const buildScan = <A, Acc>(onFirst: (a: A) => Acc, onNext: (acc: Acc, a: 
         () => sub.complete()
       )
     })
+
+
+  export const pulse = <A>(obs: Observable<A>, freq: Duration) =>
+    combineLatest([obs, startWith(0, interval(freq.milliseconds))])
+      .pipe(map(([x]) => x))

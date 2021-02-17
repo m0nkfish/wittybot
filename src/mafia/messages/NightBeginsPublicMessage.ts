@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { Observable, combineLatest, interval, concat, of } from 'rxjs';
+import { Observable, concat, of } from 'rxjs';
 import { map, scan, takeWhile } from 'rxjs/operators';
 
 import { Emojis, nightNumber } from "./text";
@@ -9,6 +9,7 @@ import { Duration } from "../../duration";
 import { NightDuration } from "../constants";
 import { MafiaGameContext } from "../context";
 import { MessageContent, StateStreamMessage, setFooter, EmbedContent } from '../../messages';
+import { pulse } from '../../util';
 
 export class NightBeginsPublicMessage implements StateStreamMessage {
   readonly type = 'state-stream'
@@ -27,13 +28,12 @@ export class NightBeginsPublicMessage implements StateStreamMessage {
   footer = (remaining: Duration) => `${remaining.seconds} seconds remaining`
 
   content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
-    combineLatest([stateStream!, interval(5000)])
+    pulse(stateStream, Duration.seconds(5))
       .pipe(
-        map(([s]) => s),
         takeWhile(s => s instanceof NightState && s.remaining().isGreaterThan(0)),
         map(s => s as NightState),
         map(s => setFooter(this.footer(s.remaining()))),
-        o => concat(o, of(setFooter(''))),
+        o => concat(o, of(setFooter(`Time's up!`))),
         scan((content, update) => update(content), this.content)
       )
 

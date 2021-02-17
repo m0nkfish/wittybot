@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { interval, Observable, combineLatest, concat, of } from 'rxjs';
+import { Observable, concat, of } from 'rxjs';
 import { map, scan, takeWhile } from 'rxjs/operators'
 
 import { AnyGameState } from '../../state';
@@ -9,7 +9,7 @@ import { WittyGameContext } from '../context';
 import { StartingStateDelay } from '../state/newGame';
 import { Duration } from '../../duration';
 import { EmbedContent, MessageContent, StateStreamMessage, setFooter, setDescription } from '../../messages/Message';
-import { chain } from '../../util';
+import { chain, pulse } from '../../util';
 
 export class GameStartedMessage implements StateStreamMessage {
   readonly type = 'state-stream'
@@ -50,9 +50,8 @@ export class GameStartedMessage implements StateStreamMessage {
       : `${remaining.seconds} seconds remaining`
 
   content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
-    combineLatest([stateStream!, interval(5000)])
+    pulse(stateStream, Duration.seconds(5))
       .pipe(
-        map(([s]) => s),
         takeWhile(s => s instanceof StartingState && s.context.sameGame(this.context) && s.remaining().isGreaterThan(0)),
         map(s => s as StartingState),
         map(s => chain(

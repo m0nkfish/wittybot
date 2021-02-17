@@ -8,12 +8,13 @@ import { shuffle } from "../../random";
 import wu from 'wu';
 import { Duration } from "../../duration";
 import { AnyGameState } from "../../state";
-import { Observable, interval, combineLatest, concat, of } from 'rxjs';
+import { Observable, concat, of } from 'rxjs';
 import { map, scan, takeWhile } from 'rxjs/operators';
 import { NightState } from '../state/NightState';
 import { NightDuration } from "../constants";
 import { MafiaGameContext } from '../context';
 import { StateStreamMessage, setFooter, MessageContent, EmbedContent } from '../../messages';
+import { pulse } from '../../util';
 
 export class NightRoleMessage implements StateStreamMessage {
   readonly type = 'state-stream'
@@ -48,13 +49,12 @@ export class NightRoleMessage implements StateStreamMessage {
   footer = (remaining: Duration) => `${remaining.seconds} seconds remaining`
 
   content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
-    combineLatest([stateStream!, interval(5000)])
+    pulse(stateStream, Duration.seconds(5))
       .pipe(
-        map(([s]) => s),
         takeWhile(s => s instanceof NightState && s.remaining().isGreaterThan(0)),
         map(s => s as NightState),
         map(s => setFooter(this.footer(s.remaining()))),
-        o => concat(o, of(setFooter(''))),
+        o => concat(o, of(setFooter(`Time's up!`))),
         scan((content, update) => update(content), this.content)
       )
 }

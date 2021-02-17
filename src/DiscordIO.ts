@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js';
 import { Observable } from 'rxjs'
 import * as O from 'rxjs'
-import { filter, map } from 'rxjs/operators'
+import { filter, map, tap } from 'rxjs/operators'
 import { Message, Destination } from "./messages";
 import { log, loggableError } from "./log";
 import { GuildStates } from './GuildStates';

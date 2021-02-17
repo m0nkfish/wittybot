@@ -1,7 +1,7 @@
 import { MessageEmbed } from "discord.js";
 import wu from 'wu';
 import * as Discord from 'discord.js';
-import { Observable, interval, combineLatest, concat, of } from 'rxjs';
+import { Observable, concat, of } from 'rxjs';
 import { takeWhile, map, scan } from 'rxjs/operators';
 import { StateStreamMessage, mention, Message, MessageContent, setDescription, setFooter, EmbedContent } from "../../messages";
 import { dayNumber, Emojis, CommandReacts } from './text';
@@ -12,7 +12,7 @@ import { DayState } from '../state/DayState';
 import { Duration } from "../../duration";
 import { shuffle } from '../../random';
 import { PlayerVotes } from "../PlayerVotes";
-import { chain } from "../../util";
+import { chain, pulse } from '../../util';
 
 export class DayBeginsPublicMessage implements StateStreamMessage {
   readonly type = 'state-stream'
@@ -58,9 +58,8 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
   footer = (remaining: Duration) => `${remaining.seconds} seconds remaining`
 
   content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
-    combineLatest([stateStream!, interval(5000)])
+    pulse(stateStream, Duration.seconds(5))
       .pipe(
-        map(([s]) => s),
         takeWhile(s => s instanceof DayState && s.remaining().isGreaterThan(0)),
         map(s => s as DayState),
         map(s => chain(
