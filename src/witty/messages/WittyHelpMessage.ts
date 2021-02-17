@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js'
-import { Message } from './index'
+import { Message } from '../../messages'
 
-export class HelpMessage implements Message {
+export class WittyHelpMessage implements Message {
   constructor() { }
 
   get content() {
@@ -15,14 +15,14 @@ export class HelpMessage implements Message {
         `4. After submissions are in and the time's up, players vote for the funniest entry`,
         `5. Repeat ad infinitum (or until there aren't enough players)`
       ])
-      .addField('Commands', HelpMessage.commands.map(([command, description]) => `\`!${command}\` - ${description}`))
+      .addField('Commands', WittyHelpMessage.commands.map(([command, description]) => `\`!${command}\` - ${description}`))
       .setFooter(`This incarnation of wittybot was brought to you by monkfish#4812`)
   }
 
   static commands = [
-    ['help', "you're looking at it"],
+    ['help witty', "you're looking at it"],
     ['witty [race <score>] [timeout <seconds>] [players <min>]', ["start a new game",
-      "• `race <score>`: the game will finish when someone reaches <score> (5 - 30)",
+      "• `race <score>`: the game will finish when someone reaches <score> (5 - 30). default is 20",
       "• `timeout <seconds>`: specify the number of seconds per round (10 - 120). default is 80",
       "• `players <min>`: specify the minimum number of players (3 - 6). default is 3"
     ].join('\n')],
