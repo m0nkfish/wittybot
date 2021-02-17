@@ -127,11 +127,16 @@ const immediateInterval = (duration: Duration): Observable<number> =>
   interval(duration.milliseconds)
     .pipe(
       startWith(0),
-      tap(n => log.debug('immediate-interval', { n })))
+      tap(n => log.debug('immediate-interval', { n }),
+      tap(null, null, () => log.debug('immediate-interval-complete'))))
 
 export const pulse = <A>(obs: Observable<A>, freq: Duration) =>
-  combineLatest([obs.pipe(tap(_ => log.debug(`pulse-input-change`))), immediateInterval(freq)])
+  combineLatest([
+    obs.pipe(
+      tap(_ => log.debug(`pulse-input-change`)),
+      tap(null, null, () => log.debug(`pulse-input-change-complete`))),
+    immediateInterval(freq)])
     .pipe(
       map(([x]) => x),
-      tap(_ => log.debug(`pulse-output`)))
-    
+      tap(_ => log.debug(`pulse-output`)),
+      tap(null, null, () => log.debug(`pulse-output-complete`)))
