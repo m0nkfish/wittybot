@@ -29,7 +29,11 @@ export class NewRoundMessage implements StateStreamMessage {
       .setFooter(this.footer(this.submitDuration))
 
     if (this.prompt.type === 'caption') {
-      msg.setImage(this.prompt.prompt)
+      return {
+        content: '',
+        embed: msg,
+        files: [this.prompt.prompt]
+      }
     }
     
     return msg

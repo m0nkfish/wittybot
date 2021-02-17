@@ -3,10 +3,14 @@ import { AnyGameState } from '../state';
 import { Observable } from 'rxjs';
 import { GuildContext } from '../context';
 import { MessageEmbed } from 'discord.js';
+import { Stream } from 'stream';
 
 export type Destination = Discord.TextChannel | Discord.User
 
-export type EmbedContent = Discord.MessageEmbed | { content: string, embed: Discord.MessageEmbed }
+type Files = (Discord.FileOptions | Discord.BufferResolvable | Stream | Discord.MessageAttachment)[]
+export type EmbedContent =
+| Discord.MessageEmbed
+| { content: string, embed: Discord.MessageEmbed, files?: Files }
 export type MessageContent = string | EmbedContent
 
 type Common = {

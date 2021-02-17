@@ -9,6 +9,7 @@ import { Subject } from 'rxjs';
 import { DiscordEvent, MessageReceived, ReactionAdded, ReactionRemoved } from './discord-events';
 import { invoke } from './util';
 import { MessageContent } from './messages/Message';
+import { MessageEmbed } from 'discord.js';
 
 export class DiscordIO {
 
@@ -87,7 +88,8 @@ export class DiscordIO {
         if (msg === null) {
           msg = send(x)
         } else {
-          msg = msg.then(m => m.edit(x))
+          const edit = x instanceof MessageEmbed ? { embed: x } : x
+          msg = msg.then(m => m.edit(edit))
         }
       })
   }
