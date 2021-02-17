@@ -5,7 +5,7 @@ import { NightActionHandler } from './night-action';
 import { Kill, Track, Protect, Distract } from '../commands';
 import { VoteHandler } from './vote';
 
-export const AllWittyCommandHandlers = () =>
+export const AllMafiaCommandHandlers = () =>
   BeginHandler()
     .orElse(InHandler())
     .orElse(OutHandler())

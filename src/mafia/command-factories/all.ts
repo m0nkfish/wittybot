@@ -4,7 +4,7 @@ import { OutFactory } from './out';
 import { NightActionsFactory } from './night-actions';
 import { VoteFactory } from './vote';
 
-export const AllWittyCommandFactories = () =>
+export const AllMafiaCommandFactories = () =>
   BeginFactory()
     .combine(InFactory())
     .combine(OutFactory())
