@@ -12,7 +12,7 @@ export class WinnersMessage implements Message {
       .setTitle(`${Emojis.tada} The ${this.team} win the game!`)
       .setDescription([
         `End game state:`,
-        this.players.players.map(p => `${roleText.get(p.role)!.emoji} ${mention(p.player)}: ${p.role.type} (${p.isAlive ? 'alive' : 'dead'})`)
+        ...this.players.players.map(p => `${roleText.get(p.role)!.emoji} ${mention(p.player)}: ${p.role.type} (${p.isAlive ? 'alive' : 'dead'})`)
       ])
   }
 }

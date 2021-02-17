@@ -28,5 +28,5 @@ export class NotifyRoleCountsMessage implements Message {
 }
 
 function pluralise(role: Role, count: number) {
-  return count === 1 ? role : role + 's'
+  return count === 1 ? role.type : role.type + 's'
 }
