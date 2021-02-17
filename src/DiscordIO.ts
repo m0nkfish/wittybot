@@ -42,13 +42,17 @@ export class DiscordIO {
           distinctUntilChanged(MessageUpdate.equal),
         )
         .subscribe(updates => {
-          msg.edit({
-            embeds: msg.embeds[0]
-              .setDescription(updates.description ?? msg.embeds[0].description)
-              .setFooter(updates.footer ?? msg.embeds[0].footer)
-              .setTitle(updates.title ?? msg.embeds[0].title)
-            })
-            .catch(e => log.error('reactive-msg-error', loggableError(e)))
+          const content = message.content // recreate the embed
+          if (content instanceof Discord.MessageEmbed) {
+            content.setColor(embedColor)
+              .setDescription(updates.description ?? content.description)
+              .setFooter(updates.footer ?? content.footer)
+              .setTitle(updates.title ?? content.title)
+
+            log.debug('reactive-msg-edit', { footer: updates.footer, title: updates.title, desc: !!updates.description })
+            msg.edit(content)
+              .catch(e => log.error('reactive-msg-error', loggableError(e)))
+          }
         })
     }
 
