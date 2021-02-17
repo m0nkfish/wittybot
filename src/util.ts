@@ -123,14 +123,10 @@ export const buildScan = <A, Acc>(onFirst: (a: A) => Acc, onNext: (acc: Acc, a: 
       )
     })
 
-const immediateInterval = (duration: Duration): Observable<number> =>
+export const immediateInterval = (duration: Duration): Observable<number> =>
   interval(duration.milliseconds)
     .pipe(startWith(0))
 
 export const pulse = <A>(obs: Observable<A>, freq: Duration) =>
-  combineLatest([
-    obs.pipe(logTap('pulse-input')),
-    immediateInterval(freq)])
-    .pipe(
-      map(([x]) => x),
-      logTap('pulse-output'))
+  combineLatest([ obs, immediateInterval(freq)])
+    .pipe(map(([x]) => x))

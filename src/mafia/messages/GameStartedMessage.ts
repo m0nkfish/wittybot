@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
-import { Observable, concat, of } from 'rxjs';
-import { endWith, map, scan, takeWhile, tap } from 'rxjs/operators'
+import { Observable } from 'rxjs';
+import { endWith, map, scan, takeWhile } from 'rxjs/operators'
 
 import { AnyGameState } from '../../state';
 import { StartingState } from '../state/StartingState';
@@ -9,7 +9,7 @@ import { MafiaGameContext } from '../context';
 import { Duration } from '../../duration';
 import { MinPlayers, StartingStateDelay } from '../constants';
 import { chain, pulse } from '../../util';
-import { log, logTap } from '../../log';
+import { logTap } from '../../log';
 
 export class GameStartedMessage implements StateStreamMessage {
   readonly type = 'state-stream'
@@ -62,7 +62,7 @@ export class GameStartedMessage implements StateStreamMessage {
           setFooter(this.footer(s.remaining())),
           setDescription(this.description(s.interested))
         )),
-        // o => concat(o, of(setFooter(''))),
+        endWith(setFooter('')),
         scan((content, update) => update(content), this.content)
       )
   
