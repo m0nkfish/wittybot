@@ -38,7 +38,7 @@ export class VoteMessage implements Message {
       .setFooter(this.footer(this.voteDuration, []))
 
     if (this.prompt.type === 'caption') {
-      msg.setImage(this.prompt.prompt)
+      msg.setThumbnail(this.prompt.prompt)
     }
 
     return msg

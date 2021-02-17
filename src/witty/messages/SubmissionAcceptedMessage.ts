@@ -17,7 +17,7 @@ export class SubmissionAcceptedMessage implements Message {
 
 
     if (this.prompt.type === 'caption') {
-      message.setImage(this.prompt.prompt)
+      message.setThumbnail(this.prompt.prompt)
     }
 
     return message

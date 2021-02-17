@@ -55,7 +55,7 @@ export class DiscordIO {
               .setTitle(updates.title ?? content.embed.title)
           }
 
-          log.debug('reactive-msg-edit', { footer: updates.footer, title: updates.title, desc: !!updates.description })
+          log.debug('reactive-msg-edit', { embeds: msg.embeds.length })
           msg.edit(content)
             .catch(e => log.error('reactive-msg-error', loggableError(e)))
         })

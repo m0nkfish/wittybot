@@ -74,7 +74,7 @@ export class VotingFinishedMessage implements Message {
       .setFooter(footer)
 
     if (this.prompt.type === 'caption') {
-      msg.setImage(this.prompt.prompt)
+      msg.setThumbnail(this.prompt.prompt)
     }
 
     return msg

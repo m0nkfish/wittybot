@@ -16,7 +16,7 @@ export class VoteAcceptedMessage implements Message {
       .setFooter(`Message again to replace your vote`)
 
     if (this.prompt.type === 'caption') {
-      msg.setImage(this.prompt.prompt)
+      msg.setThumbnail(this.prompt.prompt)
     }
 
     return msg
