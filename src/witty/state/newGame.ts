@@ -30,9 +30,9 @@ export function newGame(guildContext: GuildContext, channel: Discord.TextChannel
     )
 
   return CompositeAction(
-    PromiseAction(gameStartedMessage),
     DelayedAction(StartingStateDelay, onTimeout),
     NewState(new StartingState(context, [context.initiator], Timer.begin())),
+    PromiseAction(gameStartedMessage),
   )
 }
 

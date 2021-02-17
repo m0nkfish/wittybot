@@ -27,8 +27,8 @@ export function newGame(guildContext: GuildContext, channel: Discord.TextChannel
     )
 
   return CompositeAction(
-    Send(context.channel, new GameStartedMessage(undefined, context)),
     DelayedAction(StartingStateDelay, onTimeout),
     NewState(new StartingState(context, [initiator], Timer.begin())),
+    Send(context.channel, new GameStartedMessage(undefined, context)),
   )
 }

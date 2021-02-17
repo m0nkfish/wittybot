@@ -12,8 +12,6 @@ import { MafiaRoleCommandFactory } from '../commands';
 import { BasicMessage, mention } from '../../messages';
 import { DayState } from './DayState';
 import { WinnersMessage } from '../messages/WinnersMessage';
-import { DayBeginsPublicMessage } from '../messages/DayBeginsPublicMessage';
-import { PlayerVotes } from '../PlayerVotes';
 
 export class NightState implements GameState<MafiaGameContext> {
   
@@ -87,9 +85,9 @@ export class NightState implements GameState<MafiaGameContext> {
       )
 
     return CompositeAction(
+      NewState(new NightState(context, statuses, new PlayerIntentions([]), round, Timer.begin())),
       ...nightRolePMs,
       Send(context.channel, new NightBeginsPublicMessage(context, round)),
-      NewState(new NightState(context, statuses, new PlayerIntentions([]), round, Timer.begin())),
       DelayedAction(NightDuration, onTimeout)
     )
   }
