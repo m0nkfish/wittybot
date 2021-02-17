@@ -1,7 +1,6 @@
 import { Duration } from "./duration"
-import { Observable, combineLatest, interval, concat, of } from 'rxjs';
-import { startWith, map, tap } from 'rxjs/operators';
-import { log, logTap } from './log';
+import { Observable, combineLatest, interval } from 'rxjs';
+import { startWith, map } from 'rxjs/operators';
 
 export const tryParseInt = (str: string) => {
   try {
