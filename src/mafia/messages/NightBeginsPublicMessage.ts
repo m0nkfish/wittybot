@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js';
-import { Observable, concat, of } from 'rxjs';
-import { map, scan, takeWhile } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { endWith, map, scan, takeWhile } from 'rxjs/operators';
 
 import { Emojis, nightNumber } from "./text";
 import { AnyGameState } from "../../state";
@@ -33,7 +33,7 @@ export class NightBeginsPublicMessage implements StateStreamMessage {
         takeWhile(s => s instanceof NightState && s.remaining().isGreaterThan(0)),
         map(s => s as NightState),
         map(s => setFooter(this.footer(s.remaining()))),
-        o => concat(o, of(setFooter(`Time's up!`))),
+        endWith(setFooter(`Time's up!`)),
         scan((content, update) => update(content), this.content)
       )
 

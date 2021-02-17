@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
-import { Observable, concat, of } from 'rxjs';
-import { map, scan, takeWhile } from 'rxjs/operators'
+import { Observable } from 'rxjs';
+import { endWith, map, scan, takeWhile } from 'rxjs/operators'
 
 import  { Duration } from '../../duration'
 import { Prompt } from '../prompts';
@@ -57,7 +57,7 @@ export class VoteMessage implements StateStreamMessage {
         takeWhile(s => s instanceof VotingState && s.context.sameRound(this.context) && s.remaining().isGreaterThan(0)),
         map(s => s as VotingState),
         map(s => setFooter(this.footer(s.remaining(), Array.from(s.votes.keys())))),
-        o => concat(o, of(setFooter(`Time's up!`))),
+        endWith(setFooter(`Time's up!`)),
         scan((content, update) => update(content), this.content)
       )
 }

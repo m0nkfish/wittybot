@@ -1,8 +1,8 @@
 import { MessageEmbed } from "discord.js";
 import wu from 'wu';
 import * as Discord from 'discord.js';
-import { Observable, concat, of } from 'rxjs';
-import { takeWhile, map, scan } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { takeWhile, map, scan, endWith } from 'rxjs/operators';
 import { StateStreamMessage, mention, Message, MessageContent, setDescription, setFooter, EmbedContent } from "../../messages";
 import { dayNumber, Emojis, CommandReacts } from './text';
 import { MafiaGameContext } from '../context';
@@ -66,7 +66,7 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
           setFooter(this.footer(s.remaining())),
           setDescription(this.description(s.playerVotes))
         )),
-        o => concat(o, of(setFooter(''))),
+        endWith(setFooter('')),
         scan((content, update) => update(content), this.content)
       )
 }

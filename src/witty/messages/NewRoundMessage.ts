@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
-import { Observable, concat, of } from 'rxjs';
-import { map, scan, takeWhile } from 'rxjs/operators'
+import { Observable } from 'rxjs';
+import { endWith, map, scan, takeWhile } from 'rxjs/operators'
 
 import { Prompt } from '../prompts';
 import { SubmissionState } from '../state';
@@ -44,7 +44,7 @@ export class NewRoundMessage implements StateStreamMessage {
         takeWhile(s => s instanceof SubmissionState && s.context.sameRound(this.context) && s.remaining().isGreaterThan(0)),
         map(s => s as SubmissionState),
         map(s => setFooter(this.footer(s.remaining()))),
-        o => concat(o, of(setFooter(`Time's up!`))),
+        endWith(setFooter(`Time's up!`)),
         scan((content, update) => update(content), this.content)
       )
 }

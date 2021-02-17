@@ -123,6 +123,7 @@ export const buildScan = <A, Acc>(onFirst: (a: A) => Acc, onNext: (acc: Acc, a: 
     })
 
 
-  export const pulse = <A>(obs: Observable<A>, freq: Duration) =>
-    combineLatest([obs, concat(of(0), interval(freq.milliseconds))])
-      .pipe(map(([x]) => x))
+export const pulse = <A>(obs: Observable<A>, freq: Duration) =>
+  combineLatest([obs, concat(of(0), interval(freq.milliseconds))])
+    .pipe(map(([x]) => x))
+    
