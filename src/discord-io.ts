@@ -2,11 +2,12 @@ import * as Discord from 'discord.js';
 import { Observable } from 'rxjs'
 import * as O from 'rxjs'
 import { filter, map } from 'rxjs/operators'
-import { Message, Destination } from "./messages";
+import { Message, Destination, MessageUpdate } from "./messages";
 import { log, loggableError } from "./log";
 import { GuildStates } from './GuildStates';
 import { Subject } from 'rxjs';
 import { DiscordEvent, MessageReceived, ReactionAdded, ReactionRemoved } from './discord-events';
+import { MessageEmbed } from 'discord.js';
 
 export class DiscordIO {
 
@@ -32,6 +33,22 @@ export class DiscordIO {
       content.embed.setColor(embedColor)
     }
     const msg = await destination.send(content)
+
+    function update(embed: MessageEmbed, partial: MessageUpdate) {
+      if (partial.description) {
+        embed.setDescription(partial.description)
+      }
+      if (partial.footer) {
+        embed.setFooter(partial.footer)
+      }
+    }
+
+    if (message.reactiveMessage) {
+      const guild = message.context?.guild
+      const stateStream = guild && this.guilds.getStream(guild)
+      message.reactiveMessage(stateStream)
+        .subscribe(updates => msg.edit({ embeds: update(msg.embeds[0], updates) }))
+    }
 
     const guild = message.context?.guild
     if (guild) {

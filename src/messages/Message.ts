@@ -14,4 +14,12 @@ export interface Message {
   }
 
   onSent?: (msg: Discord.Message, stateStream: Observable<AnyGameState>) => void
+
+  reactiveMessage?: (stateStream: Observable<AnyGameState> | undefined) => Observable<MessageUpdate>
+}
+
+export type MessageUpdate = {
+  footer?: string
+  description?: string | string[]
+  title?: string
 }
