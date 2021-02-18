@@ -13,12 +13,12 @@ import { Player } from '../model/Player';
 import { Players } from '../model/Players';
 import { PlayerVotes } from "../model/PlayerVotes";
 import { DayState } from '../state/DayState';
-import { CommandReacts, Emojis } from './text';
+import { CommandReacts, Emoji, Emojis } from './text';
 
 export class DayBeginsPublicMessage implements StateStreamMessage {
   readonly type = 'state-stream'
 
-  readonly options: [string, Player][]
+  readonly options: [Emoji, Player][]
   readonly reactable: Message['reactable']
 
   constructor(
@@ -44,14 +44,21 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
   description = (votes: PlayerVotes) => {
     const deaths = this.killed.length > 0 ? `Deaths last night: ${this.killed.map(mention).join(', ')}` : `Nobody died last night.`
     const votesByPlayer = votes.votesByPlayer()
+
+    const display = (emoji: Emoji, player: Player) => {
+      const voters = votesByPlayer.get(player) ?? []
+      let basic = `${emoji} - ${mention(player.user)}`
+      if (voters.length > 0) {
+        basic += `: ${ voters.length } votes: ${ voters.map(p => mention(p.user)).join(', ') })`
+      }
+      return basic + '\n'
+    }
+
     return [
       deaths,
       ``,
       `Vote to kill any player - if the vote results in a tie, nobody will die.`,
-      ...this.options.map(([emoji, user]) => {
-        const voters = votesByPlayer.get(user) ?? []
-        return `${emoji} - ${mention(user.user)} (${voters.length} votes: ${voters.map(p => mention(p.user)).join(', ')})`
-      })
+      ...this.options.map(([emoji, user]) => display(emoji, user))
     ]
   }
 

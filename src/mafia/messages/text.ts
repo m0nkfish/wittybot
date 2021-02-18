@@ -1,3 +1,4 @@
+import { Values } from '../../util';
 import { Distract, Kill, MafiaRoleCommandFactory, Protect, Track, Vote } from "../commands";
 import { Role } from "../model/Role";
 
@@ -7,6 +8,7 @@ export type RoleFlavour = {
   desc: string
 }
 
+export type Emoji = Values<typeof Emojis>
 export const Emojis = {
   day: '☀️',
   night: '🌙',
