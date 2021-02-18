@@ -36,6 +36,8 @@ export const NightActionHandler = (action: MafiaRoleCommandFactory) => CommandHa
       return Send(user.user, new BasicMessage(`You cannot ${actionText(action)} yourself`))
     }
 
-    return NewState(state.withIntention(user, action, target))
+    const newState = state.withIntention(user, action, target)
+
+    return newState.allDone() ? newState.sunrise() : NewState(newState)
   })
 

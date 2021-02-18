@@ -20,6 +20,8 @@ export const VoteHandler = () => CommandHandler.build.state(DayState).command(Vo
       return Send(user.user, new BasicMessage(`You have already chosen to vote for ${mention(existingVote.user)}`))
     }
 
-    return NewState(state.vote(user, target))
+    const newState = state.vote(user, target)
+
+    return newState.allVoted() ? newState.sundown() : NewState(newState)
   })
 
