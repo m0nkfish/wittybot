@@ -9,19 +9,15 @@ export class Players {
   checkWinners = (): Team | undefined => {
     const teams = new Set<Team>()
     for (const p of this.players) {
-      if (p.isAlive) {
+      if (p.role === Role.Jester) {
+        if (p.status.type === Status.Executed.type) {
+          return p.role.team
+        }
+      } else if (p.isAlive) { // Jester doesn't count as a 'remaining' team
         teams.add(p.role.team)
       }
-
-      if (p.role === Role.Jester && p.status.type === Status.Executed.type) {
-        return p.role.team
-      }
     }
-
-    if (teams.size > 1) {
-      return
-    }
-
+    
     if (teams.size === 1) {
       return Array.from(teams.keys())[0]
     }

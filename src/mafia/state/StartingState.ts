@@ -55,10 +55,11 @@ function allocate(users: Discord.User[]): Players {
 
 function* roles(): Generator<Role, void, undefined> {
   yield* [
+    Role.Jester,
+    Role.Mafia,
     Role.Bodyguard,
     Role.Mafia,
     Role.Escort,
-    Role.Mafia,
     Role.Werewolf,
     Role.Inspector,
     Role.Villager,
