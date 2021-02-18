@@ -1,4 +1,4 @@
 import { Case } from "../../case";
-import * as Discord from 'discord.js';
+import { Player } from '../model/Player';
 
-export const Vote = Case('mafia-vote', (user: Discord.User, target: Discord.User) => ({ user, target }))
+export const Vote = Case('mafia-vote', (user: Player, target: Player) => ({ user, target }))

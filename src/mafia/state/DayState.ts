@@ -1,19 +1,20 @@
+import * as Discord from 'discord.js';
+import { Action, CompositeAction, DelayedAction, FromStateAction, NewState, OptionalAction, Send } from '../../actions';
 import { GameState, IdleState } from "../../state";
 import { Timer } from '../../util';
-import { MafiaGameContext } from '../context';
-import { PlayerStatuses } from "../model/PlayerStatuses";
 import { DayDuration } from '../constants';
-import * as Discord from 'discord.js';
-import { Action, Send, CompositeAction, NewState, FromStateAction, OptionalAction, DelayedAction } from '../../actions';
+import { MafiaGameContext } from '../context';
+import { DayBeginsPublicMessage, VotingOverMessage, WinnersMessage } from '../messages';
+import { Player } from '../model/Player';
+import { Players } from "../model/Players";
 import { PlayerVotes } from "../model/PlayerVotes";
-import { WinnersMessage, VotingOverMessage, DayBeginsPublicMessage} from '../messages';
 import { NightState } from "./NightState";
 
 export class DayState implements GameState<MafiaGameContext> {
 
   constructor(
     readonly context: MafiaGameContext,
-    readonly players: PlayerStatuses,
+    readonly players: Players,
     readonly playerVotes: PlayerVotes,
     readonly round: number,
     readonly timer: Timer
@@ -21,7 +22,7 @@ export class DayState implements GameState<MafiaGameContext> {
 
   remaining = () => DayDuration.subtract(this.timer.duration())
 
-  vote = (voter: Discord.User, votee: Discord.User) =>
+  vote = (voter: Player, votee: Player) =>
     new DayState(this.context, this.players, this.playerVotes.vote(voter, votee), this.round, this.timer)
 
   sundown = (): Action => {
@@ -41,7 +42,7 @@ export class DayState implements GameState<MafiaGameContext> {
     )
   }
 
-  static enter(context: MafiaGameContext, deaths: Discord.User[], statuses: PlayerStatuses, round: number): Action {
+  static enter(context: MafiaGameContext, deaths: Discord.User[], statuses: Players, round: number): Action {
     const onTimeout = FromStateAction(context.guild, state =>
       OptionalAction(state instanceof DayState && state.context.sameGame(context) && state.sundown()))
 

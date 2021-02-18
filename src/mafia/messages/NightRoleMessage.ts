@@ -1,39 +1,39 @@
-import { mention, Message } from "../../messages";
 import * as Discord from 'discord.js';
-import { Role } from "../model/Role";
-import { PlayerStatuses } from "../model/PlayerStatuses";
-import { MafiaRoleCommandFactory } from "../commands";
-import { actionText, nightNumber, roleText, CommandReacts } from './text';
-import { shuffle } from "../../random";
-import wu from 'wu';
-import { Duration } from "../../duration";
-import { AnyGameState } from "../../state";
 import { Observable } from 'rxjs';
 import { endWith, map, scan, takeWhile } from 'rxjs/operators';
-import { NightState } from '../state/NightState';
+import wu from 'wu';
+import { Duration } from "../../duration";
+import { EmbedContent, mention, Message, MessageContent, setFooter, StateStreamMessage } from "../../messages";
+import { shuffle } from "../../random";
+import { AnyGameState } from "../../state";
+import { pulse } from '../../util';
+import { MafiaRoleCommandFactory } from "../commands";
 import { NightDuration } from "../constants";
 import { MafiaGameContext } from '../context';
-import { StateStreamMessage, setFooter, MessageContent, EmbedContent } from '../../messages';
-import { pulse } from '../../util';
+import { Player } from '../model/Player';
+import { Players } from "../model/Players";
+import { Role } from "../model/Role";
+import { NightState } from '../state/NightState';
+import { actionText, CommandReacts, nightNumber, roleText } from './text';
 
 export class NightRoleMessage implements StateStreamMessage {
   readonly type = 'state-stream'
-  readonly options: [string, Discord.User][]
+  readonly options: [string, Player][]
   readonly reactable: Message['reactable']
 
   constructor(
     readonly context: MafiaGameContext,
     readonly role: Role,
     readonly command: MafiaRoleCommandFactory,
-    readonly statuses: PlayerStatuses,
+    readonly statuses: Players,
     readonly round: number) {
-      this.options = wu.zip(CommandReacts, shuffle(statuses.alivePlayers())).toArray()
+      this.options = wu.zip(CommandReacts, shuffle(statuses.alive())).toArray()
       this.reactable = {
         reacts: this.options.map(r => r[0])
       }
   }
 
-  findTarget(emoji: string): Discord.User | undefined {
+  findTarget(emoji: string): Player | undefined {
     return this.options.find(([e]) => emoji === e)?.[1]
   }
 
@@ -41,7 +41,7 @@ export class NightRoleMessage implements StateStreamMessage {
     return new Discord.MessageEmbed()
       .setTitle(`${roleText.get(this.role)!.emoji} Night ${nightNumber(this.round)} - Choose someone to ${actionText(this.command)}`)
       .setDescription(
-        this.options.map(([emoji, user]) => `${emoji} - ${mention(user)}`)
+        this.options.map(([emoji, {user}]) => `${emoji} - ${mention(user)}`)
       )
       .setFooter(this.footer(NightDuration))
   }

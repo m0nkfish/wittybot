@@ -1,26 +1,26 @@
-import { mention, Message } from "../../messages";
-import { Role } from "../model/Role";
 import * as Discord from 'discord.js';
-import { PlayerStatuses } from "../model/PlayerStatuses";
-import { shuffle } from "../../random";
-import { roleText } from "./text";
+import { mention } from "../../messages";
 import { StaticMessage } from '../../messages/Message';
+import { shuffle } from "../../random";
+import { Players } from "../model/Players";
+import { Role } from "../model/Role";
+import { roleText } from "./text";
 
 export class NotifyRoleCountsMessage implements StaticMessage {
   readonly type = 'static'
   
-  constructor(readonly statuses: PlayerStatuses) { }
+  constructor(readonly statuses: Players) { }
 
   get content() {
-    const playerNames = shuffle(this.statuses.alivePlayers())
-      .map(mention)
+    const playerNames = shuffle(this.statuses.alive())
+      .map(x => mention(x.user))
       .join(', ')
 
     const roles = this.statuses.aliveRoleCounts()
       .map(([role, count]) => `${roleText.get(role)!.emoji} ${count} ${pluralise(role, count)}`)
 
     return new Discord.MessageEmbed()
-      .setTitle(`The game begins with ${this.statuses.aliveCount()} players:`)
+      .setTitle(`The game begins with ${this.statuses.alive().length} players:`)
       .setDescription([
         playerNames,
         ``,
@@ -31,5 +31,6 @@ export class NotifyRoleCountsMessage implements StaticMessage {
 }
 
 function pluralise(role: Role, count: number) {
-  return count === 1 ? role.type : role.type + 's'
+  return count === 1 ? roleText.get(role)!.name : roleText.get(role)!.name + 's'
+
 }

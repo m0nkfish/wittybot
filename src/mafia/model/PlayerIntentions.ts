@@ -1,22 +1,21 @@
-import * as Discord from 'discord.js';
 import { Case } from '../../case';
 import { Values } from '../../util';
-import { MafiaRoleCommandFactory, Kill, Distract, Protect, Track } from '../commands';
+import { Distract, Kill, MafiaRoleCommandFactory, Protect, Track } from '../commands';
+import { Player } from './Player';
 import { Role } from './Role';
 
 export type PlayerIntention = {
-  player: Discord.User
-  role: Role
+  player: Player
   action: MafiaRoleCommandFactory
-  target: Discord.User
+  target: Player
 }
 
 export type PlayerFate = ReturnType<Values<typeof PlayerFate>>
 export const PlayerFate = {
-  Distracted: Case('distracted', (target: Discord.User) => ({ target })),
-  TargetProtected: Case('target-protected', (killer: Discord.User) => ({ killer })),
-  Killed: Case('killed', (role: Role, target: Discord.User) => ({ role, target })),
-  Tracked: Case('tracked', (player: Discord.User, target: Discord.User) => ({ player, target }))
+  Distracted: Case('distracted', (target: Player) => ({ target })),
+  TargetProtected: Case('target-protected', (killer: Player) => ({ killer })),
+  Killed: Case('killed', (killer: Player, target: Player) => ({ role: killer.role, target })),
+  Tracked: Case('tracked', (player: Player, target: Player) => ({ player, target }))
 }
 
 type FoldState = {
@@ -27,11 +26,11 @@ type FoldState = {
 export class PlayerIntentions {
   constructor(private readonly intentions: PlayerIntention[]) {}
 
-  getIntention = (user: Discord.User) =>
+  getIntention = (user: Player) =>
     this.intentions.find(x => x.player === user)
 
-  withIntention = (player: Discord.User, role: Role, action: MafiaRoleCommandFactory, target: Discord.User) =>
-    new PlayerIntentions([...this.intentions, { player, role, action, target }])
+  withIntention = (player: Player, action: MafiaRoleCommandFactory, target: Player) =>
+    new PlayerIntentions([...this.intentions, { player, action, target }])
   
   resolve = (): PlayerFate[] => {
     return [
@@ -82,9 +81,9 @@ function protections(intentions: PlayerIntention[]): [PlayerIntention[], PlayerF
 
 const kills = (role: Role) => function(intentions: PlayerIntention[]): [PlayerIntention[], PlayerFate[]] {
   const fates: PlayerFate[] = []
-  const kills = intentions.filter(x => x.action === Kill && x.role === role)
-  for (const { role, target } of kills) {
-    fates.push(PlayerFate.Killed(role, target))
+  const kills = intentions.filter(x => x.action === Kill && x.player.role === role)
+  for (const { player, target } of kills) {
+    fates.push(PlayerFate.Killed(player, target))
     intentions = intentions.filter(x => x.player !== target)
   }
   return [intentions, fates]

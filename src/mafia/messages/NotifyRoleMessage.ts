@@ -1,12 +1,13 @@
-import { mention, StaticMessage } from "../../messages";
-import { Role } from "../model/Role";
 import * as Discord from 'discord.js';
+import { mention, StaticMessage } from "../../messages";
+import { Player } from "../model/Player";
+import { Role } from "../model/Role";
 import { commandDescriptions, roleText } from './text';
 
 export class NotifyRoleMessage implements StaticMessage {
   readonly type = 'static'
 
-  constructor(readonly role: Role, readonly partner?: Discord.User) { }
+  constructor(readonly role: Role, readonly partners?: Player[]) { }
 
   get content() {
     const role = roleText.get(this.role)!
@@ -14,7 +15,7 @@ export class NotifyRoleMessage implements StaticMessage {
     return new Discord.MessageEmbed()
       .setTitle(`${role.emoji} ${role.desc}`)
       .setDescription([
-        this.partner && `Your partner is ${mention(this.partner)}.`,
+        this.partners && `Your partners are: ${this.partners.map(u => mention(u.user)).join(', ')}.`,
         day && commandDescriptions.get(day),
         night && commandDescriptions.get(night)
       ])

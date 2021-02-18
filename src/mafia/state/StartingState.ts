@@ -1,16 +1,17 @@
-import * as Discord from 'discord.js'
-import wu from 'wu'
-import { shuffle } from '../../random'
-
+import * as Discord from 'discord.js';
+import wu from 'wu';
 import { CompositeAction } from '../../actions';
-import { MafiaGameContext } from '../context';
+import { shuffle } from '../../random';
 import { GameState } from '../../state';
 import { Timer } from '../../util';
 import { MinPlayers, StartingStateDelay } from '../constants';
-import { PlayerStatuses } from '../model/PlayerStatuses';
+import { MafiaGameContext } from '../context';
+import { Player } from '../model/Player';
+import { Players as Players } from '../model/Players';
 import { Role } from '../model/Role';
 import { NightState } from './NightState';
 import { notifyRoles } from './notifyRoles';
+
 
 /** Waiting for people to sign up to the game */
 export class StartingState implements GameState<MafiaGameContext> {
@@ -41,23 +42,23 @@ export class StartingState implements GameState<MafiaGameContext> {
   }
 }
 
-function allocate(users: Discord.User[]): PlayerStatuses {
+function allocate(users: Discord.User[]): Players {
   if (users.length < MinPlayers) {
     throw new Error(`At least ${MinPlayers} required`)
   }
 
-  const statuses = wu.zip(shuffle(users), roles())
-    .map(([player, role]) => ({ player, role, isAlive: true }))
+  const players = wu.zip(shuffle(users), roles())
+    .map(([player, role]) => new Player(player, role, true))
     .toArray()
 
-  return new PlayerStatuses(statuses)
+  return new Players(players)
 }
 
 function* roles(): Generator<Role, void, undefined> {
   yield* [
     Role.Bodyguard,
     Role.Mafia,
-    Role.Hooker,
+    Role.Escort,
     Role.Mafia,
     Role.Werewolf,
     Role.Inspector,

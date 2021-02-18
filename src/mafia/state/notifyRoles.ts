@@ -1,11 +1,11 @@
 import { Action, CompositeAction, Send } from "../../actions";
-import { PlayerStatuses } from "../model/PlayerStatuses";
-import { NotifyRoleMessage, NotifyRoleCountsMessage} from "../messages";
 import { MafiaGameContext } from "../context";
+import { NotifyRoleCountsMessage, NotifyRoleMessage } from "../messages";
+import { Players } from "../model/Players";
 
-export function notifyRoles(context: MafiaGameContext, statuses: PlayerStatuses): Action {
+export function notifyRoles(context: MafiaGameContext, statuses: Players): Action {
   const privateNotifications = statuses.players
-    .map(({ player, role }) => Send(player, new NotifyRoleMessage(role, statuses.findPartner(player))))
+    .map(p => Send(p.user, new NotifyRoleMessage(p.role, statuses.findPartners(p))))
 
   const publicMessage = Send(context.channel, new NotifyRoleCountsMessage(statuses))
 

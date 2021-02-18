@@ -1,10 +1,36 @@
 import { Values } from "../../util";
-import { MafiaRoleCommandFactory, Distract, Track, Kill, Protect, Vote } from "../commands";
+import { Distract, Kill, MafiaRoleCommandFactory, Protect, Track, Vote } from "../commands";
 
-export enum Team {
-  Townsfolk = 'townsfolk',
-  Mafia = 'mafia',
-  Werewolf = 'werewolf'
+export type Team = {
+  type: Values<typeof Team>['type']
+  partnership: boolean
+}
+
+export const Team = {
+  Townsfolk: {
+    type: 'townsfolk' as const,
+    partnership: false
+  },
+
+  Mafia: {
+    type: 'mafia' as const,
+    partnership: true
+  },
+
+  Werewolf: {
+    type: 'werewolf' as const,
+    partnership: false
+  },
+
+  Yakuza: {
+    type: 'yakuza' as const,
+    partnership: true
+  },
+
+  Jester: {
+    type: 'jester' as const,
+    partnership: false
+  }
 }
 
 export type Role = {
@@ -35,8 +61,14 @@ export const Role = {
     commands: { day: Vote, night: Kill }
   },
 
-  Hooker: { 
-    type: 'hooker' as const,
+  Yakuza: {
+    type: 'yakuza' as const,
+    team: Team.Yakuza,
+    commands: { day: Vote, night: Kill }
+  },
+
+  Escort: { 
+    type: 'escort' as const,
     team: Team.Townsfolk,
     commands: { day: Vote, night: Distract }
   },
@@ -52,4 +84,10 @@ export const Role = {
     team: Team.Townsfolk,
     commands: { day: Vote, night: Protect }
   },
+
+  Jester: {
+    type: 'jester' as const,
+    team: Team.Jester,
+    commands: { day: Vote }
+  }
 }

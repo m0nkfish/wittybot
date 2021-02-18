@@ -1,8 +1,8 @@
 import { CommandFactory } from '../../commands/scoped-command-factory';
 import { ReactionAdded } from '../../discord-events';
-import { DayState } from '../state/DayState';
-import { DayBeginsPublicMessage } from '../messages/DayBeginsPublicMessage';
 import { Vote } from '../commands';
+import { DayBeginsPublicMessage } from '../messages/DayBeginsPublicMessage';
+import { DayState } from '../state/DayState';
 
 export const VoteFactory = () => CommandFactory.build.state(DayState).event(ReactionAdded)
   .process((state, { reaction, user, message }) => {
@@ -14,10 +14,15 @@ export const VoteFactory = () => CommandFactory.build.state(DayState).event(Reac
       return
     }
 
+    const player = state.players.find(user)
+    if (!player) {
+      return
+    }
+
     const target = message.findTarget(reaction.emoji.name)
     if (!target) {
       return
     }
 
-    return Vote(user, target)
+    return Vote(player, target)
   })

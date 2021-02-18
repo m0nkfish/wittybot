@@ -1,37 +1,38 @@
-import { MessageEmbed } from "discord.js";
-import wu from 'wu';
 import * as Discord from 'discord.js';
+import { MessageEmbed } from "discord.js";
 import { Observable } from 'rxjs';
-import { takeWhile, map, scan, endWith } from 'rxjs/operators';
-import { StateStreamMessage, mention, Message, MessageContent, setDescription, setFooter, EmbedContent } from "../../messages";
-import { dayNumber, Emojis, CommandReacts } from './text';
-import { MafiaGameContext } from '../context';
-import { PlayerStatuses } from '../model/PlayerStatuses';
-import { AnyGameState } from "../../state";
-import { DayState } from '../state/DayState';
+import { endWith, map, scan, takeWhile } from 'rxjs/operators';
+import wu from 'wu';
 import { Duration } from "../../duration";
+import { EmbedContent, mention, Message, MessageContent, setDescription, setFooter, StateStreamMessage } from "../../messages";
 import { shuffle } from '../../random';
-import { PlayerVotes } from "../model/PlayerVotes";
+import { AnyGameState } from "../../state";
 import { chain, pulse } from '../../util';
+import { MafiaGameContext } from '../context';
+import { Player } from '../model/Player';
+import { Players } from '../model/Players';
+import { PlayerVotes } from "../model/PlayerVotes";
+import { DayState } from '../state/DayState';
+import { CommandReacts, dayNumber, Emojis } from './text';
 
 export class DayBeginsPublicMessage implements StateStreamMessage {
   readonly type = 'state-stream'
 
-  readonly options: [string, Discord.User][]
+  readonly options: [string, Player][]
   readonly reactable: Message['reactable']
 
   constructor(
     readonly context: MafiaGameContext,
     readonly round: number,
     readonly killed: Discord.User[],
-    readonly statuses: PlayerStatuses) {
-      this.options = wu.zip(CommandReacts, shuffle(statuses.alivePlayers())).toArray()
+    readonly statuses: Players) {
+      this.options = wu.zip(CommandReacts, shuffle(statuses.alive())).toArray()
       this.reactable = {
         reacts: this.options.map(r => r[0])
       }
   }
 
-  findTarget(emoji: string): Discord.User | undefined {
+  findTarget(emoji: string): Player | undefined {
     return this.options.find(([e]) => emoji === e)?.[1]
   }
 
@@ -50,7 +51,7 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
       `Vote to kill any player - if the vote results in a tie, nobody will die.`,
       ...this.options.map(([emoji, user]) => {
         const voters = votesByPlayer.get(user) ?? []
-        return `${emoji} - ${mention(user)} (${voters.length} votes: ${voters.map(mention).join(', ')})`
+        return `${emoji} - ${mention(user.user)} (${voters.length} votes: ${voters.map(p => mention(p.user)).join(', ')})`
       })
     ]
   }

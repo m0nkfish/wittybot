@@ -1,23 +1,23 @@
-import { Action, CompositeAction, Send, NewState, DelayedAction, FromStateAction, OptionalAction } from '../../actions';
-import { GameState, IdleState } from "../../state";
-import { Timer, isNonNull } from '../../util';
-import { NightDuration, DayDuration } from '../constants';
-import { MafiaGameContext } from '../context';
-import { PlayerStatuses } from "../model/PlayerStatuses";
-import { Role } from '../model/Role';
-import { Emojis, NightBeginsPublicMessage, NightRoleMessage } from '../messages';
-import { PlayerIntentions, PlayerFate } from '../model/PlayerIntentions';
-import * as Discord from 'discord.js';
-import { MafiaRoleCommandFactory } from '../commands';
+import { Action, CompositeAction, DelayedAction, FromStateAction, NewState, OptionalAction, Send } from '../../actions';
 import { BasicMessage, mention } from '../../messages';
-import { DayState } from './DayState';
+import { GameState, IdleState } from "../../state";
+import { isNonNull, Timer } from '../../util';
+import { MafiaRoleCommandFactory } from '../commands';
+import { NightDuration } from '../constants';
+import { MafiaGameContext } from '../context';
+import { Emojis, NightBeginsPublicMessage, NightRoleMessage, roleText } from '../messages';
 import { WinnersMessage } from '../messages/WinnersMessage';
+import { Player } from '../model/Player';
+import { PlayerFate, PlayerIntentions } from '../model/PlayerIntentions';
+import { Players } from "../model/Players";
+import { Role } from '../model/Role';
+import { DayState } from './DayState';
 
 export class NightState implements GameState<MafiaGameContext> {
   
   constructor(
     readonly context: MafiaGameContext,
-    readonly players: PlayerStatuses,
+    readonly players: Players,
     readonly intentions: PlayerIntentions,
     readonly round: number,
     readonly timer: Timer,
@@ -25,8 +25,8 @@ export class NightState implements GameState<MafiaGameContext> {
 
   remaining = () => NightDuration.subtract(this.timer.duration())
 
-  withIntention = (player: Discord.User, role: Role, action: MafiaRoleCommandFactory, target: Discord.User) =>
-    new NightState(this.context, this.players, this.intentions.withIntention(player, role, action, target), this.round, this.timer)
+  withIntention = (player: Player, action: MafiaRoleCommandFactory, target: Player) =>
+    new NightState(this.context, this.players, this.intentions.withIntention(player, action, target), this.round, this.timer)
 
   sunrise = () => {
     const fates = this.intentions.resolve()
@@ -34,16 +34,16 @@ export class NightState implements GameState<MafiaGameContext> {
     const messages = fates.map(f => {
       switch (f.type) {
         case PlayerFate.Distracted.type:
-          return Send(f.target, new BasicMessage(`${Emojis.kiss} You were... somewhat distracted last night, and could not perform your action`))
+          return Send(f.target.user, new BasicMessage(`${Emojis.kiss} You were... somewhat distracted last night, and could not perform your action`))
         case PlayerFate.TargetProtected.type:
-          return Send(f.killer, new BasicMessage(`${Emojis.shield} Your target was protected; you were unable to kill them`))
+          return Send(f.killer.user, new BasicMessage(`${Emojis.shield} Your target was protected; you were unable to kill them`))
         case PlayerFate.Killed.type:
           const flavour = f.role === Role.Werewolf
             ? `${Emojis.wolf} In a flurry of gnashing teeth and razor sharp claws, you met a grizzly end...`
             : `${Emojis.dagger} "Say hello to my little friend..." - You met a quick, sharp end.`
-          return Send(f.target, new BasicMessage(flavour + `\nYou are now **dead**, please refrain from talking until the game is over`))
+          return Send(f.target.user, new BasicMessage(flavour + `\nYou are now **dead**, please refrain from talking until the game is over`))
         case PlayerFate.Tracked.type:
-          return Send(f.player, new BasicMessage(`You tracked ${mention(f.target)} and discovered their role: **${this.players.role(f.target).type}**`))
+          return Send(f.player.user, new BasicMessage(`You tracked ${mention(f.target.user)} and discovered their role: **${roleText.get(f.target.role)!.name}**`))
       }
     })
 
@@ -54,13 +54,11 @@ export class NightState implements GameState<MafiaGameContext> {
 
     const winners = newStatus.checkWinners()
 
-
     const nextState = winners
       ? CompositeAction(
-        NewState(new IdleState(this.context.guildCtx)),
-        Send(this.context.channel, new WinnersMessage(winners, newStatus)))
-      : DayState.enter(this.context, deaths, newStatus, this.round + 1)
-
+          NewState(new IdleState(this.context.guildCtx)),
+          Send(this.context.channel, new WinnersMessage(winners, newStatus)))
+      : DayState.enter(this.context, deaths.map(x => x.user), newStatus, this.round + 1)
 
     return CompositeAction(
       ...messages,
@@ -68,13 +66,13 @@ export class NightState implements GameState<MafiaGameContext> {
     )
   }
 
-  static enter(context: MafiaGameContext, statuses: PlayerStatuses, round: number): Action {
+  static enter(context: MafiaGameContext, statuses: Players, round: number): Action {
     const nightRolePMs = statuses
       .alive()
-      .map(({ player, role }) => {
+      .map(({ user, role }) => {
         const command = role.commands.night
         if (command) {
-          return Send(player, new NightRoleMessage(context, role, command, statuses, round))
+          return Send(user, new NightRoleMessage(context, role, command, statuses, round))
         }
       })
       .filter(isNonNull)
