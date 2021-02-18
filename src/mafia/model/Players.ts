@@ -1,5 +1,4 @@
 import * as Discord from 'discord.js';
-import { MafiaRoleCommandFactory } from '../commands';
 import { Player } from './Player';
 import { Role, Team } from "./Role";
 
@@ -24,16 +23,8 @@ export class Players {
 
   find = (user: Discord.User) => this.players.find(x => x.user === user)
 
-  checkAction = (user: Discord.User, command: MafiaRoleCommandFactory) =>{
-    const status = this.find(user)
-    return status && status.canPerform(command)
-  }
-
   kill = (players: Player[]) =>
     new Players(this.players.map(x => players.includes(x) ? x.kill() : x))
-
-  roles = () =>
-    new Map(this.players.map(x => [x.user, x.role] as const))
 
   alive = () =>
     this.players.filter(x => x.isAlive)

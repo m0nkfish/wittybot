@@ -1,4 +1,3 @@
-import * as Discord from 'discord.js';
 import { Action, CompositeAction, DelayedAction, FromStateAction, NewState, OptionalAction, Send } from '../../actions';
 import { GameState, IdleState } from "../../state";
 import { Timer } from '../../util';
@@ -44,15 +43,15 @@ export class DayState implements GameState<MafiaGameContext> {
     )
   }
 
-  static enter(context: MafiaRoundContext, deaths: Discord.User[], statuses: Players): Action {
+  static enter(context: MafiaRoundContext, statuses: Players): Action {
     const onTimeout = FromStateAction(context.guild, state =>
       OptionalAction(state instanceof DayState && state.context.sameGame(context) && state.sundown()))
 
-    context = context.nextRound()
+    const newContext = context.nextRound()
 
     return CompositeAction(
-      NewState(new DayState(context, statuses, new PlayerVotes(new Map()), Timer.begin())),
-      Send(context.channel, new DayBeginsPublicMessage(context, deaths, statuses)),
+      NewState(new DayState(newContext, statuses, new PlayerVotes(new Map()), Timer.begin())),
+      Send(newContext.channel, new DayBeginsPublicMessage(newContext, statuses)),
       DelayedAction(DayDuration, onTimeout)
     )
   }

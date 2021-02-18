@@ -6,6 +6,7 @@ import { MafiaRoleCommandFactory } from '../commands';
 import { NightDuration } from '../constants';
 import { MafiaGameContext, MafiaRoundContext } from '../context';
 import { Emojis, NightBeginsPublicMessage, NightRoleMessage, roleText, WinnersMessage } from '../messages';
+import { NightEndsPublicMessage } from '../messages/NightEndsPublicMessage';
 import { Player, PlayerFate, PlayerIntentions, Players, Role } from '../model';
 import { DayState } from './DayState';
 
@@ -32,7 +33,7 @@ export class NightState implements GameState<MafiaGameContext> {
   sunrise = () => {
     const fates = this.intentions.resolve()
 
-    const messages = fates.map(f => {
+    const nightEndMessages = fates.map(f => {
       switch (f.type) {
         case PlayerFate.Distracted.type:
           return Send(f.target.user, new BasicMessage(`${Emojis.kiss} You were... somewhat distracted last night, and could not perform your action`))
@@ -59,10 +60,11 @@ export class NightState implements GameState<MafiaGameContext> {
       ? CompositeAction(
           NewState(new IdleState(this.context.guildCtx)),
           Send(this.context.channel, new WinnersMessage(winners, newStatus)))
-      : DayState.enter(this.context.nextRound(), deaths.map(x => x.user), newStatus)
+      : DayState.enter(this.context.nextRound(), newStatus)
 
     return CompositeAction(
-      ...messages,
+      ...nightEndMessages,
+      Send(this.context.channel, new NightEndsPublicMessage(this.context, deaths.map(x => x.user))),
       nextState,
     )
   }

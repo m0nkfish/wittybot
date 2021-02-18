@@ -12,6 +12,8 @@ export type Emoji = Values<typeof Emojis>
 export const Emojis = {
   day: '☀️',
   night: '🌙',
+  sunrise: '🌅',
+  fullMoon: '🌕',
   villager: '🙂',
   detective: '🕵️',
   shield: '🛡️',
@@ -22,6 +24,9 @@ export const Emojis = {
   rofl: '🤣',
   dragon: '🐉',
   tick: '✅',
+  skull: '💀',
+  relieved: '😌',
+  homes: '🏘️',
 
   zero: '0️⃣',
   one: '1️⃣',

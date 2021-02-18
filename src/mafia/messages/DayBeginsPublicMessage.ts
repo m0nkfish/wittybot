@@ -1,4 +1,3 @@
-import * as Discord from 'discord.js';
 import { MessageEmbed } from "discord.js";
 import { Observable } from 'rxjs';
 import { endWith, map, scan, takeWhile } from 'rxjs/operators';
@@ -23,7 +22,6 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
 
   constructor(
     readonly context: MafiaRoundContext,
-    readonly killed: Discord.User[],
     readonly statuses: Players) {
       this.options = wu.zip(CommandReacts, shuffle(statuses.alive())).toArray()
       this.reactable = {
@@ -42,7 +40,6 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
   }
 
   description = (votes: PlayerVotes) => {
-    const deaths = this.killed.length > 0 ? `Deaths last night: ${this.killed.map(mention).join(', ')}` : `Nobody died last night.`
     const votesByPlayer = votes.votesByPlayer()
 
     const display = (emoji: Emoji, player: Player) => {
@@ -55,9 +52,8 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
     }
 
     return [
-      deaths,
+      `Vote to execute any player - if the vote results in a tie, nobody will be executed.`,
       ``,
-      `Vote to kill any player - if the vote results in a tie, nobody will die.`,
       ...this.options.map(([emoji, user]) => display(emoji, user))
     ]
   }

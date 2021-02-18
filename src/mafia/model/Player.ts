@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js';
 import { MafiaRoleCommandFactory } from '../commands';
-import { Role } from './Role';
+import { Role, Team } from './Role';
 
 export class Player {
   constructor(
@@ -17,5 +17,7 @@ export class Player {
   kill() {
     return new Player(this.user, this.role, false)
   }
+
+  isOnTeam = (team: Team) => this.role.team === team
 
 }

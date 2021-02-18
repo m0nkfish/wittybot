@@ -1,6 +1,6 @@
-import { Duration } from "./duration"
-import { Observable, combineLatest, interval } from 'rxjs';
-import { startWith, map } from 'rxjs/operators';
+import { combineLatest, interval, Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
+import { Duration } from "./duration";
 
 export const tryParseInt = (str: string) => {
   try {
@@ -141,4 +141,13 @@ export function lazy<A>(f: () => A): Lazy<A> {
       return x
     }
   }
+}
+
+export function partition<A>(list: A[], predicate: (a: A) => boolean): [A[], A[]] {
+  const failed: A[] = [], passed: A[] = []
+  for (const x of list) {
+    const bucket = predicate(x) ? passed : failed
+    bucket.push(x)
+  }
+  return [failed, passed]
 }
