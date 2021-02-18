@@ -1,11 +1,11 @@
 import { GameState, IdleState } from "../../state";
 import { Timer } from '../../util';
 import { MafiaGameContext } from '../context';
-import { PlayerStatuses } from "../PlayerStatuses";
+import { PlayerStatuses } from "../model/PlayerStatuses";
 import { DayDuration } from '../constants';
 import * as Discord from 'discord.js';
 import { Action, Send, CompositeAction, NewState, FromStateAction, OptionalAction, DelayedAction } from '../../actions';
-import { PlayerVotes } from "../PlayerVotes";
+import { PlayerVotes } from "../model/PlayerVotes";
 import { WinnersMessage, VotingOverMessage, DayBeginsPublicMessage} from '../messages';
 import { NightState } from "./NightState";
 

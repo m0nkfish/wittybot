@@ -1,7 +1,7 @@
 import { mention, Message } from "../../messages";
 import * as Discord from 'discord.js';
-import { Role } from "../Role";
-import { PlayerStatuses } from "../PlayerStatuses";
+import { Role } from "../model/Role";
+import { PlayerStatuses } from "../model/PlayerStatuses";
 import { MafiaRoleCommandFactory } from "../commands";
 import { actionText, nightNumber, roleText, CommandReacts } from './text';
 import { shuffle } from "../../random";

@@ -1,5 +1,5 @@
-import { Values } from "../util";
-import { MafiaRoleCommandFactory, Distract, Track, Kill, Protect, Vote } from "./commands";
+import { Values } from "../../util";
+import { MafiaRoleCommandFactory, Distract, Track, Kill, Protect, Vote } from "../commands";
 
 export enum Team {
   Townsfolk = 'townsfolk',

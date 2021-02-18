@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
 import { Message } from '../../messages'
-import { Role } from '../Role'
+import { Role } from '../model/Role'
 import { roleText } from './text'
 import { StaticMessage } from '../../messages';
 

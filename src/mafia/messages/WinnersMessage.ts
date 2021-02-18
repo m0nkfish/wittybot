@@ -1,8 +1,8 @@
 import { mention, Message, StaticMessage } from "../../messages";
-import { Team } from "../Role";
+import { Team } from "../model/Role";
 import * as Discord from 'discord.js';
 import { Emojis, roleText } from './text'
-import { PlayerStatuses } from '../PlayerStatuses';
+import { PlayerStatuses } from '../model/PlayerStatuses';
 
 export class WinnersMessage implements StaticMessage {
   readonly type = 'static'

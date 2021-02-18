@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js';
-import { Case } from '../case';
-import { Values } from '../util';
-import { MafiaRoleCommandFactory, Kill, Distract, Protect, Track } from './commands';
+import { Case } from '../../case';
+import { Values } from '../../util';
+import { MafiaRoleCommandFactory, Kill, Distract, Protect, Track } from '../commands';
 import { Role } from './Role';
 
 export type PlayerIntention = {

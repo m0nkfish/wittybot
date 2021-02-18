@@ -1,7 +1,7 @@
 import { mention, Message } from "../../messages";
-import { Role } from "../Role";
+import { Role } from "../model/Role";
 import * as Discord from 'discord.js';
-import { PlayerStatuses } from "../PlayerStatuses";
+import { PlayerStatuses } from "../model/PlayerStatuses";
 import { shuffle } from "../../random";
 import { roleText } from "./text";
 import { StaticMessage } from '../../messages/Message';

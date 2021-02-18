@@ -6,12 +6,12 @@ import { takeWhile, map, scan, endWith } from 'rxjs/operators';
 import { StateStreamMessage, mention, Message, MessageContent, setDescription, setFooter, EmbedContent } from "../../messages";
 import { dayNumber, Emojis, CommandReacts } from './text';
 import { MafiaGameContext } from '../context';
-import { PlayerStatuses } from '../PlayerStatuses';
+import { PlayerStatuses } from '../model/PlayerStatuses';
 import { AnyGameState } from "../../state";
 import { DayState } from '../state/DayState';
 import { Duration } from "../../duration";
 import { shuffle } from '../../random';
-import { PlayerVotes } from "../PlayerVotes";
+import { PlayerVotes } from "../model/PlayerVotes";
 import { chain, pulse } from '../../util';
 
 export class DayBeginsPublicMessage implements StateStreamMessage {

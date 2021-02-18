@@ -1,5 +1,5 @@
 import { Action, CompositeAction, Send } from "../../actions";
-import { PlayerStatuses } from "../PlayerStatuses";
+import { PlayerStatuses } from "../model/PlayerStatuses";
 import { NotifyRoleMessage, NotifyRoleCountsMessage} from "../messages";
 import { MafiaGameContext } from "../context";
 

@@ -129,3 +129,16 @@ export const immediateInterval = (duration: Duration): Observable<number> =>
 export const pulse = <A>(obs: Observable<A>, freq: Duration) =>
   combineLatest([ obs, immediateInterval(freq)])
     .pipe(map(([x]) => x))
+
+export type Lazy<A> = { readonly value: A}
+export function lazy<A>(f: () => A): Lazy<A> {
+  let x: A | typeof nothing = nothing
+  return {
+    get value() {
+      if (x === nothing) {
+        x = f()
+      }
+      return x
+    }
+  }
+}

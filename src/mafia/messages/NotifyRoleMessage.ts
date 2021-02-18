@@ -1,5 +1,5 @@
 import { mention, StaticMessage } from "../../messages";
-import { Role } from "../Role";
+import { Role } from "../model/Role";
 import * as Discord from 'discord.js';
 import { commandDescriptions, roleText } from './text';
 

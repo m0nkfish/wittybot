@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { getOrSet } from '../util';
+import { getOrSet } from '../../util';
 
 export class PlayerVotes {
   constructor(readonly votes: Map<Discord.User, Discord.User>) {}
