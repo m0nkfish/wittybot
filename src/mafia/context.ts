@@ -1,6 +1,7 @@
 import * as Discord from 'discord.js';
 import { GuildContext } from '../context';
 import { Id } from '../id';
+import { dayNumber, nightNumber } from './messages/text';
 
 export class MafiaGameContext extends GuildContext {
   constructor(
@@ -29,11 +30,6 @@ export class MafiaRoundContext extends MafiaGameContext {
 
   nextRound = () => new MafiaRoundContext(this.gameCtx, this.round + 1)
 
-  get nightNumber() {
-    return Math.ceil(this.round / 2)
-  }
-
-  get dayNumber() {
-    return Math.ceil(this.round / 2)
-  }
+  get nightNumber() { return nightNumber(this.round) }
+  get dayNumber() { return dayNumber(this.round) }
 }

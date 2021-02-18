@@ -6,12 +6,11 @@ import { GameState } from '../../state';
 import { Timer } from '../../util';
 import { MinPlayers, StartingStateDelay } from '../constants';
 import { MafiaGameContext } from '../context';
-import { Alive, Player } from '../model/Player';
+import { Player, Status } from '../model/Player';
 import { Players as Players } from '../model/Players';
 import { Role } from '../model/Role';
 import { NightState } from './NightState';
 import { notifyRoles } from './notifyRoles';
-
 
 /** Waiting for people to sign up to the game */
 export class StartingState implements GameState<MafiaGameContext> {
@@ -48,7 +47,7 @@ function allocate(users: Discord.User[]): Players {
   }
 
   const players = wu.zip(shuffle(users), roles())
-    .map(([player, role]) => new Player(player, role, Alive()))
+    .map(([player, role]) => new Player(player, role, Status.Alive()))
     .toArray()
 
   return new Players(players)

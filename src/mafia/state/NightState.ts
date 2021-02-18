@@ -53,7 +53,7 @@ export class NightState implements GameState<MafiaGameContext> {
       .filter(x => x.type === NightFate.Killed.type)
       .map(x => x as ReturnType<typeof NightFate.Killed>)
 
-    const newStatus = this.players.kill(kills, this.context.nightNumber)
+    const newStatus = this.players.kill(kills, this.context.round)
 
     const winners = newStatus.checkWinners()
 

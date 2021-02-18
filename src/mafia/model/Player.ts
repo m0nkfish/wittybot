@@ -1,15 +1,15 @@
 import * as Discord from 'discord.js';
 import { Case } from '../../case';
+import { Values } from '../../util';
 import { MafiaRoleCommandFactory } from '../commands';
 import { Role, Team } from './Role';
 
-export const Killed = Case('killed', (by: Player, night: number) => ({ by, night }))
-export const Executed = Case('executed', (day: number) => ({ day }))
-export const Alive = Case('alive', () => {})
-export type Status =
-| ReturnType<typeof Killed>
-| ReturnType<typeof Executed>
-| ReturnType<typeof Alive>
+export type Status = ReturnType<Values<typeof Status>>
+export const Status = {
+  Killed: Case('killed', (by: Player, round: number) => ({ by, round })),
+  Executed: Case('executed', (round: number) => ({ round })),
+  Alive: Case('alive', () => { })
+}
 
 export class Player {
   constructor(
@@ -20,19 +20,19 @@ export class Player {
   }
 
   get isAlive() {
-    return this.status.type === Alive.type
+    return this.status.type === Status.Alive.type
   }
 
   canPerform(action: MafiaRoleCommandFactory) {
     return this.isAlive && this.role.commands.day === action || this.role.commands.night === action
   }
 
-  kill(by: Player, night: number) {
-    return new Player(this.user, this.role, Killed(by, night))
+  kill(by: Player, round: number) {
+    return new Player(this.user, this.role, Status.Killed(by, round))
   }
 
-  execute(day: number) {
-    return new Player(this.user, this.role, Executed(day))
+  execute(round: number) {
+    return new Player(this.user, this.role, Status.Executed(round))
   }
 
   isOnTeam = (team: Team) => this.role.team === team

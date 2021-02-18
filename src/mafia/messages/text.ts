@@ -88,3 +88,12 @@ export const actionText = (command: MafiaRoleCommandFactory) => {
     case Vote.type: return 'vote for'
   }
 }
+
+
+export function nightNumber(round: number) {
+  return Math.ceil(round / 2)
+}
+
+export function dayNumber(round: number) {
+  return Math.ceil(round / 2)
+}

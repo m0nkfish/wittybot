@@ -24,13 +24,13 @@ export class Players {
 
   find = (user: Discord.User) => this.players.find(x => x.user === user)
 
-  execute = (player: Player, day: number) =>
-    new Players(this.players.map(p => p === player ? p.execute(day) : p))
+  execute = (player: Player, round: number) =>
+    new Players(this.players.map(p => p === player ? p.execute(round) : p))
 
-  kill = (kills: ReturnType<typeof NightFate.Killed>[], night: number) =>
+  kill = (kills: ReturnType<typeof NightFate.Killed>[], round: number) =>
     new Players(this.players.map(p => {
       const kill = kills.find(k => k.target === p)
-      return kill ? p.kill(kill.killer, night) : p
+      return kill ? p.kill(kill.killer, round) : p
     }))
 
   alive = () =>

@@ -28,7 +28,7 @@ export class DayState implements GameState<MafiaGameContext> {
 
   sundown = (): Action => {
     const toBeKilled = this.votes.winner()
-    const newStatus = toBeKilled ? this.players.execute(toBeKilled, this.context.dayNumber) : this.players
+    const newStatus = toBeKilled ? this.players.execute(toBeKilled, this.context.round) : this.players
     const winners = newStatus.checkWinners()
 
     const nextState = winners
