@@ -1,14 +1,14 @@
-import * as Discord from 'discord.js'
+import * as Discord from 'discord.js';
 import { Observable } from 'rxjs';
-import { endWith, map, scan, takeWhile } from 'rxjs/operators'
-
-import { AnyGameState } from '../../state';
-import { StartingState } from '../state/StartingState';
-import { mention, StateStreamMessage, MessageContent, setFooter, setDescription } from '../../messages'
-import { MafiaGameContext } from '../context';
+import { endWith, map, scan, takeWhile } from 'rxjs/operators';
 import { Duration } from '../../duration';
-import { MinPlayers, StartingStateDelay } from '../constants';
+import { mention, MessageContent, setDescription, setFooter, StateStreamMessage } from '../../messages';
+import { AnyGameState } from '../../state';
 import { chain, pulse } from '../../util';
+import { StartingStateDelay } from '../constants';
+import { MafiaGameContext } from '../context';
+import { StartingState } from '../state/StartingState';
+
 
 export class GameStartedMessage implements StateStreamMessage {
   readonly type = 'state-stream'
@@ -40,7 +40,10 @@ export class GameStartedMessage implements StateStreamMessage {
   }
 
   description = (interested: Discord.User[]) => [
-    `A new game was started by ${mention(this.startedBy)}; type \`!in\` or react with ${this.inReact} to join. The game will begin in ${StartingStateDelay.minutes} minutes (${MinPlayers} players minimum)`,
+    `A new game was started by ${mention(this.startedBy)}; type \`!in\` or react with ${this.inReact} to join. The game will begin in ${StartingStateDelay.minutes} minutes`,
+    ``,
+    `Minimum players: ${this.context.settings.minPlayers}`,
+    `Role reveals on death: ${this.context.settings.reveals ? "on " : "off"}`,
     ``,
     `In:`,
     ...interested.map(x => `• ${mention(x)}`)

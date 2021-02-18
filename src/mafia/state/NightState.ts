@@ -64,7 +64,7 @@ export class NightState implements GameState<MafiaGameContext> {
 
     return CompositeAction(
       ...nightEndMessages,
-      Send(this.context.channel, new NightEndsPublicMessage(this.context, kills.map(x => x.target.user))),
+      Send(this.context.channel, new NightEndsPublicMessage(this.context, kills.map(x => x.target))),
       nextState,
     )
   }

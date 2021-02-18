@@ -4,7 +4,7 @@ import { CompositeAction } from '../../actions';
 import { choose, chooseRandom, flipCoin, sample, shuffle } from '../../random';
 import { GameState } from '../../state';
 import { Timer } from '../../util';
-import { MinPlayers, StartingStateDelay } from '../constants';
+import { StartingStateDelay } from '../constants';
 import { MafiaGameContext } from '../context';
 import { Player, Status } from '../model/Player';
 import { Players as Players } from '../model/Players';
@@ -31,7 +31,7 @@ export class StartingState implements GameState<MafiaGameContext> {
   removeInterested = (user: Discord.User) =>
     new StartingState(this.context, this.interested.filter(x => x !== user), this.timer)
 
-  enoughInterest() { return this.interested.length >= MinPlayers }
+  enoughInterest() { return this.interested.length >= this.context.settings.minPlayers }
 
   begin() {
     const statuses = allocate(this.interested)
@@ -42,10 +42,6 @@ export class StartingState implements GameState<MafiaGameContext> {
 }
 
 function allocate(users: Discord.User[]): Players {
-  if (users.length < MinPlayers) {
-    throw new Error(`At least ${MinPlayers} required`)
-  }
-
   users = shuffle(users)
 
   const players = wu.zip(users, wu.chain(chooseRoles(users.length), wu.repeat(Role.Villager)))

@@ -1,15 +1,15 @@
-import * as Discord from 'discord.js';
 import { MessageEmbed } from "discord.js";
 import { EmbedContent, mention, StaticMessage } from "../../messages";
 import { MafiaRoundContext } from '../context';
-import { Emojis } from './text';
+import { Player } from '../model/Player';
+import { Emojis, roleText } from './text';
 
 export class NightEndsPublicMessage implements StaticMessage {
   readonly type = 'static'
 
   constructor(
     readonly context: MafiaRoundContext,
-    readonly killed: Discord.User[]
+    readonly killed: Player[]
   ) { }
 
   get content(): EmbedContent {
@@ -23,9 +23,17 @@ export class NightEndsPublicMessage implements StaticMessage {
       return `Nobody died last night!`
     }
 
+    const display = (p: Player) => {
+      let basic = `${Emojis.skull} ${mention(p.user)}`
+      if (this.context.settings.reveals) {
+        basic += ` (${roleText.get(p.role)!.name})`
+      }
+      return basic
+    }
+
     return [
       `Deaths last night:`,
-      ...this.killed.map(x => `${Emojis.skull} ${mention(x)}`)
+      ...this.killed.map(display)
     ]
   }
 }

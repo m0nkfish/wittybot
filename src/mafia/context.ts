@@ -8,6 +8,7 @@ export type MafiaSettings = {
   reveals: boolean
   dayDuration: Duration
   nightDuration: Duration
+  minPlayers: number
 }
 
 export class MafiaGameContext extends GuildContext {

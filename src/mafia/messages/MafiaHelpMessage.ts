@@ -1,8 +1,7 @@
-import * as Discord from 'discord.js'
-import { Message } from '../../messages'
-import { Role } from '../model/Role'
-import { roleText } from './text'
+import * as Discord from 'discord.js';
 import { StaticMessage } from '../../messages';
+import { Role } from '../model/Role';
+import { roleText } from './text';
 
 export class MafiaHelpMessage implements StaticMessage {
   readonly type = 'static'
@@ -27,6 +26,10 @@ export class MafiaHelpMessage implements StaticMessage {
 
   static commands = [
     ['help mafia', "you're looking at it"],
+    ['mafia [reveals <on|off>] [players <min>]', [`start a new game`,
+      '• `reveals <on|off>`: determines whether roles are publicly revealed on death. default is randomly picked at start of game',
+      "• `players <min>`: specify the minimum number of players (2 - 10). default is 5"
+    ].join('\n')],
     ['in', "register your interest when a game begins"],
     ['out', "retract your interest"],
   ] as const
