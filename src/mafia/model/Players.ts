@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { Player } from './Player';
+import { Player, Status } from './Player';
 import { NightFate } from './PlayerIntentions';
 import { Role, Team } from "./Role";
 
@@ -12,9 +12,14 @@ export class Players {
       if (p.isAlive) {
         teams.add(p.role.team)
       }
-      if (teams.size > 1) {
-        return
+
+      if (p.role === Role.Jester && p.status.type === Status.Executed.type) {
+        return p.role.team
       }
+    }
+
+    if (teams.size > 1) {
+      return
     }
 
     if (teams.size === 1) {
