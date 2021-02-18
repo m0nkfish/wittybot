@@ -4,29 +4,30 @@ import { GameState, IdleState } from "../../state";
 import { isNonNull, Timer } from '../../util';
 import { MafiaRoleCommandFactory } from '../commands';
 import { NightDuration } from '../constants';
-import { MafiaGameContext } from '../context';
-import { Emojis, NightBeginsPublicMessage, NightRoleMessage, roleText } from '../messages';
-import { WinnersMessage } from '../messages/WinnersMessage';
-import { Player } from '../model/Player';
-import { PlayerFate, PlayerIntentions } from '../model/PlayerIntentions';
-import { Players } from "../model/Players";
-import { Role } from '../model/Role';
+import { MafiaGameContext, MafiaRoundContext } from '../context';
+import { Emojis, NightBeginsPublicMessage, NightRoleMessage, roleText, WinnersMessage } from '../messages';
+import { Player, PlayerFate, PlayerIntentions, Players, Role } from '../model';
 import { DayState } from './DayState';
 
 export class NightState implements GameState<MafiaGameContext> {
   
   constructor(
-    readonly context: MafiaGameContext,
+    readonly context: MafiaRoundContext,
     readonly players: Players,
     readonly intentions: PlayerIntentions,
-    readonly round: number,
     readonly timer: Timer,
   ) {}
 
   remaining = () => NightDuration.subtract(this.timer.duration())
 
   withIntention = (player: Player, action: MafiaRoleCommandFactory, target: Player) =>
-    new NightState(this.context, this.players, this.intentions.withIntention(player, action, target), this.round, this.timer)
+    new NightState(this.context, this.players, this.intentions.with(player, action, target), this.timer)
+
+  cancelIntention = (player: Player) =>
+    new NightState(this.context, this.players, this.intentions.cancel(player), this.timer)
+
+  findPartnerIntentions = (player: Player) =>
+    (this.players.findPartners(player) ?? []).map(this.intentions.get).filter(isNonNull)
 
   sunrise = () => {
     const fates = this.intentions.resolve()
@@ -58,7 +59,7 @@ export class NightState implements GameState<MafiaGameContext> {
       ? CompositeAction(
           NewState(new IdleState(this.context.guildCtx)),
           Send(this.context.channel, new WinnersMessage(winners, newStatus)))
-      : DayState.enter(this.context, deaths.map(x => x.user), newStatus, this.round + 1)
+      : DayState.enter(this.context.nextRound(), deaths.map(x => x.user), newStatus)
 
     return CompositeAction(
       ...messages,
@@ -66,13 +67,15 @@ export class NightState implements GameState<MafiaGameContext> {
     )
   }
 
-  static enter(context: MafiaGameContext, statuses: Players, round: number): Action {
-    const nightRolePMs = statuses
+  static enter(context: MafiaRoundContext, players: Players): Action {
+    const nightState = new NightState(context, players, new PlayerIntentions([]), Timer.begin())
+
+    const nightRolePMs = players
       .alive()
-      .map(({ user, role }) => {
-        const command = role.commands.night
+      .map(player => {
+        const command = player.role.commands.night
         if (command) {
-          return Send(user, new NightRoleMessage(context, role, command, statuses, round))
+          return Send(player.user, new NightRoleMessage(nightState, player, command))
         }
       })
       .filter(isNonNull)
@@ -83,9 +86,9 @@ export class NightState implements GameState<MafiaGameContext> {
       )
 
     return CompositeAction(
-      NewState(new NightState(context, statuses, new PlayerIntentions([]), round, Timer.begin())),
+      NewState(nightState),
       ...nightRolePMs,
-      Send(context.channel, new NightBeginsPublicMessage(context, round)),
+      Send(context.channel, new NightBeginsPublicMessage(context)),
       DelayedAction(NightDuration, onTimeout)
     )
   }

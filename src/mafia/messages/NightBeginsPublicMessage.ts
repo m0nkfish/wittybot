@@ -1,23 +1,23 @@
 import * as Discord from 'discord.js';
 import { Observable } from 'rxjs';
 import { endWith, map, scan, takeWhile } from 'rxjs/operators';
-
-import { Emojis, nightNumber } from "./text";
-import { AnyGameState } from "../../state";
-import { NightState } from "../state";
 import { Duration } from "../../duration";
-import { NightDuration } from "../constants";
-import { MafiaGameContext } from "../context";
-import { MessageContent, StateStreamMessage, setFooter, EmbedContent } from '../../messages';
+import { EmbedContent, MessageContent, setFooter, StateStreamMessage } from '../../messages';
+import { AnyGameState } from "../../state";
 import { pulse } from '../../util';
+import { NightDuration } from "../constants";
+import { MafiaRoundContext } from '../context';
+import { NightState } from "../state";
+import { Emojis } from "./text";
+
 
 export class NightBeginsPublicMessage implements StateStreamMessage {
   readonly type = 'state-stream'
-  constructor(readonly context: MafiaGameContext, readonly round: number) { }
+  constructor(readonly context: MafiaRoundContext) { }
 
   get content(): EmbedContent {
     return new Discord.MessageEmbed()
-      .setTitle(`${Emojis.night} Night ${nightNumber(this.round)} Begins!`)
+      .setTitle(`${Emojis.night} Night ${this.context.nightNumber} Begins!`)
       .setDescription([
         `Villagers, you must wait until morning and hope you survive the night!`,
         `Everyone else, you will be DMed with your actions...`

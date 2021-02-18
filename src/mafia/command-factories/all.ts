@@ -1,9 +1,11 @@
 import { BeginFactory } from './begin';
 import { InFactory } from './in';
-import { OutFactory } from './out';
 import { NightActionsFactory } from './night-actions';
-import { VoteFactory } from './vote';
+import { OutFactory } from './out';
+import { RetractNightActionFactory } from './retract-night-action';
+import { RetractVoteFactory } from './retract-vote';
 import { StartFactory } from './start';
+import { VoteFactory } from './vote';
 
 export const AllMafiaCommandFactories = () =>
   BeginFactory()
@@ -12,3 +14,5 @@ export const AllMafiaCommandFactories = () =>
     .combine(NightActionsFactory())
     .combine(VoteFactory())
     .combine(StartFactory())
+    .combine(RetractNightActionFactory())
+    .combine(RetractVoteFactory())

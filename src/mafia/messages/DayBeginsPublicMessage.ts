@@ -8,12 +8,12 @@ import { EmbedContent, mention, Message, MessageContent, setDescription, setFoot
 import { shuffle } from '../../random';
 import { AnyGameState } from "../../state";
 import { chain, pulse } from '../../util';
-import { MafiaGameContext } from '../context';
+import { MafiaRoundContext } from '../context';
 import { Player } from '../model/Player';
 import { Players } from '../model/Players';
 import { PlayerVotes } from "../model/PlayerVotes";
 import { DayState } from '../state/DayState';
-import { CommandReacts, dayNumber, Emojis } from './text';
+import { CommandReacts, Emojis } from './text';
 
 export class DayBeginsPublicMessage implements StateStreamMessage {
   readonly type = 'state-stream'
@@ -22,8 +22,7 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
   readonly reactable: Message['reactable']
 
   constructor(
-    readonly context: MafiaGameContext,
-    readonly round: number,
+    readonly context: MafiaRoundContext,
     readonly killed: Discord.User[],
     readonly statuses: Players) {
       this.options = wu.zip(CommandReacts, shuffle(statuses.alive())).toArray()
@@ -38,7 +37,7 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
 
   get content(): EmbedContent {
     return new MessageEmbed()
-      .setTitle(`${Emojis.day} Day ${dayNumber(this.round)} Begins!`)
+      .setTitle(`${Emojis.day} Day ${this.context.dayNumber} Begins!`)
       .setDescription(this.description(new PlayerVotes(new Map)))
   }
 
@@ -65,7 +64,7 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
         map(s => s as DayState),
         map(s => chain(
           setFooter(this.footer(s.remaining())),
-          setDescription(this.description(s.playerVotes))
+          setDescription(this.description(s.votes))
         )),
         endWith(setFooter('')),
         scan((content, update) => update(content), this.content)

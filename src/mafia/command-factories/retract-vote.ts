@@ -1,9 +1,10 @@
 import { CommandFactory } from '../../commands/scoped-command-factory';
-import { ReactionAdded } from '../../discord-events';
+import { ReactionRemoved } from '../../discord-events';
+import { Retract } from '../commands/retract';
 import { NightRoleMessage } from '../messages';
 import { NightState } from '../state';
 
-export const NightActionsFactory = () => CommandFactory.build.state(NightState).event(ReactionAdded)
+export const RetractVoteFactory = () => CommandFactory.build.state(NightState).event(ReactionRemoved)
   .process((state, { reaction, user, message }) => {
     if (!(message instanceof NightRoleMessage)) {
       return
@@ -17,11 +18,16 @@ export const NightActionsFactory = () => CommandFactory.build.state(NightState).
     if (!player) {
       return
     }
-    
-    const target = message.findTarget(reaction.emoji.name)
-    if (!target) {
+
+    const intention = state.intentions.get(player)
+    if (!intention) {
       return
     }
 
-    return message.command(player, target)
+    const target = message.findTarget(reaction.emoji.name)
+    if (!target || intention.target !== target) {
+      return
+    }
+
+    return Retract(player)
   })

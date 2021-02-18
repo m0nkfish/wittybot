@@ -15,7 +15,7 @@ export const VoteHandler = () => CommandHandler.build.state(DayState).command(Vo
       return Send(user.user, new BasicMessage(`You cannot vote for yourself`))
     }
 
-    const existingVote = state.playerVotes.get(user)
+    const existingVote = state.votes.get(user)
     if (existingVote) {
       return Send(user.user, new BasicMessage(`You have already chosen to vote for ${mention(existingVote.user)}`))
     }

@@ -10,7 +10,7 @@ export const VoteFactory = () => CommandFactory.build.state(DayState).event(Reac
       return
     }
 
-    if (!state.context.sameGame(message.context) || state.round !== message.round) {
+    if (!state.context.sameRound(message.context)) {
       return
     }
 

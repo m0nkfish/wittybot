@@ -9,6 +9,12 @@ export class PlayerVotes {
   vote = (voter: Player, votee: Player) =>
     new PlayerVotes(new Map(this.votes).set(voter, votee))
 
+  cancel = (voter: Player) => {
+    const newMap = new Map(this.votes)
+    newMap.delete(voter)
+    return new PlayerVotes(newMap)
+  }
+
   votesByPlayer = () => {
     const map = new Map<Player, Player[]>()
     for (const [voter, votee] of this.votes) {

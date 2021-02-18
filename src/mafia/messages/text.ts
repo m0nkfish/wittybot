@@ -19,6 +19,7 @@ export const Emojis = {
   tada: '🎉',
   rofl: '🤣',
   dragon: '🐉',
+  tick: '✅',
 
   zero: '0️⃣',
   one: '1️⃣',
@@ -70,9 +71,6 @@ export const commandDescriptions = new Map<MafiaRoleCommandFactory, string>([
   [Distract, `During each night, you can choose one target to distract and prevent from performing any actions.`],
   [Protect, `During each night, you can choose one target to protect from being killed.`],
 ])
-
-export const nightNumber = (round: number) => Math.floor(round / 2)
-export const dayNumber = (round: number) => Math.floor(round / 2)
 
 export const actionText = (command: MafiaRoleCommandFactory) => {
   switch (command.type) {

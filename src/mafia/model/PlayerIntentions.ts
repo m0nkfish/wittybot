@@ -26,11 +26,14 @@ type FoldState = {
 export class PlayerIntentions {
   constructor(private readonly intentions: PlayerIntention[]) {}
 
-  getIntention = (user: Player) =>
+  get = (user: Player) =>
     this.intentions.find(x => x.player === user)
 
-  withIntention = (player: Player, action: MafiaRoleCommandFactory, target: Player) =>
+  with = (player: Player, action: MafiaRoleCommandFactory, target: Player) =>
     new PlayerIntentions([...this.intentions, { player, action, target }])
+
+  cancel = (player: Player) =>
+    new PlayerIntentions(this.intentions.filter(x => x.player !== player))
   
   resolve = (): PlayerFate[] => {
     return [
@@ -38,6 +41,7 @@ export class PlayerIntentions {
       protections,
       kills(Role.Werewolf),
       kills(Role.Mafia),
+      kills(Role.Yakuza),
       inspections
     ].reduce(({intentions, fates}, process) => {
         const [i, f] = process(intentions)

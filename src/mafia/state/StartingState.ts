@@ -38,7 +38,7 @@ export class StartingState implements GameState<MafiaGameContext> {
     const statuses = allocate(this.interested)
     return CompositeAction(
       notifyRoles(this.context, statuses),
-      NightState.enter(this.context, statuses, 0))
+      NightState.enter(this.context.firstRound(), statuses))
   }
 }
 

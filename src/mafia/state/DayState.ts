@@ -3,7 +3,7 @@ import { Action, CompositeAction, DelayedAction, FromStateAction, NewState, Opti
 import { GameState, IdleState } from "../../state";
 import { Timer } from '../../util';
 import { DayDuration } from '../constants';
-import { MafiaGameContext } from '../context';
+import { MafiaGameContext, MafiaRoundContext } from '../context';
 import { DayBeginsPublicMessage, VotingOverMessage, WinnersMessage } from '../messages';
 import { Player } from '../model/Player';
 import { Players } from "../model/Players";
@@ -13,20 +13,22 @@ import { NightState } from "./NightState";
 export class DayState implements GameState<MafiaGameContext> {
 
   constructor(
-    readonly context: MafiaGameContext,
+    readonly context: MafiaRoundContext,
     readonly players: Players,
-    readonly playerVotes: PlayerVotes,
-    readonly round: number,
+    readonly votes: PlayerVotes,
     readonly timer: Timer
   ) { }
 
   remaining = () => DayDuration.subtract(this.timer.duration())
 
   vote = (voter: Player, votee: Player) =>
-    new DayState(this.context, this.players, this.playerVotes.vote(voter, votee), this.round, this.timer)
+    new DayState(this.context, this.players, this.votes.vote(voter, votee), this.timer)
+
+  cancelVote = (voter: Player) =>
+    new DayState(this.context, this.players, this.votes.cancel(voter), this.timer)
 
   sundown = (): Action => {
-    const toBeKilled = this.playerVotes.winner()
+    const toBeKilled = this.votes.winner()
     const newStatus = toBeKilled ? this.players.kill([toBeKilled]) : this.players
     const winners = newStatus.checkWinners()
 
@@ -34,7 +36,7 @@ export class DayState implements GameState<MafiaGameContext> {
       ? CompositeAction(
           NewState(new IdleState(this.context.guildCtx)),
           Send(this.context.channel, new WinnersMessage(winners, newStatus)))
-      : NightState.enter(this.context, newStatus, this.round + 1)
+      : NightState.enter(this.context.nextRound(), newStatus)
 
     return CompositeAction(
       Send(this.context.channel, new VotingOverMessage(this.context, toBeKilled)),
@@ -42,13 +44,15 @@ export class DayState implements GameState<MafiaGameContext> {
     )
   }
 
-  static enter(context: MafiaGameContext, deaths: Discord.User[], statuses: Players, round: number): Action {
+  static enter(context: MafiaRoundContext, deaths: Discord.User[], statuses: Players): Action {
     const onTimeout = FromStateAction(context.guild, state =>
       OptionalAction(state instanceof DayState && state.context.sameGame(context) && state.sundown()))
 
+    context = context.nextRound()
+
     return CompositeAction(
-      NewState(new DayState(context, statuses, new PlayerVotes(new Map()), round + 1, Timer.begin())),
-      Send(context.channel, new DayBeginsPublicMessage(context, round + 1, deaths, statuses)),
+      NewState(new DayState(context, statuses, new PlayerVotes(new Map()), Timer.begin())),
+      Send(context.channel, new DayBeginsPublicMessage(context, deaths, statuses)),
       DelayedAction(DayDuration, onTimeout)
     )
   }
