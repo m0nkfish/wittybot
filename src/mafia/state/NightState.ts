@@ -7,7 +7,7 @@ import { NightDuration } from '../constants';
 import { MafiaGameContext, MafiaRoundContext } from '../context';
 import { Emojis, NightBeginsPublicMessage, NightRoleMessage, roleText, WinnersMessage } from '../messages';
 import { NightEndsPublicMessage } from '../messages/NightEndsPublicMessage';
-import { Player, PlayerFate, PlayerIntentions, Players, Role } from '../model';
+import { NightFate, Player, PlayerIntentions, Players, Role } from '../model';
 import { DayState } from './DayState';
 
 export class NightState implements GameState<MafiaGameContext> {
@@ -35,24 +35,25 @@ export class NightState implements GameState<MafiaGameContext> {
 
     const nightEndMessages = fates.map(f => {
       switch (f.type) {
-        case PlayerFate.Distracted.type:
+        case NightFate.Distracted.type:
           return Send(f.target.user, new BasicMessage(`${Emojis.kiss} You were... somewhat distracted last night, and could not perform your action`))
-        case PlayerFate.TargetProtected.type:
+        case NightFate.TargetProtected.type:
           return Send(f.killer.user, new BasicMessage(`${Emojis.shield} Your target was protected; you were unable to kill them`))
-        case PlayerFate.Killed.type:
-          const flavour = f.role === Role.Werewolf
+        case NightFate.Killed.type:
+          const flavour = f.killer.role === Role.Werewolf
             ? `${Emojis.wolf} In a flurry of gnashing teeth and razor sharp claws, you met a grizzly end...`
             : `${Emojis.dagger} "Say hello to my little friend..." - You met a quick, sharp end.`
           return Send(f.target.user, new BasicMessage(flavour + `\nYou are now **dead**, please refrain from talking until the game is over`))
-        case PlayerFate.Tracked.type:
+        case NightFate.Tracked.type:
           return Send(f.player.user, new BasicMessage(`You tracked ${mention(f.target.user)} and discovered their role: **${roleText.get(f.target.role)!.name}**`))
       }
     })
 
-    const deaths = fates.map(f => f.type === PlayerFate.Killed.type ? f.target : undefined)
-      .filter(isNonNull)
+    const kills = fates
+      .filter(x => x.type === NightFate.Killed.type)
+      .map(x => x as ReturnType<typeof NightFate.Killed>)
 
-    const newStatus = this.players.kill(deaths)
+    const newStatus = this.players.kill(kills, this.context.nightNumber)
 
     const winners = newStatus.checkWinners()
 
@@ -64,7 +65,7 @@ export class NightState implements GameState<MafiaGameContext> {
 
     return CompositeAction(
       ...nightEndMessages,
-      Send(this.context.channel, new NightEndsPublicMessage(this.context, deaths.map(x => x.user))),
+      Send(this.context.channel, new NightEndsPublicMessage(this.context, kills.map(x => x.target.user))),
       nextState,
     )
   }

@@ -6,7 +6,7 @@ import { GameState } from '../../state';
 import { Timer } from '../../util';
 import { MinPlayers, StartingStateDelay } from '../constants';
 import { MafiaGameContext } from '../context';
-import { Player } from '../model/Player';
+import { Alive, Player } from '../model/Player';
 import { Players as Players } from '../model/Players';
 import { Role } from '../model/Role';
 import { NightState } from './NightState';
@@ -48,7 +48,7 @@ function allocate(users: Discord.User[]): Players {
   }
 
   const players = wu.zip(shuffle(users), roles())
-    .map(([player, role]) => new Player(player, role, true))
+    .map(([player, role]) => new Player(player, role, Alive()))
     .toArray()
 
   return new Players(players)

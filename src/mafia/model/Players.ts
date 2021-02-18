@@ -1,5 +1,6 @@
 import * as Discord from 'discord.js';
 import { Player } from './Player';
+import { NightFate } from './PlayerIntentions';
 import { Role, Team } from "./Role";
 
 export class Players {
@@ -23,8 +24,14 @@ export class Players {
 
   find = (user: Discord.User) => this.players.find(x => x.user === user)
 
-  kill = (players: Player[]) =>
-    new Players(this.players.map(x => players.includes(x) ? x.kill() : x))
+  execute = (player: Player, day: number) =>
+    new Players(this.players.map(p => p === player ? p.execute(day) : p))
+
+  kill = (kills: ReturnType<typeof NightFate.Killed>[], night: number) =>
+    new Players(this.players.map(p => {
+      const kill = kills.find(k => k.target === p)
+      return kill ? p.kill(kill.killer, night) : p
+    }))
 
   alive = () =>
     this.players.filter(x => x.isAlive)
