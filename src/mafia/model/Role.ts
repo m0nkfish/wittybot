@@ -91,3 +91,5 @@ export const Role = {
     commands: { day: Vote }
   }
 }
+
+export const AllRoles: Role[] = Object.values(Role)

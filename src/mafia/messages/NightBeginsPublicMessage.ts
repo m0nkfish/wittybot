@@ -5,7 +5,6 @@ import { Duration } from "../../duration";
 import { EmbedContent, MessageContent, setFooter, StateStreamMessage } from '../../messages';
 import { AnyGameState } from "../../state";
 import { pulse } from '../../util';
-import { NightDuration } from "../constants";
 import { MafiaRoundContext } from '../context';
 import { NightState } from "../state";
 import { Emojis } from "./text";
@@ -22,7 +21,6 @@ export class NightBeginsPublicMessage implements StateStreamMessage {
         `Villagers, you must wait until morning and hope you survive the night!`,
         `Everyone else, you will be DMed with your actions...`
       ])
-      .setFooter(this.footer(NightDuration))
   }
 
   footer = (remaining: Duration) => `${remaining.seconds} seconds remaining`

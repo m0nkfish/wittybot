@@ -1,17 +1,17 @@
-import { Action, NewState, CompositeAction, Send, OptionalAction, DelayedAction, FromStateAction } from '../../actions';
-import { MafiaGameContext } from '../context';
-import { GameStartedMessage } from '../messages';
-import { BasicMessage } from '../../messages';
-import { IdleState } from './../../state';
-import { StartingState } from './StartingState';
-import { GuildContext } from '../../context/GuildContext';
 import * as Discord from 'discord.js';
+import { Action, CompositeAction, DelayedAction, FromStateAction, NewState, OptionalAction, Send } from '../../actions';
+import { GuildContext } from '../../context/GuildContext';
 import { Id } from '../../id';
+import { BasicMessage } from '../../messages';
 import { Timer } from '../../util';
 import { StartingStateDelay } from '../constants';
+import { MafiaGameContext, MafiaSettings } from '../context';
+import { GameStartedMessage } from '../messages';
+import { IdleState } from './../../state';
+import { StartingState } from './StartingState';
 
-export function newGame(guildContext: GuildContext, channel: Discord.TextChannel, initiator: Discord.User): Action {
-  const context = new MafiaGameContext(guildContext, channel, Id.create(), initiator)
+export function newGame(guildContext: GuildContext, settings: MafiaSettings, channel: Discord.TextChannel, initiator: Discord.User): Action {
+  const context = new MafiaGameContext(guildContext, settings, channel, Id.create(), initiator)
 
   const onTimeout =
     FromStateAction(context.channel.guild, state =>

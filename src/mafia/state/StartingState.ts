@@ -1,14 +1,14 @@
 import * as Discord from 'discord.js';
 import wu from 'wu';
 import { CompositeAction } from '../../actions';
-import { shuffle } from '../../random';
+import { choose, chooseRandom, flipCoin, sample, shuffle } from '../../random';
 import { GameState } from '../../state';
 import { Timer } from '../../util';
 import { MinPlayers, StartingStateDelay } from '../constants';
 import { MafiaGameContext } from '../context';
 import { Player, Status } from '../model/Player';
 import { Players as Players } from '../model/Players';
-import { Role } from '../model/Role';
+import { AllRoles, Role, Team } from '../model/Role';
 import { NightState } from './NightState';
 import { notifyRoles } from './notifyRoles';
 
@@ -46,26 +46,57 @@ function allocate(users: Discord.User[]): Players {
     throw new Error(`At least ${MinPlayers} required`)
   }
 
-  const players = wu.zip(shuffle(users), roles())
+  users = shuffle(users)
+
+  const players = wu.zip(users, wu.chain(chooseRoles(users.length), wu.repeat(Role.Villager)))
     .map(([player, role]) => new Player(player, role, Status.Alive()))
     .toArray()
 
   return new Players(players)
 }
 
-function* roles(): Generator<Role, void, undefined> {
-  yield* [
-    Role.Jester,
-    Role.Mafia,
-    Role.Bodyguard,
-    Role.Mafia,
-    Role.Escort,
-    Role.Werewolf,
-    Role.Inspector,
-    Role.Villager,
-    Role.Villager,
-  ]
-  while (true) {
-    yield Role.Villager
+function chooseRoles(n: number): Iterable<Role> {
+  const mafia = [Role.Mafia, Role.Mafia]
+  const yakuza = [Role.Yakuza, Role.Yakuza]
+  const wolf = Role.Werewolf
+  const bg = Role.Bodyguard
+  const esc = Role.Escort
+  const jk = Role.Jester
+  const insp = Role.Inspector
+
+  switch (n) {
+    case 2:
+    case 3: return chooseRandom(
+      [wolf, bg]
+    )
+    case 4: return chooseRandom(
+      [wolf, bg],
+      [wolf, esc]
+    )
+    case 5: return chooseRandom(
+      [...mafia, insp],
+      [wolf, insp]
+    )
+    case 6: return chooseRandom(
+      [...mafia, insp],
+      [wolf, insp, esc]
+    )
+    case 7: return chooseRandom(
+      [...mafia, insp, bg],
+      [...mafia, wolf, insp, esc],
+      [...mafia, wolf, insp, esc, bg, jk]
+    )
+    case 8: return chooseRandom(
+      [...mafia, insp, esc, bg, jk],
+      [...mafia, wolf, insp, esc, bg],
+      [...mafia, ...yakuza, insp, esc, bg],
+    )
+
+    default: {
+      const villains = sample(choose(1, 3), [mafia, yakuza, [wolf]]).flat()
+      const jester = flipCoin() ? [jk] : []
+      return wu.chain(villains, jester, AllRoles.filter(x => x.team === Team.Townsfolk), wu.repeat(Role.Villager))
+    }
   }
+
 }

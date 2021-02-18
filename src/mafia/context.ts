@@ -1,11 +1,19 @@
 import * as Discord from 'discord.js';
 import { GuildContext } from '../context';
+import { Duration } from '../duration';
 import { Id } from '../id';
 import { dayNumber, nightNumber } from './messages/text';
+
+export type MafiaSettings = {
+  reveals: boolean
+  dayDuration: Duration
+  nightDuration: Duration
+}
 
 export class MafiaGameContext extends GuildContext {
   constructor(
     readonly guildCtx: GuildContext,
+    readonly settings: MafiaSettings,
     readonly channel: Discord.TextChannel,
     readonly gameId: Id,
     readonly initiator: Discord.User
@@ -23,7 +31,7 @@ export class MafiaRoundContext extends MafiaGameContext {
     readonly gameCtx: MafiaGameContext,
     readonly round: number
   ) {
-    super(gameCtx.guildCtx, gameCtx.channel, gameCtx.gameId, gameCtx.initiator)
+    super(gameCtx.guildCtx, gameCtx.settings, gameCtx.channel, gameCtx.gameId, gameCtx.initiator)
   }
 
   sameRound = (other: MafiaRoundContext) => this.sameGame(other) && this.round === other.round

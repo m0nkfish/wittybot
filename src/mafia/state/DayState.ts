@@ -1,7 +1,6 @@
 import { Action, CompositeAction, DelayedAction, FromStateAction, NewState, OptionalAction, Send } from '../../actions';
 import { GameState, IdleState } from "../../state";
 import { Timer } from '../../util';
-import { DayDuration } from '../constants';
 import { MafiaGameContext, MafiaRoundContext } from '../context';
 import { DayBeginsPublicMessage, VotingOverMessage, WinnersMessage } from '../messages';
 import { Player } from '../model/Player';
@@ -18,7 +17,7 @@ export class DayState implements GameState<MafiaGameContext> {
     readonly timer: Timer
   ) { }
 
-  remaining = () => DayDuration.subtract(this.timer.duration())
+  remaining = () => this.context.settings.dayDuration.subtract(this.timer.duration())
 
   vote = (voter: Player, votee: Player) =>
     new DayState(this.context, this.players, this.votes.vote(voter, votee), this.timer)
@@ -52,7 +51,7 @@ export class DayState implements GameState<MafiaGameContext> {
     return CompositeAction(
       NewState(new DayState(newContext, statuses, new PlayerVotes(new Map()), Timer.begin())),
       Send(newContext.channel, new DayBeginsPublicMessage(newContext, statuses)),
-      DelayedAction(DayDuration, onTimeout)
+      DelayedAction(context.settings.dayDuration, onTimeout)
     )
   }
 

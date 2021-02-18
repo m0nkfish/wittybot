@@ -9,7 +9,6 @@ import { AnyGameState } from "../../state";
 import { chain, pulse } from '../../util';
 import { MafiaRoleCommandFactory } from "../commands";
 import { MafiaCommand } from '../commands/all';
-import { NightDuration } from "../constants";
 import { Player } from '../model/Player';
 import { PlayerIntention } from '../model/PlayerIntentions';
 import { NightState } from '../state/NightState';
@@ -43,7 +42,6 @@ export class NightRoleMessage implements StateStreamMessage {
     return new Discord.MessageEmbed()
       .setTitle(`${roleText.get(this.player.role)!.emoji} Night ${this.context.nightNumber} - Choose someone to ${actionText(this.command)}`)
       .setDescription(this.description(this.initialState))
-      .setFooter(this.footer(NightDuration))
   }
 
   description = (state: NightState) => {
