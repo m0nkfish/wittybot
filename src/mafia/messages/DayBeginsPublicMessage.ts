@@ -46,7 +46,7 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
       const voters = votesByPlayer.get(player) ?? []
       let basic = `${emoji} - ${mention(player.user)}`
       if (voters.length > 0) {
-        basic += `: ${ voters.length } votes: ${ voters.map(p => mention(p.user)).join(', ') })`
+        basic += `: ${ voters.length } votes (${ voters.map(p => mention(p.user)).join(', ') })`
       }
       return basic + '\n'
     }

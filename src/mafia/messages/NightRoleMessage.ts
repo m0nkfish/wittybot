@@ -52,7 +52,7 @@ export class NightRoleMessage implements StateStreamMessage {
 
     const display = (emoji: string, target: Player): string => {
       let line = `${emoji} ${mention(target.user)}`
-      if (intention) {
+      if (intention && intention.target === target) {
         line += ' [chosen'
         if (intention.player !== this.player) {
           line += ' by ' + mention(intention.player.user)

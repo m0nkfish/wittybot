@@ -19,7 +19,7 @@ export class NightEndsPublicMessage implements StaticMessage {
   }
 
   get description() {
-    if (this.killed.length) {
+    if (this.killed.length === 0) {
       return `Nobody died last night!`
     }
 
