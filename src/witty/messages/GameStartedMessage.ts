@@ -1,15 +1,16 @@
-import * as Discord from 'discord.js'
-import { Observable } from 'rxjs';
-import { endWith, map, scan, takeWhile } from 'rxjs/operators'
-
+import * as Discord from 'discord.js';
+import { concat, Observable } from 'rxjs';
+import { map, scan, skipWhile, take, takeWhile } from 'rxjs/operators';
+import { Duration } from '../../duration';
+import { mention } from '../../messages';
+import { EmbedContent, MessageContent, setDescription, setFooter, StateStreamMessage } from '../../messages/Message';
 import { AnyGameState } from '../../state';
-import { StartingState } from '../state/StartingState';
-import { mention } from '../../messages'
+import { IdleState } from '../../state/IdleState';
+import { chain, isType, pulse } from '../../util';
 import { WittyGameContext } from '../context';
 import { StartingStateDelay } from '../state/newGame';
-import { Duration } from '../../duration';
-import { EmbedContent, MessageContent, StateStreamMessage, setFooter, setDescription } from '../../messages/Message';
-import { chain, pulse } from '../../util';
+import { StartingState } from '../state/StartingState';
+
 
 export class GameStartedMessage implements StateStreamMessage {
   readonly type = 'state-stream'
@@ -49,16 +50,23 @@ export class GameStartedMessage implements StateStreamMessage {
       ? `${remaining.minutes} minutes remaining`
       : `${remaining.seconds} seconds remaining`
 
-  content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
-    pulse(stateStream, Duration.seconds(5))
+  content$ = (stateStream$: Observable<AnyGameState>): Observable<MessageContent> => {
+    const startingState$ = pulse(stateStream$, Duration.seconds(5))
       .pipe(
-        takeWhile(s => s instanceof StartingState && s.context.sameGame(this.context) && s.remaining().isGreaterThan(0)),
-        map(s => s as StartingState),
+        takeWhile(isType(StartingState)),
         map(s => chain(
           setFooter(this.footer(s.remaining())),
           setDescription(this.description(s.interested))
-        )),
-        endWith(setFooter('')),
-        scan((content, update) => update(content), this.content)
+        )))
+
+    const subsequentState$ = stateStream$
+      .pipe(
+        skipWhile(isType(StartingState)),
+        take(1),
+        map(s => setFooter(s instanceof IdleState ? 'The game has been cancelled' : 'The game has begun!'))
       )
+ 
+    return concat(startingState$, subsequentState$)
+      .pipe(scan((content, update) => update(content), this.content))
+  }
 }

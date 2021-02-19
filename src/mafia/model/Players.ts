@@ -38,9 +38,12 @@ export class Players {
     this.players.filter(x => x.isAlive)
 
   findPartners = (player: Player): Player[] | undefined =>
-    player.role.team.partnership
+    player.role.team.isPartnership
       ? this.players.filter(p => p.role.team === player.role.team && p !== player)
       : undefined
+
+  arePartners = (p1: Player, p2: Player) =>
+    p1 !== p2 && p1.role.team === p2.role.team && p1.role.team.isPartnership
 
   aliveRoleCounts = () =>
     Array.from(this.players

@@ -3,33 +3,33 @@ import { Distract, Kill, MafiaRoleCommandFactory, Protect, Track, Vote } from ".
 
 export type Team = {
   type: Values<typeof Team>['type']
-  partnership: boolean
+  isPartnership: boolean
 }
 
 export const Team = {
   Townsfolk: {
     type: 'townsfolk' as const,
-    partnership: false
+    isPartnership: false
   },
 
   Mafia: {
     type: 'mafia' as const,
-    partnership: true
+    isPartnership: true
   },
 
   Werewolf: {
     type: 'werewolf' as const,
-    partnership: false
+    isPartnership: false
   },
 
   Yakuza: {
     type: 'yakuza' as const,
-    partnership: true
+    isPartnership: true
   },
 
   Jester: {
     type: 'jester' as const,
-    partnership: false
+    isPartnership: false
   }
 }
 

@@ -24,7 +24,7 @@ export class NightRoleMessage implements StateStreamMessage {
   }
 
   readonly context = this.initialState.context
-  readonly options = wu.zip(CommandReacts, shuffle(this.initialState.players.alive().filter(x => x !== this.player))).toArray()
+  readonly options = wu.zip(CommandReacts, shuffle(this.initialState.targets(this.player))).toArray()
   readonly reactable = {
     reacts: this.options.map(r => r[0])
   }

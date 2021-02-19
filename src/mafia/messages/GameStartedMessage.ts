@@ -1,10 +1,11 @@
 import * as Discord from 'discord.js';
-import { Observable } from 'rxjs';
-import { endWith, map, scan, takeWhile } from 'rxjs/operators';
+import { concat, Observable } from 'rxjs';
+import { map, scan, skipWhile, take, takeWhile } from 'rxjs/operators';
 import { Duration } from '../../duration';
 import { mention, MessageContent, setDescription, setFooter, StateStreamMessage } from '../../messages';
 import { AnyGameState } from '../../state';
-import { chain, pulse } from '../../util';
+import { IdleState } from '../../state/IdleState';
+import { chain, isType, pulse } from '../../util';
 import { StartingStateDelay } from '../constants';
 import { MafiaGameContext } from '../context';
 import { StartingState } from '../state/StartingState';
@@ -54,17 +55,23 @@ export class GameStartedMessage implements StateStreamMessage {
       ? `${remaining.minutes} minutes remaining`
       : `${remaining.seconds} seconds remaining`
 
-  content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
-    pulse(stateStream, Duration.seconds(5))
+  content$ = (stateStream$: Observable<AnyGameState>): Observable<MessageContent> => {
+    const startingState$ = pulse(stateStream$, Duration.seconds(5))
       .pipe(
-        takeWhile(s => s instanceof StartingState && s.context.sameGame(this.context) && s.remaining().isGreaterThan(0)),
-        map(s => s as StartingState),
+        takeWhile(isType(StartingState)),
         map(s => chain(
           setFooter(this.footer(s.remaining())),
           setDescription(this.description(s.interested))
-        )),
-        endWith(setFooter('')),
-        scan((content, update) => update(content), this.content)
+        )))
+
+    const subsequentState$ = stateStream$
+      .pipe(
+        skipWhile(isType(StartingState)),
+        take(1),
+        map(s => setFooter(s instanceof IdleState ? 'The game has been cancelled' : 'The game has begun!'))
       )
-  
+
+    return concat(startingState$, subsequentState$)
+      .pipe(scan((content, update) => update(content), this.content))
+  }
 }

@@ -1,5 +1,5 @@
-import { combineLatest, interval, Observable } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
+import { interval, Observable } from 'rxjs';
+import { map, startWith, switchMap } from 'rxjs/operators';
 import { Duration } from "./duration";
 
 export const tryParseInt = (str: string) => {
@@ -126,9 +126,9 @@ export const immediateInterval = (duration: Duration): Observable<number> =>
   interval(duration.milliseconds)
     .pipe(startWith(0))
 
-export const pulse = <A>(obs: Observable<A>, freq: Duration) =>
-  combineLatest([ obs, immediateInterval(freq)])
-    .pipe(map(([x]) => x))
+/** repeats values from the input at intervals until a new value is emitted */
+export const pulse = <A>(obs: Observable<A>, freq: Duration): Observable<A> =>
+  obs.pipe(switchMap(s => immediateInterval(freq).pipe(map(_ => s))))
 
 export type Lazy<A> = { readonly value: A}
 export function lazy<A>(f: () => A): Lazy<A> {
