@@ -1,4 +1,4 @@
-import { NewState, Send } from '../../actions';
+import { CompositeAction, NewState, OptionalAction, Send } from '../../actions';
 import { CommandHandler } from '../../commands';
 import { BasicMessage, mention } from '../../messages';
 import { MafiaRoleCommandFactory } from '../commands';
@@ -38,6 +38,9 @@ export const NightActionHandler = (action: MafiaRoleCommandFactory) => CommandHa
 
     const newState = state.withIntention(user, action, target)
 
-    return newState.allDone() ? newState.sunrise() : NewState(newState)
+    return CompositeAction(
+      NewState(newState),
+      OptionalAction(newState.allDone() && newState.sunrise())
+    )
   })
 

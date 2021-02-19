@@ -1,4 +1,4 @@
-import { NewState, Send } from '../../actions';
+import { CompositeAction, NewState, OptionalAction, Send } from '../../actions';
 import { CommandHandler } from '../../commands';
 import { BasicMessage, mention } from '../../messages';
 import { Vote } from '../commands';
@@ -22,6 +22,9 @@ export const VoteHandler = () => CommandHandler.build.state(DayState).command(Vo
 
     const newState = state.vote(user, target)
 
-    return newState.allVoted() ? newState.sundown() : NewState(newState)
+    return CompositeAction(
+      NewState(newState),
+      OptionalAction(newState.allVoted() && newState.sundown())
+    )
   })
 
