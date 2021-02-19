@@ -2,13 +2,11 @@ import * as Discord from 'discord.js';
 import { Observable } from 'rxjs';
 import { endWith, map, scan, takeWhile } from 'rxjs/operators';
 import { Duration } from "../../duration";
-import { EmbedContent, MessageContent, setFooter, StateStreamMessage } from '../../messages';
+import { EmbedContent, Emojis, MessageContent, setFooter, StateStreamMessage } from '../../messages';
 import { AnyGameState } from "../../state";
 import { pulse } from '../../util';
 import { MafiaRoundContext } from '../context';
 import { NightState } from "../state";
-import { Emojis } from "./text";
-
 
 export class NightBeginsPublicMessage implements StateStreamMessage {
   readonly type = 'state-stream'

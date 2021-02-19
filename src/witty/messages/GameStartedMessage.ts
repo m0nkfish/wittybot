@@ -2,21 +2,19 @@ import * as Discord from 'discord.js';
 import { concat, Observable } from 'rxjs';
 import { map, scan, skipWhile, take, takeWhile } from 'rxjs/operators';
 import { Duration } from '../../duration';
-import { mention } from '../../messages';
-import { EmbedContent, MessageContent, setDescription, setFooter, StateStreamMessage } from '../../messages/Message';
+import { EmbedContent, Emojis, mention, MessageContent, setDescription, setFooter, StateStreamMessage } from '../../messages';
 import { AnyGameState } from '../../state';
 import { IdleState } from '../../state/IdleState';
 import { chain, isType, pulse } from '../../util';
 import { WittyGameContext } from '../context';
-import { StartingStateDelay } from '../state/newGame';
-import { StartingState } from '../state/StartingState';
+import { StartingState, StartingStateDelay } from '../state';
 
 
 export class GameStartedMessage implements StateStreamMessage {
   readonly type = 'state-stream'
   constructor(readonly notifyRole: Discord.Role | undefined, readonly context: WittyGameContext) { }
 
-  readonly inReact = '👍'
+  readonly inReact = Emojis.rofl
 
   readonly reactable = {
     reacts: [this.inReact]

@@ -1,8 +1,8 @@
 import { MessageEmbed } from "discord.js";
-import { EmbedContent, mention, StaticMessage } from "../../messages";
+import { EmbedContent, Emojis, mention, StaticMessage } from "../../messages";
 import { MafiaRoundContext } from '../context';
 import { Player } from '../model/Player';
-import { Emojis, roleText } from './text';
+import { roleText } from './text';
 
 export class NightEndsPublicMessage implements StaticMessage {
   readonly type = 'static'

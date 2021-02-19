@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { endWith, map, scan, takeWhile } from 'rxjs/operators';
 import wu from 'wu';
 import { Duration } from "../../duration";
-import { EmbedContent, mention, MessageContent, setDescription, setFooter, StateStreamMessage } from "../../messages";
+import { CommandReacts, EmbedContent, mention, MessageContent, setDescription, setFooter, StateStreamMessage } from "../../messages";
 import { shuffle } from "../../random";
 import { AnyGameState } from "../../state";
 import { chain, pulse } from '../../util';
@@ -12,7 +12,7 @@ import { MafiaCommand } from '../commands/all';
 import { PlayerIntention } from '../model/Intentions';
 import { Player } from '../model/Player';
 import { NightState } from '../state/NightState';
-import { actionText, CommandReacts, roleText } from './text';
+import { actionText, roleText } from './text';
 
 export class NightRoleMessage implements StateStreamMessage {
   readonly type = 'state-stream'

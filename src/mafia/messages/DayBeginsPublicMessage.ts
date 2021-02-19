@@ -3,16 +3,13 @@ import { Observable } from 'rxjs';
 import { endWith, map, scan, takeWhile } from 'rxjs/operators';
 import wu from 'wu';
 import { Duration } from "../../duration";
-import { EmbedContent, mention, Message, MessageContent, setDescription, setFooter, StateStreamMessage } from "../../messages";
+import { CommandReacts, EmbedContent, Emoji, Emojis, mention, Message, MessageContent, setDescription, setFooter, StateStreamMessage } from "../../messages";
 import { shuffle } from '../../random';
 import { AnyGameState } from "../../state";
 import { chain, pulse } from '../../util';
 import { MafiaRoundContext } from '../context';
-import { Player } from '../model/Player';
-import { Players } from '../model/Players';
-import { Votes } from "../model/Votes";
-import { DayState } from '../state/DayState';
-import { CommandReacts, Emoji, Emojis } from './text';
+import { Player, Players, Votes } from '../model';
+import { DayState } from '../state';
 
 export class DayBeginsPublicMessage implements StateStreamMessage {
   readonly type = 'state-stream'

@@ -1,10 +1,10 @@
 import * as Discord from 'discord.js';
-import { mention, StaticMessage } from "../../messages";
+import { Emojis, mention, StaticMessage } from "../../messages";
 import { partition } from '../../util';
 import { Player, Status } from '../model/Player';
 import { Players } from '../model/Players';
 import { Team } from "../model/Role";
-import { dayNumber, Emojis, nightNumber, roleText } from './text';
+import { dayNumber, nightNumber, roleText } from './text';
 
 const status = (status: Status) => {
   switch (status.type) {
