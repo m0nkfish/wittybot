@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js';
 import wu from 'wu';
 import { choose, flipCoin, oneOf, sample, shuffle } from '../../random';
-import { AllRoles, Player, Players, Role, Status, Team } from '../model';
+import { Player, Players, Role, Status } from '../model';
 
 export function allocateRoles(users: Discord.User[]): Players {
   users = shuffle(users)
@@ -14,46 +14,36 @@ export function allocateRoles(users: Discord.User[]): Players {
 }
 
 function chooseRoles(n: number): Iterable<Role> {
-  const loneMaf = Role.Mafia
-  const mafia = [Role.Mafia, Role.Mafia]
-  const yakuza = [Role.Yakuza, Role.Yakuza]
-  const wolf = Role.Werewolf
-  const bg = Role.Bodyguard
-  const esc = Role.Escort
-  const jk = Role.Jester
-  const insp = Role.Inspector
+  const { Mafia, Yakuza, Werewolf, Bodyguard, Escort, Jester, Inspector, Mayor } = Role
+
+  const townRoles = [Bodyguard, Escort, Inspector, Mayor]
+  const maybeJester = flipCoin() ? [Jester] : []
 
   switch (n) {
     case 2:
-    case 3: return [loneMaf, bg]
+    case 3: return [Mafia, Escort]
     case 4: return oneOf(
-      [loneMaf, bg],
-      [loneMaf, esc]
+      [Mafia, Mayor],
+      [Mafia, Escort]
     )
     case 5: return oneOf(
-      [wolf, loneMaf, insp],
-      [wolf, insp],
-      [wolf, bg, esc]
+      [Werewolf, Mafia, ...sample(3, townRoles)],
+      [oneOf<Role>(Werewolf, Mafia), ...sample(2, townRoles)],
     )
-    case 6: return oneOf(
-      [wolf, loneMaf, insp, bg, esc],
-      [wolf, insp, esc]
-    )
+    case 6: 
     case 7: return oneOf(
-      [...mafia, insp, bg],
-      [loneMaf, wolf, insp, esc],
-      [loneMaf, wolf, insp, esc, bg, jk]
+      [Werewolf, ...sample(3, townRoles)],
+      [Werewolf, Mafia, ...sample(4, townRoles), ...maybeJester],
+      [Mafia, Mafia, ...sample(4, townRoles)]
     )
     case 8: return oneOf(
-      [...mafia, insp, esc, bg, jk],
-      [...mafia, wolf, insp, esc, bg],
-      [...mafia, ...yakuza, insp, esc, bg],
+      [Mafia, Mafia, ...sample(4, townRoles)],
+      [Mafia, Mafia, Werewolf, ...sample(4, townRoles)],
     )
 
     default: {
-      const villains = sample(choose(1, 3), [mafia, yakuza, [wolf]]).flat()
-      const jester = flipCoin() ? [jk] : []
-      return wu.chain(villains, jester, AllRoles.filter(x => x.team === Team.Townsfolk), wu.repeat(Role.Villager))
+      const villains = sample(choose(1, 3), [[Mafia, Mafia], [Yakuza, Yakuza], [Werewolf]]).flat()
+      return wu.chain<Role>(villains, maybeJester, townRoles, wu.repeat(Role.Villager))
     }
   }
 
