@@ -1,4 +1,4 @@
 import * as Discord from 'discord.js';
-import { Case } from '../case'
+import { Case } from '../case';
 
-export const Out = Case('uninterested', (member: Discord.GuildMember) => ({ member }))
+export const Out = Case('out', (member: Discord.GuildMember) => ({ member }))

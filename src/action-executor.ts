@@ -66,7 +66,7 @@ export class ActionExecutor {
 
 export function logAction(action: Action) {
   try {
-    const event = `execute_action:${action.type}`
+    const event = `execute-action:${action.type}`
     if (action.type === 'new-state') {
       const { newState } = action
       log(event, logGuild(newState.context.guild), { state: getName(newState) }, logState(newState))
