@@ -33,7 +33,7 @@ function chooseRoles(n: number): Iterable<Role> {
     case 6: 
     case 7: return oneOf(
       [Werewolf, Jester, ...sample(3, townRoles)],
-      [Werewolf, Mafia, ...sample(3, townRoles), ...maybeJester],
+      [Werewolf, Mafia, ...maybeJester, ...sample(4, townRoles)],
       [Mafia, Mafia, ...sample(4, townRoles)]
     )
     case 8: return oneOf(
