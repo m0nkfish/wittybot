@@ -5,7 +5,7 @@ import { MafiaGameContext, MafiaRoundContext } from '../context';
 import { DayBeginsPublicMessage, VotingOverMessage, WinnersMessage } from '../messages';
 import { Player } from '../model/Player';
 import { Players } from "../model/Players";
-import { PlayerVotes } from "../model/PlayerVotes";
+import { Votes } from "../model/Votes";
 import { NightState } from "./NightState";
 
 export class DayState implements GameState<MafiaGameContext> {
@@ -13,7 +13,7 @@ export class DayState implements GameState<MafiaGameContext> {
   constructor(
     readonly context: MafiaRoundContext,
     readonly players: Players,
-    readonly votes: PlayerVotes,
+    readonly votes: Votes,
     readonly timer: Timer
   ) { }
 
@@ -52,7 +52,7 @@ export class DayState implements GameState<MafiaGameContext> {
     const newContext = context.nextRound()
 
     return CompositeAction(
-      NewState(new DayState(newContext, statuses, new PlayerVotes(new Map()), Timer.begin())),
+      NewState(new DayState(newContext, statuses, new Votes(new Map()), Timer.begin())),
       Send(newContext.channel, new DayBeginsPublicMessage(newContext, statuses)),
       DelayedAction(context.settings.dayDuration, onTimeout)
     )

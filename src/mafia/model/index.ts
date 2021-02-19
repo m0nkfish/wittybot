@@ -1,5 +1,6 @@
+export * from './Intentions'
 export * from './Player'
-export * from './PlayerIntentions'
 export * from './Players'
-export * from './PlayerVotes'
 export * from './Role'
+export * from './Votes'
+

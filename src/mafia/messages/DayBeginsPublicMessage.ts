@@ -10,7 +10,7 @@ import { chain, pulse } from '../../util';
 import { MafiaRoundContext } from '../context';
 import { Player } from '../model/Player';
 import { Players } from '../model/Players';
-import { PlayerVotes } from "../model/PlayerVotes";
+import { Votes } from "../model/Votes";
 import { DayState } from '../state/DayState';
 import { CommandReacts, Emoji, Emojis } from './text';
 
@@ -36,10 +36,10 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
   get content(): EmbedContent {
     return new MessageEmbed()
       .setTitle(`${Emojis.day} Day ${this.context.dayNumber} Begins!`)
-      .setDescription(this.description(new PlayerVotes(new Map)))
+      .setDescription(this.description(new Votes(new Map)))
   }
 
-  description = (votes: PlayerVotes) => {
+  description = (votes: Votes) => {
     const votesByPlayer = votes.votesByPlayer()
 
     const display = (emoji: Emoji, player: Player) => {

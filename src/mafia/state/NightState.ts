@@ -6,7 +6,7 @@ import { MafiaRoleCommandFactory } from '../commands';
 import { MafiaGameContext, MafiaRoundContext } from '../context';
 import { Emojis, NightBeginsPublicMessage, NightRoleMessage, roleText, WinnersMessage } from '../messages';
 import { NightEndsPublicMessage } from '../messages/NightEndsPublicMessage';
-import { NightFate, Player, PlayerIntentions, Players, Role } from '../model';
+import { Intentions, NightFate, Player, Players, Role } from '../model';
 import { DayState } from './DayState';
 
 export class NightState implements GameState<MafiaGameContext> {
@@ -14,7 +14,7 @@ export class NightState implements GameState<MafiaGameContext> {
   constructor(
     readonly context: MafiaRoundContext,
     readonly players: Players,
-    readonly intentions: PlayerIntentions,
+    readonly intentions: Intentions,
     readonly timer: Timer,
   ) {}
 
@@ -73,7 +73,7 @@ export class NightState implements GameState<MafiaGameContext> {
   }
 
   static enter(context: MafiaRoundContext, players: Players): Action {
-    const nightState = new NightState(context, players, new PlayerIntentions([]), Timer.begin())
+    const nightState = new NightState(context, players, new Intentions([]), Timer.begin())
 
     const nightRolePMs = players
       .alive()

@@ -9,8 +9,8 @@ import { AnyGameState } from "../../state";
 import { chain, pulse } from '../../util';
 import { MafiaRoleCommandFactory } from "../commands";
 import { MafiaCommand } from '../commands/all';
+import { PlayerIntention } from '../model/Intentions';
 import { Player } from '../model/Player';
-import { PlayerIntention } from '../model/PlayerIntentions';
 import { NightState } from '../state/NightState';
 import { actionText, CommandReacts, roleText } from './text';
 

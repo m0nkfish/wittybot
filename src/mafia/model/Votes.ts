@@ -1,18 +1,18 @@
 import { getOrSet } from '../../util';
 import { Player } from './Player';
 
-export class PlayerVotes {
+export class Votes {
   constructor(readonly votes: Map<Player, Player>) {}
 
   get = (voter: Player) => this.votes.get(voter)
 
   vote = (voter: Player, votee: Player) =>
-    new PlayerVotes(new Map(this.votes).set(voter, votee))
+    new Votes(new Map(this.votes).set(voter, votee))
 
   cancel = (voter: Player) => {
     const newMap = new Map(this.votes)
     newMap.delete(voter)
-    return new PlayerVotes(newMap)
+    return new Votes(newMap)
   }
 
   votesByPlayer = () => {

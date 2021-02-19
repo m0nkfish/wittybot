@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js';
+import { NightFate } from './Intentions';
 import { Player, Status } from './Player';
-import { NightFate } from './PlayerIntentions';
 import { Role, Team } from "./Role";
 
 export class Players {

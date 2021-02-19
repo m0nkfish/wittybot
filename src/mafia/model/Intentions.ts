@@ -23,17 +23,17 @@ type FoldState = {
   fates: NightFate[]
 }
 
-export class PlayerIntentions {
+export class Intentions {
   constructor(private readonly intentions: PlayerIntention[]) {}
 
   get = (user: Player) =>
     this.intentions.find(x => x.player === user)
 
   with = (player: Player, action: MafiaRoleCommandFactory, target: Player) =>
-    new PlayerIntentions([...this.intentions, { player, action, target }])
+    new Intentions([...this.intentions, { player, action, target }])
 
   cancel = (player: Player) =>
-    new PlayerIntentions(this.intentions.filter(x => x.player !== player))
+    new Intentions(this.intentions.filter(x => x.player !== player))
   
   resolve = (): NightFate[] => {
     return [
