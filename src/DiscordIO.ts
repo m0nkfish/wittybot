@@ -46,14 +46,6 @@ export class DiscordIO {
 
       if (message.reactable) {
         const { reacts } = message.reactable
-        if (reacts) {
-          try {
-            await reacts
-              .reduce((res, emoji) => res.then(async () => { await msg.react(emoji) }), Promise.resolve())
-          } catch (err) {
-            log.error('message:add-reactions', loggableError(err))
-          }
-        }
 
         msg.client.on('messageReactionAdd', async (reaction, user) => {
           if (reaction.message.id === msg.id && user !== msg.client.user && reacts.includes(reaction.emoji.name)) {
@@ -76,6 +68,15 @@ export class DiscordIO {
             }
           }
         })
+        
+        if (reacts) {
+          try {
+            await reacts
+              .reduce((res, emoji) => res.then(async () => { await msg.react(emoji) }), Promise.resolve())
+          } catch (err) {
+            log.error('message:add-reactions', loggableError(err))
+          }
+        }
       }
 
       return msg
