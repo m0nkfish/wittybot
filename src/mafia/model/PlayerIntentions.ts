@@ -43,21 +43,22 @@ export class PlayerIntentions {
       kills(Role.Mafia),
       kills(Role.Yakuza),
       inspections
-    ].reduce(({intentions, fates}, process) => {
-        const [i, f] = process(intentions)
-        return {
-          intentions: i,
-          fates: [...fates, ...f]
-        }
-      }, {
-        intentions: this.intentions,
-        fates: []
-      } as FoldState)
+    ].reduce<FoldState>((state, process) => process(state), { intentions: this.intentions, fates: [] })
       .fates
   }
 }
 
-function distractions(intentions: PlayerIntention[]): [PlayerIntention[], NightFate[]] {
+function createProcess(f: (intentions: PlayerIntention[]) => [PlayerIntention[], NightFate[]]) {
+  return function(foldState: FoldState) {
+    const [intentions, fates] = f(foldState.intentions)
+    return {
+      intentions,
+      fates: [...foldState.fates, ...fates]
+    }
+  }
+}
+
+const distractions = createProcess(intentions => {
   const fates: NightFate[] = []
   const distractions = intentions
     .filter(x => x.action === Distract)
@@ -71,9 +72,9 @@ function distractions(intentions: PlayerIntention[]): [PlayerIntention[], NightF
     intentions = intentions.filter(x => x.player !== target)
   }
   return [intentions, fates]
-}
+})
 
-function protections(intentions: PlayerIntention[]): [PlayerIntention[], NightFate[]] {
+const protections = createProcess(intentions => {
   const fates: NightFate[] = []
   const protections = intentions.filter(x => x.action === Protect)
   for (const { target } of protections) {
@@ -84,9 +85,9 @@ function protections(intentions: PlayerIntention[]): [PlayerIntention[], NightFa
     intentions = intentions.filter(x => x.action !== Kill || x.target !== target)
   }
   return [intentions, fates]
-}
+})
 
-const kills = (role: Role) => function(intentions: PlayerIntention[]): [PlayerIntention[], NightFate[]] {
+const kills = (role: Role) => createProcess(intentions => {
   const fates: NightFate[] = []
   const kills = intentions.filter(x => x.action === Kill && x.player.role === role)
   for (const { player, target } of kills) {
@@ -94,13 +95,13 @@ const kills = (role: Role) => function(intentions: PlayerIntention[]): [PlayerIn
     intentions = intentions.filter(x => x.player !== target)
   }
   return [intentions, fates]
-}
+})
 
-function inspections(intentions: PlayerIntention[]): [PlayerIntention[], NightFate[]] {
+const inspections = createProcess(intentions => {
   const fates: NightFate[] = []
   const inspections = intentions.filter(x => x.action === Track)
   for (const { player, target } of inspections) {
     fates.push(NightFate.Tracked(player, target))
   }
   return [intentions, fates]
-}
+})
