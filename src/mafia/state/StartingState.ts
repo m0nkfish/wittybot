@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js';
 import wu from 'wu';
 import { CompositeAction } from '../../actions';
-import { choose, chooseRandom, flipCoin, sample, shuffle } from '../../random';
+import { choose, flipCoin, oneOf, sample, shuffle } from '../../random';
 import { GameState } from '../../state';
 import { Timer } from '../../util';
 import { StartingStateDelay } from '../constants';
@@ -62,27 +62,26 @@ function chooseRoles(n: number): Iterable<Role> {
 
   switch (n) {
     case 2:
-    case 3: return chooseRandom(
-      [wolf, bg]
-    )
-    case 4: return chooseRandom(
+    case 3:
+    case 4: return oneOf(
       [wolf, bg],
       [wolf, esc]
     )
-    case 5: return chooseRandom(
-      [...mafia, insp],
-      [wolf, insp]
+    case 5: return oneOf(
+      [wolf, Role.Mafia, insp],
+      [wolf, insp],
+      [wolf, bg, esc]
     )
-    case 6: return chooseRandom(
-      [...mafia, insp],
+    case 6: return oneOf(
+      [wolf, Role.Mafia, insp, bg, esc],
       [wolf, insp, esc]
     )
-    case 7: return chooseRandom(
+    case 7: return oneOf(
       [...mafia, insp, bg],
-      [...mafia, wolf, insp, esc],
-      [...mafia, wolf, insp, esc, bg, jk]
+      [Role.Mafia, wolf, insp, esc],
+      [Role.Mafia, wolf, insp, esc, bg, jk]
     )
-    case 8: return chooseRandom(
+    case 8: return oneOf(
       [...mafia, insp, esc, bg, jk],
       [...mafia, wolf, insp, esc, bg],
       [...mafia, ...yakuza, insp, esc, bg],

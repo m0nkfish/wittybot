@@ -5,7 +5,7 @@ export const mt = MersenneTwister19937.seedWithArray(seed)
 
 export const shuffle = <T>(arr: T[]): T[] => rShuffle(mt, [...arr])
 
-export const chooseRandom = <T>(...arr: T[]): T => pick(mt, arr)
+export const oneOf = <T>(...arr: T[]): T => pick(mt, arr)
 
 export const choose = (min: number, max: number) => integer(min, max)(mt)
 

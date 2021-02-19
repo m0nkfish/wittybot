@@ -61,9 +61,12 @@ function distractions(intentions: PlayerIntention[]): [PlayerIntention[], NightF
   const fates: NightFate[] = []
   const distractions = intentions
     .filter(x => x.action === Distract)
-  for (const { target } of distractions) {
+  for (const { player, target } of distractions) {
     if (intentions.some(x => x.player === target)) {
       fates.push(NightFate.Distracted(target))
+    }
+    if (target.role === Role.Werewolf) {
+      fates.push(NightFate.Killed(target, player))
     }
     intentions = intentions.filter(x => x.player !== target)
   }
