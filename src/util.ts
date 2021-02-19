@@ -99,7 +99,14 @@ export function isAny<T>(x: T): x is T {
   return true
 }
 
+export function isEither<T, A extends T, B extends T>(a: (t: T) => t is A, b: (t: T) => t is B) {
+  return function(t: T): t is A | B {
+    return a(t) || b(t)
+  }
+}
+
 export type Values<T> = T extends { [key: string]: infer V } ? V : never
+export type Items<T extends any[]> = T extends (infer V)[] ? V : never
 
 export const chain = <A>(...functions: ((a: A) => A)[]) => (a: A) => functions.reduce((a, f) => f(a), a)
 
@@ -143,6 +150,8 @@ export function lazy<A>(f: () => A): Lazy<A> {
   }
 }
 
+export function partition<A, B extends A>(list: A[], predicate: (a: A) => a is B): [Exclude<A, B>[], B[]]
+export function partition<A>(list: A[], predicate: (a: A) => boolean): [A[], A[]]
 export function partition<A>(list: A[], predicate: (a: A) => boolean): [A[], A[]] {
   const failed: A[] = [], passed: A[] = []
   for (const x of list) {

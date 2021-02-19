@@ -1,5 +1,5 @@
 import { Values } from "../../util";
-import { Distract, Kill, MafiaRoleCommandFactory, Protect, Track, Vote } from "../commands";
+import { DayCommandFactory, Distract, Kill, NightCommandFactory, Protect, Track, Vote } from "../commands";
 
 export type Team = {
   type: Values<typeof Team>['type']
@@ -37,8 +37,8 @@ export type Role = {
   type: Values<typeof Role>['type']
   team: Team
   commands: {
-    day?: MafiaRoleCommandFactory
-    night?: MafiaRoleCommandFactory
+    day?: DayCommandFactory
+    night?: NightCommandFactory
   }
 }
 

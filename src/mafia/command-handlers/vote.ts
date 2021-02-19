@@ -7,7 +7,7 @@ import { DayState } from '../state/DayState';
 export const VoteHandler = () => CommandHandler.build.state(DayState).command(Vote)
   .sync((state, command) => {
     const { user, target } = command
-    if (!user.canPerform(Vote) || !target.isAlive) {
+    if (!user.canPerform(command)) {
       return
     }
 

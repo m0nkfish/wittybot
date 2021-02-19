@@ -3,7 +3,7 @@ import { Duration } from '../../duration';
 import { BasicMessage, Emojis, mention } from '../../messages';
 import { GameState, IdleState, pause } from "../../state";
 import { isNonNull, Timer } from '../../util';
-import { MafiaRoleCommandFactory } from '../commands';
+import { RoleCommandFactory } from '../commands';
 import { MafiaGameContext, MafiaRoundContext } from '../context';
 import { NightBeginsPublicMessage, NightRoleMessage, roleText, WinnersMessage } from '../messages';
 import { NightEndsPublicMessage } from '../messages/NightEndsPublicMessage';
@@ -21,8 +21,8 @@ export class NightState implements GameState<MafiaGameContext> {
 
   remaining = () => this.context.settings.nightDuration.subtract(this.timer.duration())
 
-  withIntention = (player: Player, action: MafiaRoleCommandFactory, target: Player) =>
-    new NightState(this.context, this.players, this.intentions.with(player, action, target), this.timer)
+  withIntention = (action: ReturnType<RoleCommandFactory>) =>
+    new NightState(this.context, this.players, this.intentions.with(action), this.timer)
 
   cancelIntention = (player: Player) =>
     new NightState(this.context, this.players, this.intentions.cancel(player), this.timer)

@@ -2,16 +2,16 @@ import * as Discord from 'discord.js';
 import { Observable } from 'rxjs';
 import { endWith, map, scan, takeWhile } from 'rxjs/operators';
 import wu from 'wu';
+import { isCase } from '../../case';
 import { Duration } from "../../duration";
 import { CommandReacts, EmbedContent, mention, MessageContent, setDescription, setFooter, StateStreamMessage } from "../../messages";
 import { shuffle } from "../../random";
 import { AnyGameState } from "../../state";
-import { chain, pulse } from '../../util';
-import { MafiaRoleCommandFactory } from "../commands";
-import { MafiaCommand } from '../commands/all';
-import { PlayerIntention } from '../model/Intentions';
-import { Player } from '../model/Player';
-import { NightState } from '../state/NightState';
+import { chain, invoke, pulse } from '../../util';
+import { Idle } from "../commands";
+import { NightCommand, NightCommandFactory } from '../commands/all';
+import { Player, PlayerIntention } from '../model';
+import { NightState } from '../state';
 import { actionText, roleText } from './text';
 
 export class NightRoleMessage implements StateStreamMessage {
@@ -20,22 +20,24 @@ export class NightRoleMessage implements StateStreamMessage {
   constructor(
     readonly initialState: NightState,
     readonly player: Player,
-    readonly command: MafiaRoleCommandFactory) {
+    readonly command: NightCommandFactory) {
   }
 
   readonly context = this.initialState.context
-  readonly options = wu.zip(CommandReacts, shuffle(this.initialState.targets(this.player))).toArray()
+  readonly options = invoke(() => {
+    const targets = shuffle(this.initialState.targets(this.player)).map(target => this.command(this.player, target))
+    return wu.zip(CommandReacts, [Idle(this.player), ...targets]).toArray()
+  })
   readonly reactable = {
     reacts: this.options.map(r => r[0])
   }
 
   findTarget(emoji: string): Player | undefined {
-    return this.options.find(([e]) => emoji === e)?.[1]
+    return this.options.find(([e]) => emoji === e)?.[1]?.target
   }
 
-  createCommand(user: Player, emoji: string): MafiaCommand | undefined {
-    const target = this.findTarget(emoji)
-    return target && this.command(user, target)
+  getCommand(emoji: string): NightCommand | undefined {
+    return this.options.find(([e]) => emoji === e)?.[1]
   }
 
   get content(): EmbedContent {
@@ -48,12 +50,12 @@ export class NightRoleMessage implements StateStreamMessage {
     const intention: PlayerIntention | undefined = state.intentions.get(this.player)
       ?? state.findPartnerIntentions(this.player)[0]
 
-    const display = (emoji: string, target: Player): string => {
-      let line = `${emoji} ${mention(target.user)}`
-      if (intention && intention.target === target) {
+    const display = (emoji: string, command: NightCommand): string => {
+      let line = isCase(Idle)(command) ? `do nothing` : `${emoji} ${mention(command.target.user)}`
+      if (intention && intention.type === command.type && intention.target === command.target) {
         line += ' [chosen'
-        if (intention.player !== this.player) {
-          line += ' by ' + mention(intention.player.user)
+        if (intention.user !== this.player) {
+          line += ' by ' + mention(intention.user.user)
         }
         line += ']'
       }
@@ -61,7 +63,7 @@ export class NightRoleMessage implements StateStreamMessage {
     }
 
     return this.options
-      .map(([emoji, target]) => display(emoji, target))
+      .map(([emoji, command]) => display(emoji, command))
   }
 
   footer = (remaining: Duration) => `${remaining.seconds} seconds remaining`

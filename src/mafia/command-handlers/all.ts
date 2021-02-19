@@ -1,4 +1,3 @@
-import { Distract, Kill, Protect, Track } from '../commands';
 import { BeginHandler } from './begin';
 import { InHandler } from './in';
 import { NightActionHandler } from './night-action';
@@ -12,10 +11,7 @@ export const AllMafiaCommandHandlers = () =>
   BeginHandler()
     .orElse(InHandler())
     .orElse(OutHandler())
-    .orElse(NightActionHandler(Track))
-    .orElse(NightActionHandler(Protect))
-    .orElse(NightActionHandler(Distract))
-    .orElse(NightActionHandler(Kill))
+    .orElse(NightActionHandler())
     .orElse(VoteHandler())
     .orElse(StartHandler())
     .orElse(RetractNightActionHandler())

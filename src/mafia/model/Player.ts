@@ -1,7 +1,8 @@
 import * as Discord from 'discord.js';
 import { Case } from '../../case';
 import { Values } from '../../util';
-import { MafiaRoleCommandFactory } from '../commands';
+import { RoleCommandFactory, Vote } from '../commands';
+import { Idle } from '../commands/idle';
 import { Role, Team } from './Role';
 
 export type Status = ReturnType<Values<typeof Status>>
@@ -23,8 +24,17 @@ export class Player {
     return this.status.type === Status.Alive.type
   }
 
-  canPerform(action: MafiaRoleCommandFactory) {
-    return this.isAlive && this.role.commands.day === action || this.role.commands.night === action
+  canPerform(roleCmd: ReturnType<RoleCommandFactory> | ReturnType<typeof Vote>) {
+    switch (roleCmd.type) {
+      case Vote.type:
+        return this.isAlive && this.role.commands.day === Vote
+
+      case Idle.type:
+        return this.isAlive
+
+      default:
+        return this.isAlive && this.role.commands.night?.type === roleCmd.type
+    }
   }
 
   kill(by: Player, round: number) {

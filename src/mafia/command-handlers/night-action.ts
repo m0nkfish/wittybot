@@ -1,42 +1,39 @@
 import { CompositeAction, NewState, OptionalAction, Send } from '../../actions';
 import { CommandHandler } from '../../commands';
 import { BasicMessage, mention } from '../../messages';
-import { MafiaRoleCommandFactory } from '../commands';
-import { actionText } from '../messages';
+import { Distract, Idle, Kill, Protect, Track } from '../commands';
+import { actionText, commandText } from '../messages';
 import { NightState } from '../state';
 
-export const NightActionHandler = (action: MafiaRoleCommandFactory) => CommandHandler.build.state(NightState)
+export const NightActionHandler = () => CommandHandler.build.state(NightState)
+  .command(Idle).orCommand(Kill).orCommand(Distract).orCommand(Protect).orCommand(Track)
   .sync((state, command) => {
-    if (command.type !== action.type) {
-      return
-    }
-
     const { user, target } = command
-    if (!user.canPerform(action) || !target.isAlive) {
+    if (!user.canPerform(command)) {
       return
     }
     const existingIntention = state.intentions.get(user)
     if (existingIntention) {
-      return Send(user.user, new BasicMessage(`You have already chosen to ${actionText(existingIntention.action)} ${mention(existingIntention.target.user)}`))
+      return Send(user.user, new BasicMessage(`You have already chosen to ${commandText(existingIntention)}`))
     }
 
     const partners = state.players.findPartners(user) ?? []
     for (const partner of partners) {
       const existingIntention = state.intentions.get(partner)
       if (existingIntention) {
-        return Send(user.user, new BasicMessage(`Your partner, ${mention(partner.user)}, has already chosen to ${actionText(existingIntention.action)} ${mention(existingIntention.target.user)}`))
+        return Send(user.user, new BasicMessage(`Your partner, ${mention(partner.user)}, has already chosen to ${commandText(existingIntention)}`))
       }
     }
 
-    if (partners.includes(target)) {
-      return Send(user.user, new BasicMessage(`You cannot ${actionText(action)} a partner`))
+    if (target && partners.includes(target)) {
+      return Send(user.user, new BasicMessage(`You cannot ${actionText(command)} a partner`))
     }
 
     if (user === target) {
-      return Send(user.user, new BasicMessage(`You cannot ${actionText(action)} yourself`))
+      return Send(user.user, new BasicMessage(`You cannot ${actionText(command)} yourself`))
     }
 
-    const newState = state.withIntention(user, action, target)
+    const newState = state.withIntention(command)
 
     return CompositeAction(
       NewState(newState),

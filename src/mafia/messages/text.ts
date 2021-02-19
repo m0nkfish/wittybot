@@ -1,5 +1,6 @@
-import { Emojis } from "../../messages";
-import { Distract, Kill, MafiaRoleCommandFactory, Protect, Track, Vote } from "../commands";
+import { Emojis, mention } from "../../messages";
+import { Distract, Kill, Protect, RoleCommandFactory, Track, Vote } from "../commands";
+import { Idle } from '../commands/idle';
 import { Role } from "../model/Role";
 
 export type RoleFlavour = {
@@ -20,7 +21,7 @@ export const roleText = new Map<Role, RoleFlavour>([
   [Role.Jester, { emoji: Emojis.rofl, name: 'Jester', desc: `You are the Jester. You're on your own team, and you win if you get yourself executed by the daytime vote!` }]
 ])
 
-export const commandDescriptions = new Map<MafiaRoleCommandFactory, string>([
+export const commandDescriptions = new Map<RoleCommandFactory, string>([
   [Vote, `During each day, you can vote to kill another player.`],
   [Kill, `During each night, you can choose one target to kill.`],
   [Track, `During each night, you can choose one target to inspect and discover their role.`],
@@ -28,16 +29,21 @@ export const commandDescriptions = new Map<MafiaRoleCommandFactory, string>([
   [Protect, `During each night, you can choose one target to protect from being killed.`],
 ])
 
-export const actionText = (command: MafiaRoleCommandFactory) => {
+export const actionText = (command: RoleCommandFactory | ReturnType<RoleCommandFactory>) => {
   switch (command.type) {
     case Distract.type: return 'distract'
     case Track.type: return 'inspect'
     case Kill.type: return 'kill'
     case Protect.type: return 'protect'
     case Vote.type: return 'vote for'
+    case Idle.type: return 'do nothing'
   }
 }
 
+export const commandText = (command: ReturnType<RoleCommandFactory>) => {
+  const append = command.target ? ' ' + mention(command.target.user) : ''
+  return actionText(command) + append
+}
 
 export function nightNumber(round: number) {
   return Math.ceil(round / 2)

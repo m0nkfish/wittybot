@@ -1,14 +1,10 @@
-import { Case } from '../../case';
-import { Values } from '../../util';
-import { Distract, Kill, MafiaRoleCommandFactory, Protect, Track } from '../commands';
+import { Case, isCase } from '../../case';
+import { partition, Values } from '../../util';
+import { Distract, Kill, Protect, RoleCommandFactory, Track } from '../commands';
 import { Player } from './Player';
 import { Role } from './Role';
 
-export type PlayerIntention = {
-  player: Player
-  action: MafiaRoleCommandFactory
-  target: Player
-}
+export type PlayerIntention = ReturnType<RoleCommandFactory>
 
 export type NightFate = ReturnType<Values<typeof NightFate>>
 export const NightFate = {
@@ -27,13 +23,13 @@ export class Intentions {
   constructor(private readonly intentions: PlayerIntention[]) {}
 
   get = (user: Player) =>
-    this.intentions.find(x => x.player === user)
+    this.intentions.find(x => x.user === user)
 
-  with = (player: Player, action: MafiaRoleCommandFactory, target: Player) =>
-    new Intentions([...this.intentions, { player, action, target }])
+  with = (command: ReturnType<RoleCommandFactory>) =>
+    new Intentions([...this.intentions, command])
 
   cancel = (player: Player) =>
-    new Intentions(this.intentions.filter(x => x.player !== player))
+    new Intentions(this.intentions.filter(x => x.user !== player))
   
   resolve = (): NightFate[] => {
     return [
@@ -60,48 +56,44 @@ function createProcess(f: (intentions: PlayerIntention[]) => [PlayerIntention[],
 
 const distractions = createProcess(intentions => {
   const fates: NightFate[] = []
-  const distractions = intentions
-    .filter(x => x.action === Distract)
-  for (const { player, target } of distractions) {
-    if (intentions.some(x => x.player === target)) {
+  let [rest, distractions] = partition(intentions, isCase(Distract))
+  for (const command of distractions) {
+    const {target, user} = command
+    if (intentions.some(x => x.user === target)) {
       fates.push(NightFate.Distracted(target))
     }
     if (target.role === Role.Werewolf) {
-      fates.push(NightFate.Killed(target, player))
+      fates.push(NightFate.Killed(target, user))
     }
-    intentions = intentions.filter(x => x.player !== target)
+    rest = rest.filter(x => x.user !== target)
   }
-  return [intentions, fates]
+  return [rest, fates]
 })
 
 const protections = createProcess(intentions => {
   const fates: NightFate[] = []
-  const protections = intentions.filter(x => x.action === Protect)
-  for (const { target } of protections) {
-    const protectedKills = intentions.filter(x => x.action === Kill && x.target === target)
-    for (const { player } of protectedKills) {
-      fates.push(NightFate.TargetProtected(player))
+  let [rest, protections] = partition(intentions, isCase(Protect))
+  for (const command of protections) {
+    const [other, protectedKills] = partition(rest, x => isCase(Kill)(x) && x.target === command.target)
+    for (const { user } of protectedKills) {
+      fates.push(NightFate.TargetProtected(user))
     }
-    intentions = intentions.filter(x => x.action !== Kill || x.target !== target)
+    rest = other
   }
-  return [intentions, fates]
+  return [rest, fates]
 })
 
 const kills = (role: Role) => createProcess(intentions => {
   const fates: NightFate[] = []
-  const kills = intentions.filter(x => x.action === Kill && x.player.role === role)
-  for (const { player, target } of kills) {
-    fates.push(NightFate.Killed(player, target))
-    intentions = intentions.filter(x => x.player !== target)
+  const kills = intentions.filter(isCase(Kill)).filter(x => x.user.role === role)
+  for (const { user, target } of kills) {
+    fates.push(NightFate.Killed(user, target))
+    intentions = intentions.filter(x => x.user !== target)
   }
   return [intentions, fates]
 })
 
 const inspections = createProcess(intentions => {
-  const fates: NightFate[] = []
-  const inspections = intentions.filter(x => x.action === Track)
-  for (const { player, target } of inspections) {
-    fates.push(NightFate.Tracked(player, target))
-  }
-  return [intentions, fates]
+  const [other, tracks] = partition(intentions, isCase(Track))
+  return [other, tracks.map(x => NightFate.Tracked(x.user, x.target))]
 })

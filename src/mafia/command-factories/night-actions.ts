@@ -18,10 +18,5 @@ export const NightActionsFactory = () => CommandFactory.build.state(NightState).
       return
     }
     
-    const target = message.findTarget(reaction.emoji.name)
-    if (!target) {
-      return
-    }
-
-    return message.command(player, target)
+    return message.getCommand(reaction.emoji.name)
   })
