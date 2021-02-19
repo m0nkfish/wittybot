@@ -17,7 +17,7 @@ export class NotifyRoleCountsMessage implements StaticMessage {
       .join(', ')
 
     const roles = this.statuses.aliveRoleCounts()
-      .map(([role, count]) => `${roleText.get(role)!.emoji} ${count} ${pluralise(role, count)}`)
+      .map(([role, count]) => `${roleText(role).emoji} ${count} ${pluralise(role, count)}`)
 
     return new Discord.MessageEmbed()
       .setTitle(`The game begins with ${this.statuses.alive().length} players:`)
@@ -31,6 +31,6 @@ export class NotifyRoleCountsMessage implements StaticMessage {
 }
 
 function pluralise(role: Role, count: number) {
-  return count === 1 ? roleText.get(role)!.name : roleText.get(role)!.name + 's'
+  return count === 1 ? roleText(role).name : roleText(role).name + 's'
 
 }

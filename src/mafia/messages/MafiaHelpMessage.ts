@@ -20,7 +20,7 @@ export class MafiaHelpMessage implements StaticMessage {
         `5. The goal is to be the last team remaining`
       ])
       .addField('Commands', MafiaHelpMessage.commands.map(([command, description]) => `\`!${command}\` - ${description}`))
-      .addField('Roles', Object.values(Role).map(x => roleText.get(x)!).map(({ emoji, desc }) => `${emoji} - ${desc}`))
+      .addField('Roles', Object.values(Role).map(roleText).map(({ emoji, desc }) => `${emoji} - ${desc}`))
       .setFooter(`This incarnation of wittybot was brought to you by monkfish#4812`)
   }
 

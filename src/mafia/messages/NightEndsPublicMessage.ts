@@ -26,7 +26,7 @@ export class NightEndsPublicMessage implements StaticMessage {
     const display = (p: Player) => {
       let basic = `${Emojis.skull} ${mention(p.user)}`
       if (this.context.settings.reveals) {
-        basic += ` (${roleText.get(p.role)!.name})`
+        basic += ` (${roleText(p.role).name})`
       }
       return basic
     }

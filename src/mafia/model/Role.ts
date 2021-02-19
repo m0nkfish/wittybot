@@ -49,6 +49,12 @@ export const Role = {
     commands: { day: Vote }
   },
 
+  Mayor: {
+    type: 'mayor' as const,
+    team: Team.Townsfolk,
+    commands: { day: Vote }
+  },
+
   Inspector: {
     type: 'inpector' as const,
     team: Team.Townsfolk,

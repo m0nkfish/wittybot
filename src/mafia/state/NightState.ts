@@ -54,7 +54,7 @@ export class NightState implements GameState<MafiaGameContext> {
             : `${Emojis.dagger} "Say hello to my little friend..." - You met a quick, sharp end.`
           return Send(f.target.user, new BasicMessage(flavour + `\nYou are now **dead**, please refrain from talking until the game is over`))
         case NightFate.Tracked.type:
-          return Send(f.player.user, new BasicMessage(`You tracked ${mention(f.target.user)} and discovered their role: **${roleText.get(f.target.role)!.name}**`))
+          return Send(f.player.user, new BasicMessage(`You tracked ${mention(f.target.user)} and discovered their role: **${roleText(f.target.role).name}**`))
       }
     })
 

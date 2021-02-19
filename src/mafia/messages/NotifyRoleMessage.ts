@@ -10,10 +10,10 @@ export class NotifyRoleMessage implements StaticMessage {
   constructor(readonly role: Role, readonly partners?: Player[]) { }
 
   get content() {
-    const role = roleText.get(this.role)!
+    const {emoji, desc} = roleText(this.role)
     const { day, night } = this.role.commands
     return new Discord.MessageEmbed()
-      .setTitle(`${role.emoji} ${role.desc}`)
+      .setTitle(`${emoji} ${desc}`)
       .setDescription([
         this.partners && `Your partners are: ${this.partners.map(u => mention(u.user)).join(', ')}.`,
         day && commandDescriptions.get(day),

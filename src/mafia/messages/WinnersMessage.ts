@@ -15,8 +15,8 @@ const status = (status: Status) => {
 }
 
 const display = (p: Player) => {
-  const role = roleText.get(p.role)!
-  return `${role.emoji} ${mention(p.user)}, ${role.name}: ${status(p.status)}`
+  const {emoji, name} = roleText(p.role)
+  return `${emoji} ${mention(p.user)}, ${name}: ${status(p.status)}`
 }
 
 const compareStatus = (s1: Status, s2: Status): number => {
@@ -50,13 +50,12 @@ export class WinnersMessage implements StaticMessage {
   }
 
   get title(): string {
-    switch (this.winningTeam) {
-      case Team.Townsfolk: return `${Emojis.homes} The Townsfolk have peace at last!`
-      case Team.Jester: return `${Emojis.rofl} The Jester fooled you all!`
-      case Team.Mafia: return `${Emojis.dagger} Business resumes... The Mafia have won!`
-      case Team.Yakuza: return `${Emojis.dragon} There's a new gang in town... The Yakuza have won!`
-      case Team.Werewolf: return `${Emojis.wolf} ${Emojis.fullMoon} Arooo! Against the odds, the Werewolf emerges victorious!`
-      default: return `Game over!`
+    switch (this.winningTeam.type) {
+      case Team.Townsfolk.type: return `${Emojis.homes} The Townsfolk have peace at last!`
+      case Team.Jester.type: return `${Emojis.rofl} He who laughs last, laughs longest... The Jester fooled you all!`
+      case Team.Mafia.type: return `${Emojis.dagger} Business resumes... The Mafia have won!`
+      case Team.Yakuza.type: return `${Emojis.dragon} There's a new gang in town... The Yakuza have won!`
+      case Team.Werewolf.type: return `${Emojis.wolf} ${Emojis.fullMoon} Arooo! Against the odds, the Werewolf emerges victorious!`
     }
   }
 }

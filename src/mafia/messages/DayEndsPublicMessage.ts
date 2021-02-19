@@ -16,7 +16,7 @@ export class DayEndsPublicMessage implements StaticMessage {
     const display = (player: Player) => {
       let basic = mention(player.user)
       if (this.context.settings.reveals) {
-        basic += ` (${roleText.get(player.role)!.name})`
+        basic += ` (${roleText(player.role).name})`
       }
       return basic
     }
