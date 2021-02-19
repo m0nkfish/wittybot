@@ -1,6 +1,7 @@
 import { Action, CompositeAction, DelayedAction, FromStateAction, NewState, OptionalAction, Send } from '../../actions';
+import { Duration } from '../../duration';
 import { BasicMessage, mention } from '../../messages';
-import { GameState, IdleState } from "../../state";
+import { GameState, IdleState, pause } from "../../state";
 import { isNonNull, Timer } from '../../util';
 import { MafiaRoleCommandFactory } from '../commands';
 import { MafiaGameContext, MafiaRoundContext } from '../context';
@@ -93,11 +94,11 @@ export class NightState implements GameState<MafiaGameContext> {
         OptionalAction(state instanceof NightState && state.context.sameGame(context) && state.sunrise())
       )
 
-    return CompositeAction(
+    return pause(Duration.seconds(5), context, CompositeAction(
       NewState(nightState),
       ...nightRolePMs,
       Send(context.channel, new NightBeginsPublicMessage(context)),
       DelayedAction(context.settings.nightDuration, onTimeout)
-    )
+    ))
   }
 }

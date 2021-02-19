@@ -1,5 +1,6 @@
 import { Action, CompositeAction, DelayedAction, FromStateAction, NewState, OptionalAction, Send } from '../../actions';
-import { GameState, IdleState } from "../../state";
+import { Duration } from '../../duration';
+import { GameState, IdleState, pause } from "../../state";
 import { Timer } from '../../util';
 import { MafiaGameContext, MafiaRoundContext } from '../context';
 import { DayBeginsPublicMessage, VotingOverMessage, WinnersMessage } from '../messages';
@@ -51,11 +52,11 @@ export class DayState implements GameState<MafiaGameContext> {
 
     const newContext = context.nextRound()
 
-    return CompositeAction(
+    return pause(Duration.seconds(5), context, CompositeAction(
       NewState(new DayState(newContext, statuses, new Votes(new Map()), Timer.begin())),
       Send(newContext.channel, new DayBeginsPublicMessage(newContext, statuses)),
       DelayedAction(context.settings.dayDuration, onTimeout)
-    )
+    ))
   }
 
 }

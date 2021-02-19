@@ -1,11 +1,10 @@
-import { WittyGameContext } from '../context';
-import { CompositeAction, NewState, DelayedAction, FromStateAction, OptionalAction, Send } from '../../actions';
-import { WaitingState } from './WaitingState';
-import { IdleState } from '../../state';
-import { newRound } from './newRound';
-import { Scores } from '../scores';
-import { WinnerMessage } from '../messages';
+import { CompositeAction, NewState, Send } from '../../actions';
 import { Duration } from '../../duration';
+import { IdleState, pause } from '../../state';
+import { WittyGameContext } from '../context';
+import { WinnerMessage } from '../messages';
+import { Scores } from '../scores';
+import { newRound } from './newRound';
 
 export function endRound(context: WittyGameContext) {
 
@@ -17,8 +16,5 @@ export function endRound(context: WittyGameContext) {
       NewState(new IdleState(context.guildCtx)))
   }
 
-  return CompositeAction(
-    NewState(new WaitingState(context)),
-    DelayedAction(Duration.seconds(5), FromStateAction(context.guild, state => OptionalAction(state instanceof WaitingState && newRound(context))))
-  )
+  return pause(Duration.seconds(5), context, newRound(context))
 }

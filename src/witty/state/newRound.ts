@@ -1,9 +1,9 @@
-import { CompositeAction, NewState, DelayedAction, FromStateAction, Send, PromiseAction, OptionalAction } from '../../actions';
-import { choosePrompt } from '../prompts';
+import { CompositeAction, DelayedAction, FromStateAction, NewState, OptionalAction, PromiseAction, Send } from '../../actions';
+import { WaitingState } from '../../state/WaitingState';
 import { WittyGameContext } from '../context';
 import { NewRoundMessage } from '../messages';
-import { WaitingState } from './WaitingState';
-import { SubmissionState } from './SubmissionState'
+import { choosePrompt } from '../prompts';
+import { SubmissionState } from './SubmissionState';
 
 export function newRound(context: WittyGameContext) {
   const roundCtx = context.newRound()
