@@ -60,6 +60,7 @@ export class DiscordIO {
             try {
               log('reaction-added', { reaction: reaction.emoji.name, user: user.id })
               const fullUser = await msg.client.users.fetch(user.id, true)
+              log('reaction-added-user-found', { reaction: reaction.emoji.name, user: user.id })
               this.reactionSubject.next(ReactionAdded(reaction, fullUser, message))
             } catch (err) {
               log.error('error:on-reaction-add', loggableError(err))
@@ -72,6 +73,7 @@ export class DiscordIO {
             try {
               log('reaction-removed', { reaction: reaction.emoji.name, user: user.id })
               const fullUser = await msg.client.users.fetch(user.id, true)
+              log('reaction-removed-user-found', { reaction: reaction.emoji.name, user: user.id })
               this.reactionSubject.next(ReactionRemoved(reaction, fullUser, message))
             } catch (err) {
               log.error('error:on-reaction-remove', loggableError(err))
