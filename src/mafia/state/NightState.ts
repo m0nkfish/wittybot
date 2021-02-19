@@ -100,7 +100,7 @@ export class NightState implements GameState<MafiaGameContext> {
         OptionalAction(state instanceof NightState && state.context.sameRound(context) && state.sunrise())
       )
 
-    return pause(Duration.seconds(5), context, CompositeAction(
+    return pause(Duration.seconds(5), context, () => CompositeAction(
       NewState(nightState),
       ...nightRolePMs,
       Send(context.channel, new NightBeginsPublicMessage(context)),

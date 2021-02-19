@@ -55,7 +55,7 @@ export class DayState implements GameState<MafiaGameContext> {
 
     const newContext = context.nextRound()
 
-    return pause(Duration.seconds(5), context, CompositeAction(
+    return pause(Duration.seconds(5), context, () => CompositeAction(
       NewState(new DayState(newContext, statuses, new Votes(new Map()), Timer.begin())),
       Send(newContext.channel, new DayBeginsPublicMessage(newContext, statuses)),
       DelayedAction(context.settings.dayDuration, onTimeout)

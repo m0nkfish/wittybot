@@ -16,5 +16,5 @@ export function endRound(context: WittyGameContext) {
       NewState(new IdleState(context.guildCtx)))
   }
 
-  return pause(Duration.seconds(5), context, newRound(context))
+  return pause(Duration.seconds(5), context, () => newRound(context))
 }
