@@ -29,8 +29,11 @@ export class NightState implements GameState<MafiaGameContext> {
   findPartnerIntentions = (player: Player) =>
     (this.players.findPartners(player) ?? []).map(this.intentions.get).filter(isNonNull)
 
+  canTakeAction = (player: Player) =>
+    !!player.role.commands.night && !this.intentions.get(player) && this.findPartnerIntentions(player).length === 0
+
   allDone = () =>
-    false
+    !this.players.alive().some(this.canTakeAction)
 
   sunrise = () => {
     const fates = this.intentions.resolve()
