@@ -1,7 +1,8 @@
-import { Command, ScopedCommand, GlobalCommandHandler, Help, In, Out } from '../commands';
-import { log, loggableError } from '../log';
-import { logUser, logMember, logSource, logGuild } from '../witty/loggable';
-import { Begin, Skip, Submit, Vote, GetScores, Notify, Unnotify } from '../witty/commands';
+import { Command, GlobalCommandHandler, Help, In, Out, ScopedCommand } from '../commands';
+import { log, Loggable, loggableError } from '../log';
+import * as Mafia from '../mafia/commands';
+import * as Witty from '../witty/commands';
+import { logGuild, logMember, logSource, logUser } from '../witty/loggable';
 
 export const LoggedCommandHandler = (handler: GlobalCommandHandler) =>
   new GlobalCommandHandler(async command => {
@@ -17,39 +18,57 @@ export function logCommand(input: Command) {
   const command = input.type === ScopedCommand.type ? input.scopedCommand : input
   const guild = input.type === ScopedCommand.type ? logGuild(input.guild) : undefined
   const event = `command:${command.type}`
-  switch (command.type) {
-    case Begin.type:
-      log(event, guild, logUser(command.user))
-      break;
+  const toLog: Loggable[] = []
 
-    case GetScores.type:
-      log(event, guild, { unit: command.unit }, logSource(command.source))
-      break;
+  switch (command.type) {
+    case Mafia.Begin.type:
+    case Witty.Begin.type:
+      toLog.push(logUser(command.user))
+      break
+
+    case Witty.GetScores.type:
+      toLog.push({ unit: command.unit }, logSource(command.source))
+      break
 
     case Help.type:
-      log(event, guild, logSource(command.source))
-      break;
+      toLog.push(logSource(command.source))
+      break
 
     case In.type:
     case Out.type:
-    case Notify.type:
-    case Unnotify.type:
-      log(event, guild, logMember(command.member))
+    case Witty.Notify.type:
+    case Witty.Unnotify.type:
+      toLog.push(logMember(command.member))
+      break
+
+    case Witty.Submit.type:
+      toLog.push(logUser(command.user), { submission: command.submission })
+      break
+
+    case Witty.Vote.type:
+      toLog.push(logUser(command.user), { entry: command.entry })
+      break
+
+    case Mafia.Begin.type:
+      toLog.push(logUser(command.user))
       break;
 
-    case Skip.type:
-      log(event, guild)
+    case Mafia.Distract.type:
+    case Mafia.Kill.type:
+    case Mafia.Protect.type:
+    case Mafia.Track.type:
+    case Mafia.Vote.type:
+      toLog.push(logUser(command.user.user), { target: command.user.user.username })
       break;
 
-    case Submit.type:
-      log(event, guild, logUser(command.user), { submission: command.submission })
+    case Mafia.Retract.type:
+      toLog.push(logUser(command.player.user))
       break;
 
-    case Vote.type:
-      log(event, guild, logUser(command.user), { entry: command.entry })
-      break;
-
-    default:
-      break;
+    case Mafia.Idle.type:
+      toLog.push(logUser(command.user.user))
+      break
   }
+
+  log(event, guild, ...toLog)
 }

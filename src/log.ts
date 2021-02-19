@@ -1,7 +1,7 @@
 import { Subscriber } from "rxjs"
 import { tap } from "rxjs/operators"
 
-type Loggable = {
+export type Loggable = {
   [key: string]: string | number | boolean | undefined | null
 } | undefined | null
 
