@@ -51,7 +51,7 @@ export class NightRoleMessage implements StateStreamMessage {
       ?? state.findPartnerIntentions(this.player)[0]
 
     const display = (emoji: string, command: NightCommand): string => {
-      let line = isCase(Idle)(command) ? `do nothing` : `${emoji} ${mention(command.target.user)}`
+      let line = isCase(Idle)(command) ? `${emoji} do nothing` : `${emoji} ${mention(command.target.user)}`
       if (intention && intention.type === command.type && intention.target === command.target) {
         line += ' [chosen'
         if (intention.user !== this.player) {
