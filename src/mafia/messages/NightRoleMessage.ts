@@ -62,8 +62,10 @@ export class NightRoleMessage implements StateStreamMessage {
       return line
     }
 
-    return this.options
-      .map(([emoji, command]) => emoji + ' ' + display(command))
+    return [
+      `Choose your action by reacting to this message`,
+      ...this.options.map(([emoji, command]) => emoji + ' ' + display(command))
+    ]
   }
 
   footer = (remaining: Duration) => `${remaining.seconds} seconds remaining`

@@ -43,13 +43,13 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
       const voters = votesByPlayer.get(player) ?? []
       let basic = mention(player.user)
       if (voters.length > 0) {
-        basic += `: ${ voters.length } votes (${ voters.map(p => mention(p.user)).join(', ') })`
+        basic += `: ${ voters.map(p => mention(p.user)).join(', ') }`
       }
       return basic + '\n'
     }
 
     return [
-      `Vote to execute any player - if the vote results in a tie, nobody will be executed.`,
+      `Vote to execute any player by reacting to this message. If the vote results in a tie, nobody will be executed.`,
       ``,
       ...this.options.map(([emoji, user]) => emoji + ' ' + display(user))
     ]

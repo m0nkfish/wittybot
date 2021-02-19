@@ -45,6 +45,10 @@ export class Player {
     return new Player(this.user, this.role, Status.Executed(round))
   }
 
+  get voteCount() {
+    return this.role === Role.Mayor ? 2 : 1
+  }
+
   isOnTeam = (team: Team) => this.role.team === team
 
 }

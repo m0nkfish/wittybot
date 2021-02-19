@@ -26,9 +26,10 @@ export class Votes {
   winner = () => {
     let winners: { votees: Player[], votes: number } | null = null
     for (const [votee, voters] of this.votesByPlayer()) {
-      if (winners === null || winners.votes < voters.length) {
-        winners = { votees: [votee], votes: voters.length }
-      } else if (winners.votes === voters.length) {
+      const tally = voters.reduce((acc, x) => acc + x.voteCount, 0)
+      if (winners === null || winners.votes < tally) {
+        winners = { votees: [votee], votes: tally }
+      } else if (winners.votes === tally) {
         winners.votees = [...winners.votees, votee]
       }
     }
