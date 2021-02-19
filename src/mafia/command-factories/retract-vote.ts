@@ -2,9 +2,9 @@ import { CommandFactory } from '../../commands/scoped-command-factory';
 import { ReactionRemoved } from '../../discord-events';
 import { Retract } from '../commands/retract';
 import { DayBeginsPublicMessage } from '../messages';
-import { NightState } from '../state';
+import { DayState } from '../state/DayState';
 
-export const RetractVoteFactory = () => CommandFactory.build.state(NightState).event(ReactionRemoved)
+export const RetractVoteFactory = () => CommandFactory.build.state(DayState).event(ReactionRemoved)
   .process((state, { reaction, user, message }) => {
     if (!(message instanceof DayBeginsPublicMessage)) {
       return
@@ -19,13 +19,13 @@ export const RetractVoteFactory = () => CommandFactory.build.state(NightState).e
       return
     }
 
-    const intention = state.intentions.get(player)
-    if (!intention) {
+    const vote = state.votes.get(player)
+    if (!vote) {
       return
     }
 
     const target = message.findTarget(reaction.emoji.name)
-    if (!target || intention.target !== target) {
+    if (!target || vote !== target) {
       return
     }
 
