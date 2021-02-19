@@ -2,7 +2,7 @@ import * as Discord from 'discord.js';
 import { concat, Observable } from 'rxjs';
 import { map, scan, skipWhile, take, takeWhile } from 'rxjs/operators';
 import { Duration } from '../../duration';
-import { Emojis, mention, MessageContent, setDescription, setFooter, StateStreamMessage } from '../../messages';
+import { EmbedContent, Emojis, mention, MessageContent, setDescription, setFooter, StateStreamMessage } from '../../messages';
 import { AnyGameState, IdleState } from '../../state';
 import { chain, isType, pulse } from '../../util';
 import { StartingStateDelay } from '../constants';
@@ -12,7 +12,7 @@ import { StartingState } from '../state';
 export class GameStartedMessage implements StateStreamMessage {
   readonly type = 'state-stream'
 
-  constructor(readonly notifyRole: Discord.Role | undefined, readonly context: MafiaGameContext) { }
+  constructor(readonly context: MafiaGameContext) { }
 
   readonly inReact = Emojis.detective
 
@@ -22,20 +22,11 @@ export class GameStartedMessage implements StateStreamMessage {
 
   get startedBy() { return this.context.initiator }
 
-  get content() {
-    const title = `:detective: A game of Mafia has begun!`
-
-    const embed = new Discord.MessageEmbed()
-      .setTitle(title)
+  get content(): EmbedContent {
+    return new Discord.MessageEmbed()
+      .setTitle(`:detective: A game of Mafia has begun!`)
       .setDescription(this.description([this.startedBy]))
       .setFooter(this.footer(StartingStateDelay))
-
-    return this.notifyRole
-      ? {
-        content: `Calling all ${mention(this.notifyRole)}! (:point_left: type \`!notify\` if you want to be in this group)`,
-        embed
-      }
-      : embed
   }
 
   description = (interested: Discord.User[]) => [

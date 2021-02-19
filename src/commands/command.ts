@@ -1,9 +1,10 @@
-import { Help } from './help'
-import { Case } from '../case'
 import * as Discord from 'discord.js';
-import { MafiaCommand } from '../mafia/commands';
-import { WittyCommand } from '../witty/commands'
 import { AdminCommand } from '../admin/commands';
+import { Case } from '../case';
+import { MafiaCommand } from '../mafia/commands';
+import { WittyCommand } from '../witty/commands';
+import { Help } from './help';
+import { Notify } from './notify';
 
 export type ScopedCommand =
 | WittyCommand
@@ -15,3 +16,4 @@ export const ScopedCommand = Case('scoped-command', (guild: Discord.Guild, scope
 export type Command =
 | ReturnType<typeof ScopedCommand>
 | ReturnType<typeof Help>
+| ReturnType<typeof Notify>

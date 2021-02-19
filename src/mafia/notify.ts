@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js';
 
-export const notifyRoleName = 'wittybot players'
+export const notifyRoleName = 'mafia players'
 
 export const getNotifyRole = async (guild: Discord.Guild) => {
   const role = guild.roles.cache.find(r => r.name === notifyRoleName)
@@ -14,7 +14,7 @@ export const getNotifyRole = async (guild: Discord.Guild) => {
         name: notifyRoleName,
         mentionable: true
       },
-      reason: 'Notification role for wittybot players'
+      reason: 'Notification role for mafia players'
     })
   } catch {
     return undefined

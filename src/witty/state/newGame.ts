@@ -1,20 +1,23 @@
-import { Action, NewState, CompositeAction, Send, PromiseAction, OptionalAction, DelayedAction, FromStateAction } from '../../actions';
+import * as Discord from 'discord.js';
+import { Action, CompositeAction, DelayedAction, FromStateAction, NewState, OptionalAction, PromiseAction, Send } from '../../actions';
+import { GuildContext } from '../../context/GuildContext';
+import { Duration } from '../../duration';
+import { Id } from '../../id';
+import { BasicMessage, RoleMentionNotifyMessage } from '../../messages';
+import { Timer } from '../../util';
 import { WittyGameContext } from '../context';
-import { getNotifyRole } from '../notify';
 import { GameStartedMessage } from '../messages';
-import { BasicMessage } from '../../messages';
+import { getNotifyRole } from '../notify';
 import { IdleState } from './../../state';
 import { StartingState } from './StartingState';
-import { GuildContext } from '../../context/GuildContext';
-import * as Discord from 'discord.js';
-import { Id } from '../../id';
-import { Timer } from '../../util';
-import { Duration } from '../../duration';
 
 export function newGame(guildContext: GuildContext, channel: Discord.TextChannel, initiator: Discord.User, timeout: Duration, minPlayers: number, race: number): Action {
   const context = new WittyGameContext(guildContext, channel, Id.create(), initiator, [], timeout, minPlayers, race)
+
   const gameStartedMessage = getNotifyRole(context.guild)
-    .then(role => Send(context.channel, new GameStartedMessage(role, context)))
+    .then(role => CompositeAction(
+      OptionalAction(role && Send(context.channel, new RoleMentionNotifyMessage(role))),
+      Send(context.channel, new GameStartedMessage(context))))
 
   const onTimeout =
     FromStateAction(context.channel.guild, state =>

@@ -1,13 +1,13 @@
-import { Action, AddUserToRole, CompositeAction, FromStateAction, NewState, PromiseAction, RemoveUserFromRole, SaveRound, Send, NullAction, RegisterCommand } from './actions';
-import { log, loggableError } from './log';
-import { logSource, logGuild, logChannel, getName, logMessage, logState } from './witty/loggable';
 import * as Discord from 'discord.js';
-import { saveRound } from "./witty/db";
-import { GuildStates } from './GuildStates';
 import { Subject } from 'rxjs';
+import { Action, AddUserToRole, CompositeAction, FromStateAction, NewState, NullAction, PromiseAction, RegisterCommand, RemoveUserFromRole, SaveRound, Send } from './actions';
 import { Command } from './commands';
-import { Message } from './messages';
 import { DiscordIO } from './DiscordIO';
+import { GuildStates } from './GuildStates';
+import { log } from './log';
+import { Message } from './messages';
+import { saveRound } from "./witty/db";
+import { getName, logChannel, logGuild, logMessage, logSource, logState } from './witty/loggable';
 
 export class ActionExecutor {
   constructor(private readonly guilds: GuildStates, private readonly io: DiscordIO) {}

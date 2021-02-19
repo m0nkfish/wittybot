@@ -1,4 +1,4 @@
-import { Command, GlobalCommandHandler, Help, In, Out, ScopedCommand } from '../commands';
+import { Command, GlobalCommandHandler, Help, In, Notify, Out, ScopedCommand } from '../commands';
 import { log, Loggable, loggableError } from '../log';
 import * as Mafia from '../mafia/commands';
 import * as Witty from '../witty/commands';
@@ -36,8 +36,7 @@ export function logCommand(input: Command) {
 
     case In.type:
     case Out.type:
-    case Witty.Notify.type:
-    case Witty.Unnotify.type:
+    case Notify.type:
       toLog.push(logMember(command.member))
       break
 

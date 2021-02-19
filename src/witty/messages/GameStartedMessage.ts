@@ -9,10 +9,9 @@ import { chain, isType, pulse } from '../../util';
 import { WittyGameContext } from '../context';
 import { StartingState, StartingStateDelay } from '../state';
 
-
 export class GameStartedMessage implements StateStreamMessage {
   readonly type = 'state-stream'
-  constructor(readonly notifyRole: Discord.Role | undefined, readonly context: WittyGameContext) { }
+  constructor(readonly context: WittyGameContext) { }
 
   readonly inReact = Emojis.rofl
 
@@ -23,17 +22,10 @@ export class GameStartedMessage implements StateStreamMessage {
   get startedBy() { return this.context.initiator }
 
   get content(): EmbedContent {
-    const embed = new Discord.MessageEmbed()
+    return new Discord.MessageEmbed()
       .setTitle(`:person_running: It's a race to ${this.context.race}`)
       .setDescription(this.description([this.startedBy]))
       .setFooter(this.footer(StartingStateDelay))
-
-    return this.notifyRole
-      ? {
-        content: `Calling all ${mention(this.notifyRole)}! (:point_left: type \`!notify\` if you want to be in this group)`,
-        embed
-      }
-      : embed
   }
 
   description = (interested: Discord.User[]) => [

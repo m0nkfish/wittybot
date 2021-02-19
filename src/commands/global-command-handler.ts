@@ -4,6 +4,6 @@ import { Command } from './command';
 export class GlobalCommandHandler {
   constructor(readonly handle: (command: Command) => Promise<Action | undefined>) { }
 
-  combine = (other: GlobalCommandHandler) =>
+  orElse = (other: GlobalCommandHandler) =>
     new GlobalCommandHandler(async cmd => (await this.handle(cmd)) ?? other.handle(cmd))
 }

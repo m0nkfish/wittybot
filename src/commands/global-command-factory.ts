@@ -1,4 +1,3 @@
-import * as Discord from 'discord.js';
 import { DiscordEvent } from '../discord-events';
 import { Command } from './command';
 

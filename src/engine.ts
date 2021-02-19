@@ -1,17 +1,17 @@
-import * as O from 'rxjs'
+import * as O from 'rxjs';
+import { Observable } from 'rxjs';
 import { filter, map, mergeMap } from 'rxjs/operators';
-
-import { GlobalContext } from './context'
-import { isNonNull } from './util';
-import { log, loggableError } from './log'
-import { ScopedGlobalCommandFactory, ScopedGlobalCommandHandler } from './commands'
-import { GuildStates } from './GuildStates';
+import { ActionExecutor } from './action-executor';
+import { Action } from './actions';
 import { AllGlobalCommandFactories, AllScopedCommandFactories, LoggedCommandFactory } from './command-factories';
 import { AllGlobalCommandHandlers, AllScopedCommandHandlers, LoggedCommandHandler } from './command-handlers';
-import { ActionExecutor } from './action-executor';
-import { Observable } from 'rxjs';
-import { Action } from './actions';
+import { ScopedGlobalCommandFactory, ScopedGlobalCommandHandler } from './commands';
+import { GlobalContext } from './context';
 import { DiscordIO } from './DiscordIO';
+import { GuildStates } from './GuildStates';
+import { log, loggableError } from './log';
+import { isNonNull } from './util';
+
 
 export class Engine {
   readonly guilds: GuildStates
@@ -23,7 +23,7 @@ export class Engine {
     this.guilds = new GuildStates(context)
 
     const commandProcessor = LoggedCommandFactory(AllGlobalCommandFactories().combine(new ScopedGlobalCommandFactory(this.guilds, AllScopedCommandFactories())))
-    const commandHandler = LoggedCommandHandler(AllGlobalCommandHandlers().combine(new ScopedGlobalCommandHandler(this.guilds, AllScopedCommandHandlers())))
+    const commandHandler = LoggedCommandHandler(AllGlobalCommandHandlers().orElse(new ScopedGlobalCommandHandler(this.guilds, AllScopedCommandHandlers())))
     const io = new DiscordIO(this.guilds, this.context.client)
 
     this.executor = new ActionExecutor(this.guilds, io)

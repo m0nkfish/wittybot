@@ -20,6 +20,11 @@ export const Emojis = {
   skull: '💀',
   relieved: '😌',
   homes: '🏘️',
+  cool: '🆒',
+
+  bell: '🔔',
+  noBell: '🔕',
+  pointLeft: '👈',
 
   zero: '0️⃣',
   one: '1️⃣',
