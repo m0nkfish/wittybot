@@ -40,7 +40,7 @@ export class DayState implements GameState<MafiaGameContext> {
           NewState(new IdleState(this.context.guildCtx)),
           Send(this.context.channel, new WinnersMessage(winners, newStatus)))
       : CompositeAction(
-          Send(this.context.channel, new NotifyRoleCountsMessage(this.players)),
+          Send(this.context.channel, new NotifyRoleCountsMessage(newStatus)),
           NightState.enter(this.context.nextRound(), newStatus))
 
     return CompositeAction(
