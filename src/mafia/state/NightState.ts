@@ -7,6 +7,7 @@ import { NightCommand } from '../commands/all';
 import { MafiaGameContext, MafiaRoundContext } from '../context';
 import { NightBeginsPublicMessage, NightRoleMessage, roleText, WinnersMessage } from '../messages';
 import { NightEndsPublicMessage } from '../messages/NightEndsPublicMessage';
+import { NotifyRoleCountsMessage } from '../messages/NotifyRoleCountsMessage';
 import { Intentions, NightFate, Player, Players, Role } from '../model';
 import { DayState } from './DayState';
 
@@ -70,7 +71,9 @@ export class NightState implements GameState<MafiaGameContext> {
       ? CompositeAction(
           NewState(new IdleState(this.context.guildCtx)),
           Send(this.context.channel, new WinnersMessage(winners, newStatus)))
-      : DayState.enter(this.context.nextRound(), newStatus)
+      : CompositeAction(
+          Send(this.context.channel, new NotifyRoleCountsMessage(this.players)),
+          DayState.enter(this.context.nextRound(), newStatus))
 
     return CompositeAction(
       ...nightEndMessages,

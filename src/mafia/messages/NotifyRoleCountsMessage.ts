@@ -9,18 +9,18 @@ import { roleText } from "./text";
 export class NotifyRoleCountsMessage implements StaticMessage {
   readonly type = 'static'
   
-  constructor(readonly statuses: Players) { }
+  constructor(readonly players: Players) { }
 
   get content() {
-    const playerNames = shuffle(this.statuses.alive())
+    const playerNames = shuffle(this.players.alive())
       .map(x => mention(x.user))
       .join(', ')
 
-    const roles = this.statuses.aliveRoleCounts()
+    const roles = this.players.aliveRoleCounts()
       .map(([role, count]) => `${roleText(role).emoji} ${count} ${pluralise(role, count)}`)
 
     return new Discord.MessageEmbed()
-      .setTitle(`The game begins with ${this.statuses.alive().length} players:`)
+      .setTitle(`There are ${this.players.alive().length} players left alive:`)
       .setDescription([
         playerNames,
         ``,
