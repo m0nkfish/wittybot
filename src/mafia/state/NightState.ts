@@ -97,7 +97,7 @@ export class NightState implements GameState<MafiaGameContext> {
 
     const onTimeout =
       FromStateAction(context.channel.guild, state =>
-        OptionalAction(state instanceof NightState && state.context.sameGame(context) && state.sunrise())
+        OptionalAction(state instanceof NightState && state.context.sameRound(context) && state.sunrise())
       )
 
     return pause(Duration.seconds(5), context, CompositeAction(

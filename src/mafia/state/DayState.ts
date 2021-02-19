@@ -51,7 +51,7 @@ export class DayState implements GameState<MafiaGameContext> {
 
   static enter(context: MafiaRoundContext, statuses: Players): Action {
     const onTimeout = FromStateAction(context.guild, state =>
-      OptionalAction(state instanceof DayState && state.context.sameGame(context) && state.sundown()))
+      OptionalAction(state instanceof DayState && state.context.sameRound(context) && state.sundown()))
 
     const newContext = context.nextRound()
 
