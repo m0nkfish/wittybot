@@ -60,8 +60,9 @@ const distractions = createProcess(intentions => {
     if (intentions.some(x => x.user === target)) {
       fates.push(NightFate.Distracted(target))
     }
+    // specific interaction: distracting the werewolf directs its attention towards you, but you can be saved by the bodyguard
     if (target.role === Role.Werewolf) {
-      fates.push(NightFate.Killed(target, user))
+      rest = rest.map(cmd => cmd.user === target && cmd.type === Kill.type ? Kill(target, user) : cmd)
     }
     rest = rest.filter(x => x.user !== target)
   }
