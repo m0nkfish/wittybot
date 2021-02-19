@@ -71,8 +71,9 @@ export class DiscordIO {
         
         if (reacts) {
           try {
-            await reacts
-              .reduce((res, emoji) => res.then(async () => { await msg.react(emoji) }), Promise.resolve())
+            for (const r of reacts) {
+              await msg.react(r)
+            }
           } catch (err) {
             log.error('message:add-reactions', loggableError(err))
           }
