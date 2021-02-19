@@ -86,7 +86,7 @@ const kills = (role: Role) => createProcess(intentions => {
   const kills = intentions.filter(isCase(Kill)).filter(x => x.user.role === role)
   for (const { user, target } of kills) {
     fates.push(NightFate.Killed(user, target))
-    intentions = intentions.filter(x => x.user !== target)
+    intentions = intentions.filter(x => x.user !== target && x.target !== target)
   }
   return [intentions, fates]
 })
