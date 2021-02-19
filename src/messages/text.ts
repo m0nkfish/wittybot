@@ -5,6 +5,7 @@ export const Emojis = {
   day: '☀️',
   night: '🌙',
   sunrise: '🌅',
+  sunset: '🌇',
   fullMoon: '🌕',
   villager: '🙂',
   detective: '🕵️',

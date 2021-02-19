@@ -3,7 +3,7 @@ import { Duration } from '../../duration';
 import { GameState, IdleState, pause } from "../../state";
 import { Timer } from '../../util';
 import { MafiaGameContext, MafiaRoundContext } from '../context';
-import { DayBeginsPublicMessage, VotingOverMessage, WinnersMessage } from '../messages';
+import { DayBeginsPublicMessage, DayEndsPublicMessage, WinnersMessage } from '../messages';
 import { Player } from '../model/Player';
 import { Players } from "../model/Players";
 import { Votes } from "../model/Votes";
@@ -41,7 +41,7 @@ export class DayState implements GameState<MafiaGameContext> {
       : NightState.enter(this.context.nextRound(), newStatus)
 
     return CompositeAction(
-      Send(this.context.channel, new VotingOverMessage(this.context, toBeKilled)),
+      Send(this.context.channel, new DayEndsPublicMessage(this.context, toBeKilled)),
       nextState
     )
   }
