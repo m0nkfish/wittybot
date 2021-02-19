@@ -1,15 +1,14 @@
 import * as Discord from 'discord.js';
-import { Observable } from 'rxjs'
-import * as O from 'rxjs'
-import { filter, map, tap } from 'rxjs/operators'
-import { Message, Destination } from "./messages";
-import { log, loggableError } from "./log";
-import { GuildStates } from './GuildStates';
-import { Subject } from 'rxjs';
-import { DiscordEvent, MessageReceived, ReactionAdded, ReactionRemoved } from './discord-events';
-import { invoke } from './util';
-import { MessageContent } from './messages/Message';
 import { MessageEmbed } from 'discord.js';
+import * as O from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+import { DiscordEvent, MessageReceived, ReactionAdded, ReactionRemoved } from './discord-events';
+import { GuildStates } from './GuildStates';
+import { log, loggableError } from "./log";
+import { Destination, Message } from "./messages";
+import { MessageContent } from './messages/Message';
+import { invoke } from './util';
 
 export class DiscordIO {
 
@@ -59,6 +58,7 @@ export class DiscordIO {
         msg.client.on('messageReactionAdd', async (reaction, user) => {
           if (reaction.message.id === msg.id && user !== msg.client.user && reacts.includes(reaction.emoji.name)) {
             try {
+              log('reaction-added', { reaction: reaction.emoji.name, user: user.id })
               const fullUser = await msg.client.users.fetch(user.id, true)
               this.reactionSubject.next(ReactionAdded(reaction, fullUser, message))
             } catch (err) {
@@ -70,6 +70,7 @@ export class DiscordIO {
         msg.client.on('messageReactionRemove', async (reaction, user) => {
           if (reaction.message.id === msg.id && user !== msg.client.user && reacts.includes(reaction.emoji.name)) {
             try {
+              log('reaction-removed', { reaction: reaction.emoji.name, user: user.id })
               const fullUser = await msg.client.users.fetch(user.id, true)
               this.reactionSubject.next(ReactionRemoved(reaction, fullUser, message))
             } catch (err) {
