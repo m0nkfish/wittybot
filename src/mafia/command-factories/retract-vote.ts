@@ -1,12 +1,12 @@
 import { CommandFactory } from '../../commands/scoped-command-factory';
 import { ReactionRemoved } from '../../discord-events';
 import { Retract } from '../commands/retract';
-import { NightRoleMessage } from '../messages';
+import { DayBeginsPublicMessage } from '../messages';
 import { NightState } from '../state';
 
 export const RetractVoteFactory = () => CommandFactory.build.state(NightState).event(ReactionRemoved)
   .process((state, { reaction, user, message }) => {
-    if (!(message instanceof NightRoleMessage)) {
+    if (!(message instanceof DayBeginsPublicMessage)) {
       return
     }
 
