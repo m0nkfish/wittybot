@@ -10,7 +10,7 @@ import { AnyGameState } from "../../state";
 import { chain, invoke, pulse } from '../../util';
 import { Idle } from "../commands";
 import { NightCommand, NightCommandFactory } from '../commands/all';
-import { Player, PlayerIntention } from '../model';
+import { Player } from '../model';
 import { NightState } from '../state';
 import { actionText, roleText } from './text';
 
@@ -47,11 +47,11 @@ export class NightRoleMessage implements StateStreamMessage {
   }
 
   description = (state: NightState) => {
-    const intention: PlayerIntention | undefined = state.intentions.get(this.player)
+    const intention: NightCommand | undefined = state.intentions.get(this.player)
       ?? state.findPartnerIntentions(this.player)[0]
 
-    const display = (emoji: string, command: NightCommand): string => {
-      let line = isCase(Idle)(command) ? `${emoji} do nothing` : `${emoji} ${mention(command.target.user)}`
+    const display = (command: NightCommand): string => {
+      let line = isCase(Idle)(command) ? `do nothing` : mention(command.target.user)
       if (intention && intention.type === command.type && intention.target === command.target) {
         line += ' [chosen'
         if (intention.user !== this.player) {
@@ -63,7 +63,7 @@ export class NightRoleMessage implements StateStreamMessage {
     }
 
     return this.options
-      .map(([emoji, command]) => display(emoji, command))
+      .map(([emoji, command]) => emoji + ' ' + display(command))
   }
 
   footer = (remaining: Duration) => `${remaining.seconds} seconds remaining`

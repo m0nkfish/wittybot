@@ -1,10 +1,8 @@
 import { Case, isCase } from '../../case';
 import { partition, Values } from '../../util';
-import { Distract, Kill, Protect, RoleCommandFactory, Track } from '../commands';
+import { Distract, Kill, NightCommand, Protect, Track } from '../commands';
 import { Player } from './Player';
 import { Role } from './Role';
-
-export type PlayerIntention = ReturnType<RoleCommandFactory>
 
 export type NightFate = ReturnType<Values<typeof NightFate>>
 export const NightFate = {
@@ -15,17 +13,17 @@ export const NightFate = {
 }
 
 type FoldState = {
-  intentions: PlayerIntention[]
+  intentions: NightCommand[]
   fates: NightFate[]
 }
 
 export class Intentions {
-  constructor(private readonly intentions: PlayerIntention[]) {}
+  constructor(private readonly intentions: NightCommand[]) {}
 
   get = (user: Player) =>
     this.intentions.find(x => x.user === user)
 
-  with = (command: ReturnType<RoleCommandFactory>) =>
+  with = (command: NightCommand) =>
     new Intentions([...this.intentions, command])
 
   cancel = (player: Player) =>
@@ -44,7 +42,7 @@ export class Intentions {
   }
 }
 
-function createProcess(f: (intentions: PlayerIntention[]) => [PlayerIntention[], NightFate[]]) {
+function createProcess(f: (intentions: NightCommand[]) => [NightCommand[], NightFate[]]) {
   return function(foldState: FoldState) {
     const [intentions, fates] = f(foldState.intentions)
     return {
