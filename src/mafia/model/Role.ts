@@ -61,19 +61,13 @@ export const Role = {
     commands: { day: Vote, night: Track }
   },
 
-  Mafia: {
-    type: 'mafia' as const,
-    team: Team.Mafia,
-    commands: { day: Vote, night: Kill }
+  Bodyguard: {
+    type: 'bodyguard' as const,
+    team: Team.Townsfolk,
+    commands: { day: Vote, night: Protect }
   },
 
-  Yakuza: {
-    type: 'yakuza' as const,
-    team: Team.Yakuza,
-    commands: { day: Vote, night: Kill }
-  },
-
-  Escort: { 
+  Escort: {
     type: 'escort' as const,
     team: Team.Townsfolk,
     commands: { day: Vote, night: Distract }
@@ -85,10 +79,16 @@ export const Role = {
     commands: { day: Vote, night: Kill }
   },
 
-  Bodyguard: {
-    type: 'bodyguard' as const,
-    team: Team.Townsfolk,
-    commands: { day: Vote, night: Protect }
+  Mafia: {
+    type: 'mafia' as const,
+    team: Team.Mafia,
+    commands: { day: Vote, night: Kill }
+  },
+
+  Yakuza: {
+    type: 'yakuza' as const,
+    team: Team.Yakuza,
+    commands: { day: Vote, night: Kill }
   },
 
   Jester: {
