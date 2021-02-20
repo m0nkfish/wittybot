@@ -28,6 +28,7 @@ export class DiscordIO {
       discordEventObs(client, 'messageReactionRemove')
         .pipe(map(e => [...e, ReactionRemoved] as const))
     ).pipe(
+      filter(([_, u]) => u !== client.user), // ignore reactions from wittybot!
       tap(([r, u, t]) => log('reaction-event', { emoji: r.emoji.name, type: t.type, user: u.username ?? 'partial-user' })),
       concatMap(([reaction, user, ctor]) => client.users.fetch(user.id, true).then(user => [reaction, user, ctor] as const)),
       tap(([r, u, t]) => log('reaction-event-user-fetched', { emoji: r.emoji.name, type: t.type, user: u.username })),
