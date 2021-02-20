@@ -21,6 +21,9 @@ export class DiscordIO {
         .pipe(
           filter(m => !m.author.bot),
           map(MessageReceived))
+        
+    O.fromEvent(client, 'messageReactionAdd')
+      .subscribe((...args) => log('debug-react-event-add', { argsLen: args.length, argTypes: args.map(x => typeof x).join(',') }))
 
     this.eventStream = O.merge(this.reactionSubject, messageStream)
   }

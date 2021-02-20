@@ -6,7 +6,7 @@ import { Duration } from "../../duration";
 import { CommandReacts, EmbedContent, Emoji, Emojis, mention, Message, MessageContent, setDescription, setFooter, StateStreamMessage } from "../../messages";
 import { shuffle } from '../../random';
 import { AnyGameState } from "../../state";
-import { chain, pulse } from '../../util';
+import { chain, isType, pulse } from '../../util';
 import { MafiaRoundContext } from '../context';
 import { Player, Players, Votes } from '../model';
 import { DayState } from '../state';
@@ -60,8 +60,7 @@ export class DayBeginsPublicMessage implements StateStreamMessage {
   content$ = (stateStream: Observable<AnyGameState>): Observable<MessageContent> =>
     pulse(stateStream, Duration.seconds(5))
       .pipe(
-        takeWhile(s => s instanceof DayState && s.remaining().isGreaterThan(0)),
-        map(s => s as DayState),
+        takeWhile(isType(DayState)),
         map(s => chain(
           setFooter(this.footer(s.remaining())),
           setDescription(this.description(s.votes))
