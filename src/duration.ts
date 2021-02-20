@@ -248,6 +248,10 @@ export class Duration {
     return new Date(date.valueOf() + this._milliseconds);
   }
 
+  promise(): Promise<void> {
+    return new Promise(res => setTimeout(() => res(), this.milliseconds))
+  }
+
   static since(date: DateLike): Duration {
     return new Duration(new Date().valueOf() - date.valueOf());
   }

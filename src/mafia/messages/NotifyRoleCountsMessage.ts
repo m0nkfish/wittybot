@@ -27,5 +27,4 @@ export class NotifyRoleCountsMessage implements StaticMessage {
 
 function pluralise(role: Role, count: number) {
   return count === 1 ? roleText(role).name : roleText(role).name + 's'
-
 }

@@ -30,5 +30,16 @@ export type Action =
   | Case<'promise-action', { promise: Promise<Action> }>
 
 export const UpdateState = (guild: Discord.Guild, update: (state: AnyGameState) => AnyGameState) => FromStateAction(guild, state => NewState(update(state)))
-export const DelayedAction = (delay: Duration, action: Action) => PromiseAction(new Promise<Action>(resolve => setTimeout(() => resolve(action), delay.milliseconds)))
+export const DelayedAction = (delay: Duration, action: Action) => PromiseAction(delay.promise().then(() => action))
 export const OptionalAction = (action: Action | undefined | null | false): Action => action || NullAction()
+
+export function toAction(generator: () => Generator<Action>) {
+  const actions: Action[] = []
+  for (const x of generator()) {
+    actions.push(x)
+  }
+  if (actions.length === 1) {
+    return actions[0]
+  }
+  return CompositeAction(...actions)
+}

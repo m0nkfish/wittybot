@@ -5,7 +5,7 @@ import { Distract, Idle, Kill, Protect, Track } from "../commands"
 import { commandText, getCommandText } from "../messages"
 import { NightState } from "../state"
 
-export const NightActionHandler = () =>  CommandHandler.build.state(NightState)
+export const NightActionHandler = () => CommandHandler.build.state(NightState)
   .command(Idle).orCommand(Kill).orCommand(Distract).orCommand(Protect).orCommand(Track)
   .sync((state, command) => {
     const { user, target } = command
