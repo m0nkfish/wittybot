@@ -22,6 +22,8 @@ export const Emojis = {
   homes: '🏘️',
   cool: '🆒',
   info: 'ℹ️',
+  monocle: '🧐',
+  tophat: '🎩',
 
   bell: '🔔',
   noBell: '🔕',

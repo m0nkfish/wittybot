@@ -25,7 +25,7 @@ export function roleText(role: Role): RoleFlavour {
       desc: `You are a humble Villager. ${townDescription}`,
     }
     case Role.Mayor.type: return {
-      emoji: Emojis.villager,
+      emoji: Emojis.tophat,
       name: "Mayor",
       desc: `You are the Mayor. Your vote counts twice! ${townDescription}`,
     }

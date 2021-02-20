@@ -39,7 +39,7 @@ export class MafiaHelpRolesMessage implements StaticMessage {
   get content() {
     return new Discord.MessageEmbed()
       .setTitle(`${Emojis.info} Mafia roles`)
-      .setDescription(`Each player is assigned a role at the start of the game. During each day and night, players may choose actions according to their role.`)
+      .setDescription(`Each player is assigned a role at the start of the game. During the day, players vote to execute any one player, and during the night players may perform an action according to their role.`)
       .addFields(
         Object.values(Role).map(x => x as Role).map(role => {
           const { emoji, name, desc } = roleText(role)
@@ -47,9 +47,8 @@ export class MafiaHelpRolesMessage implements StaticMessage {
           return {
             name: `${emoji} ${name}`,
             value: [
-              desc, ,
-              day && commandText(day).desc,
-              night && commandText(night).desc
+              desc,
+              night && `• **${commandText(night).verb}**: ${commandText(night).desc}`
             ]
           }
         })
