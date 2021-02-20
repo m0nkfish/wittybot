@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "main": "dist/bot.js",
   "scripts": {
-    "start": "node dist/bot.js",
+    "start": "node --inspect dist/bot.js",
     "build": "tsc",
     "postinstall": "npm run build",
     "local": "node -r dotenv/config dist/bot.js"
