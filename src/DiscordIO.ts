@@ -2,7 +2,7 @@ import * as Discord from 'discord.js';
 import { MessageEmbed } from 'discord.js';
 import * as O from 'rxjs';
 import { Observable, Subject } from 'rxjs';
-import { concatMap, filter, map, mergeMap } from 'rxjs/operators';
+import { concatMap, filter, map, mergeMap, multicast } from 'rxjs/operators';
 import { DiscordEvent, MessageReceived, ReactionAdded, ReactionRemoved } from './discord-events';
 import { GuildStates } from './GuildStates';
 import { log, loggableError } from './log';
@@ -10,10 +10,15 @@ import { Destination, Message } from "./messages";
 import { MessageContent } from './messages/Message';
 import { invoke } from './util';
 
+type SentMessage = {
+  sent: Discord.Message
+  source: Message
+}
+
 export class DiscordIO {
 
   readonly eventStream: Observable<DiscordEvent>;
-  private readonly sentMessages = new Subject<[Discord.Message, Message]>()
+  private readonly sentMessages = new Subject<SentMessage>()
 
   constructor(readonly guilds: GuildStates, readonly client: Discord.Client) {
     const messageStream =
@@ -22,38 +27,41 @@ export class DiscordIO {
           filter(m => m.author !== client.user && !m.author.bot),
           map(MessageReceived))
 
-    const rawReacts$ = O.merge(
+    const connectable$ = O.merge(
       discordEventObs(client, 'messageReactionAdd')
         .pipe(map(e => [...e, ReactionAdded] as const)),
       discordEventObs(client, 'messageReactionRemove')
         .pipe(map(e => [...e, ReactionRemoved] as const))
     ).pipe(
       filter(([_, u]) => u !== client.user), // ignore reactions from wittybot!
-    )
+      multicast(new Subject())
+    ) as O.ConnectableObservable<[Discord.MessageReaction, Discord.User | Discord.PartialUser, typeof ReactionAdded | typeof ReactionRemoved]>
 
-    const reactsWithUser$ = rawReacts$.pipe(
+    connectable$.connect()
+
+    const reactsWithUser$ = connectable$.pipe(
       concatMap(([reaction, user, ctor]) => client.users.fetch(user.id, true).then(user => [reaction, user, ctor] as const)),
     )
 
     const reactionEvents$ = this.sentMessages.pipe(
-      filter(([_, source]) => !!source.reactable),
-      mergeMap(([msg, source]) => reactsWithUser$.pipe(
-        filter(([reaction]) => reaction.message.id === msg.id && source.reactable!.reacts.includes(reaction.emoji.name)),
+      filter(x => !!x.source.reactable),
+      mergeMap(({sent, source}) => reactsWithUser$.pipe(
+        filter(([reaction]) => reaction.message.id === sent.id && source.reactable!.reacts.includes(reaction.emoji.name)),
         map(([reaction, user, ctor]) => ctor(reaction, user, source)))))
 
-    rawReacts$.subscribe(([r, u, t]) => log('react-received', { emoji: r.emoji.name, user: u.username ?? 'partial', type: t.type }))
-    reactsWithUser$.subscribe(([r, u, t]) => log('react-received-user-fetched', { emoji: r.emoji.name, user: u.username, type: t.type }))
+    connectable$.subscribe(([r, u, t]) => log('react-received', { emoji: r.emoji.name, user: u.username ?? 'partial', type: t.type }))
+    connectable$.subscribe(([r, u, t]) => log('react-received-user-fetched', { emoji: r.emoji.name, user: u.username, type: t.type }))
         
     this.eventStream = O.merge(reactionEvents$, messageStream)
   }
 
-  send = (destination: Destination, message: Message) => {
-    const messageStates$ = message.type === 'static'
-      ? O.of(message.content)
+  send = (destination: Destination, source: Message) => {
+    const messageStates$ = source.type === 'static'
+      ? O.of(source.content)
       : invoke(() => {
-        const guild = message.context.guild
+        const guild = source.context.guild
         const stateStream = this.guilds.getStream(guild)
-        return message.content$(stateStream)
+        return source.content$(stateStream)
       })
 
     const send = async (content: MessageContent) => {
@@ -64,21 +72,21 @@ export class DiscordIO {
         content.embed.setColor(embedColor)
       }
 
-      const msg = await destination.send(content)
+      const sent = await destination.send(content)
 
-      this.sentMessages.next([msg, message])
+      this.sentMessages.next({sent, source})
 
-      if (message.reactable) {
+      if (source.reactable) {
         try {
-          for (const r of message.reactable.reacts) {
-            await msg.react(r)
+          for (const r of source.reactable.reacts) {
+            await sent.react(r)
           }
         } catch (err) {
           log.error('message:add-reactions', loggableError(err))
         }
       }
 
-      return msg
+      return sent
     }
 
     let msg: Promise<Discord.Message> | null = null

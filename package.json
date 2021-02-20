@@ -7,7 +7,9 @@
     "start": "node --inspect dist/bot.js",
     "build": "tsc",
     "postinstall": "npm run build",
-    "local": "node -r dotenv/config dist/bot.js"
+    "local": "node -r dotenv/config dist/bot.js",
+    "remote-debug": "heroku ps:forward 9229 -a wittyfirebot -d worker.1",
+    "logs": "heroku logs -a wittyfirebot -t -n 500"
   },
   "dependencies": {
     "discord.js": "^12.5.1",
