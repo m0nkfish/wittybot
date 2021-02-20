@@ -4,10 +4,10 @@ import { Action, AddUserToRole, CompositeAction, FromStateAction, NewState, Null
 import { Command } from './commands';
 import { DiscordIO } from './DiscordIO';
 import { GuildStates } from './GuildStates';
-import { log } from './log';
+import { log, logType } from './log';
 import { Message } from './messages';
 import { saveRound } from "./witty/db";
-import { getName, logChannel, logGuild, logMessage, logSource, logState } from './witty/loggable';
+import { logChannel, logGuild, logMessage, logSource, logState } from './witty/loggable';
 
 export class ActionExecutor {
   constructor(private readonly guilds: GuildStates, private readonly io: DiscordIO) {}
@@ -69,10 +69,10 @@ export function logAction(action: Action) {
     const event = `execute-action:${action.type}`
     if (action.type === 'new-state') {
       const { newState } = action
-      log(event, logGuild(newState.context.guild), { state: getName(newState) }, logState(newState))
+      log(event, logGuild(newState.context.guild), logType(newState), logState(newState))
     } else if (action.type === 'send-message') {
       const { message, destination } = action
-      log(event, logSource(destination), { message: getName(message) }, logMessage(message))
+      log(event, logSource(destination), logMessage(message))
     } else if (action.type === 'save-round') {
       log(event, logChannel(action.round.channel), { round: action.round.id })
     } else if (action.type === RegisterCommand.type) {

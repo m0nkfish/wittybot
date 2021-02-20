@@ -58,7 +58,7 @@ export function loggableError(err: any) {
   return err instanceof Error ? { name: err.name, message: err.message } : null
 }
 
-export function loggableType(value: any) {
+export function logType(value: any) {
   const type = typeof value
-  return { type: type === "object" ? value.constructor.name : type }
+  return { type: type === "object" ? value?.constructor?.name : type }
 }

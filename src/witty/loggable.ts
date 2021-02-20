@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { loggableType } from '../log';
+import { logType } from '../log';
 import { BasicMessage, Message } from '../messages';
 import { GameState } from '../state';
 import { SubmissionState, VotingState } from './state';
@@ -16,6 +16,5 @@ export const logState = (state: GameState<any>) =>
   : undefined
 
 export const logMessage = (message: Message) =>
-  message instanceof BasicMessage ? { content: `"${message.content}"` }  : loggableType(message)
+  message instanceof BasicMessage ? { content: `"${message.content}"` }  : logType(message)
 
-export const getName = (obj: any) => obj?.constructor?.name

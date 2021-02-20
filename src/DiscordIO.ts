@@ -2,30 +2,44 @@ import * as Discord from 'discord.js';
 import { MessageEmbed } from 'discord.js';
 import * as O from 'rxjs';
 import { Observable, Subject } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { concatMap, filter, map, mergeMap, tap } from 'rxjs/operators';
 import { DiscordEvent, MessageReceived, ReactionAdded, ReactionRemoved } from './discord-events';
 import { GuildStates } from './GuildStates';
-import { log, loggableError, loggableType } from './log';
+import { log, loggableError } from './log';
 import { Destination, Message } from "./messages";
 import { MessageContent } from './messages/Message';
 import { invoke } from './util';
 
 export class DiscordIO {
 
-  private readonly reactionSubject = new Subject<DiscordEvent>()
   readonly eventStream: Observable<DiscordEvent>;
+  private readonly sentMessages = new Subject<[Discord.Message, Message]>()
 
   constructor(readonly guilds: GuildStates, readonly client: Discord.Client) {
     const messageStream =
       O.fromEvent<Discord.Message>(client, 'message')
         .pipe(
-          filter(m => !m.author.bot),
+          filter(m => m.author !== client.user && !m.author.bot),
           map(MessageReceived))
-        
-    O.fromEvent(client, 'messageReactionAdd')
-      .subscribe((...args) => log('debug-react-event-add', { argsLen: args.length, argTypes: args.map(loggableType).join(',') }))
 
-    this.eventStream = O.merge(this.reactionSubject, messageStream)
+    const discordReacts$ = O.merge(
+      discordEventObs(client, 'messageReactionAdd')
+        .pipe(map(e => [...e, ReactionAdded] as const)),
+      discordEventObs(client, 'messageReactionRemove')
+        .pipe(map(e => [...e, ReactionRemoved] as const))
+    ).pipe(
+      tap(([r, u, t]) => log('reaction-event', { emoji: r.emoji.name, type: t.type, user: u.username ?? 'partial-user' })),
+      concatMap(([reaction, user, ctor]) => client.users.fetch(user.id, true).then(user => [reaction, user, ctor] as const)),
+      tap(([r, u, t]) => log('reaction-event-user-fetched', { emoji: r.emoji.name, type: t.type, user: u.username })),
+    )
+
+    const reactionEvents$ = this.sentMessages.pipe(
+      filter(([_, source]) => !!source.reactable),
+      mergeMap(([msg, source]) => discordReacts$.pipe(
+        filter(([reaction]) => reaction.message.id === msg.id && source.reactable!.reacts.includes(reaction.emoji.name)),
+        map(([reaction, user, ctor]) => ctor(reaction, user, source)))))
+        
+    this.eventStream = O.merge(reactionEvents$, messageStream)
   }
 
   send = (destination: Destination, message: Message) => {
@@ -47,39 +61,15 @@ export class DiscordIO {
 
       const msg = await destination.send(content)
 
+      this.sentMessages.next([msg, message])
+
       if (message.reactable) {
-        const { reacts } = message.reactable
-
-        msg.client.on('messageReactionAdd', async (reaction, user) => {
-          if (reaction.message.id === msg.id && user !== msg.client.user && reacts.includes(reaction.emoji.name)) {
-            try {
-              const fullUser = await msg.client.users.fetch(user.id, true)
-              this.reactionSubject.next(ReactionAdded(reaction, fullUser, message))
-            } catch (err) {
-              log.error('error:on-reaction-add', loggableError(err))
-            }
+        try {
+          for (const r of message.reactable.reacts) {
+            await msg.react(r)
           }
-        })
-
-        msg.client.on('messageReactionRemove', async (reaction, user) => {
-          if (reaction.message.id === msg.id && user !== msg.client.user && reacts.includes(reaction.emoji.name)) {
-            try {
-              const fullUser = await msg.client.users.fetch(user.id, true)
-              this.reactionSubject.next(ReactionRemoved(reaction, fullUser, message))
-            } catch (err) {
-              log.error('error:on-reaction-remove', loggableError(err))
-            }
-          }
-        })
-        
-        if (reacts) {
-          try {
-            for (const r of reacts) {
-              await msg.react(r)
-            }
-          } catch (err) {
-            log.error('message:add-reactions', loggableError(err))
-          }
+        } catch (err) {
+          log.error('message:add-reactions', loggableError(err))
         }
       }
 
@@ -97,4 +87,16 @@ export class DiscordIO {
         }
       })
   }
+}
+
+export function discordEventObs<T, K extends keyof Discord.ClientEvents>(client: Discord.Client, eventName: K): Observable<Discord.ClientEvents[K]> {
+  return new Observable<Discord.ClientEvents[K]>(subscribe => {
+    const handler = (...args: Discord.ClientEvents[K]) => {
+      subscribe.next(args)
+    }
+    client.on(eventName, handler)
+    return () => {
+      client.off(eventName, handler)
+    }
+  })
 }

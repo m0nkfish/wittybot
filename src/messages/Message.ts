@@ -1,9 +1,9 @@
-import * as Discord from 'discord.js'
-import { AnyGameState } from '../state';
-import { Observable } from 'rxjs';
-import { GuildContext } from '../context';
+import * as Discord from 'discord.js';
 import { MessageEmbed } from 'discord.js';
+import { Observable } from 'rxjs';
 import { Stream } from 'stream';
+import { GuildContext } from '../context';
+import { AnyGameState } from '../state';
 
 export type Destination = Discord.TextChannel | Discord.User
 
@@ -14,7 +14,7 @@ export type EmbedContent =
 export type MessageContent = string | EmbedContent
 
 type Common = {
-  reactable?: {
+  readonly reactable?: {
     reacts: Discord.EmojiResolvable[]
   }
 }
