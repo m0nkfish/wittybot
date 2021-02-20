@@ -5,7 +5,7 @@ import { Observable, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { DiscordEvent, MessageReceived, ReactionAdded, ReactionRemoved } from './discord-events';
 import { GuildStates } from './GuildStates';
-import { log, loggableError } from "./log";
+import { log, loggableError, loggableType } from './log';
 import { Destination, Message } from "./messages";
 import { MessageContent } from './messages/Message';
 import { invoke } from './util';
@@ -23,7 +23,7 @@ export class DiscordIO {
           map(MessageReceived))
         
     O.fromEvent(client, 'messageReactionAdd')
-      .subscribe((...args) => log('debug-react-event-add', { argsLen: args.length, argTypes: args.map(x => typeof x).join(',') }))
+      .subscribe((...args) => log('debug-react-event-add', { argsLen: args.length, argTypes: args.map(loggableType).join(',') }))
 
     this.eventStream = O.merge(this.reactionSubject, messageStream)
   }

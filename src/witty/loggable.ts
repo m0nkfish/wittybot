@@ -1,4 +1,5 @@
 import * as Discord from 'discord.js';
+import { loggableType } from '../log';
 import { BasicMessage, Message } from '../messages';
 import { GameState } from '../state';
 import { SubmissionState, VotingState } from './state';
@@ -11,11 +12,10 @@ export const logChannel = (channel: Discord.TextChannel) => ({ ...logGuild(chann
 export const logSource = (source: Discord.TextChannel | Discord.User) => source instanceof Discord.TextChannel ? logChannel(source) : logUser(source)
 export const logState = (state: GameState<any>) =>
   state instanceof SubmissionState ? { submissions: logUsernames(state.submissions.keys()) }
-    : state instanceof VotingState ? { submissions: logUsernames(state.submissions.map(x => x.user)), votes: logUsernames(state.votes.keys()) }
-      : undefined
+  : state instanceof VotingState ? { submissions: logUsernames(state.submissions.map(x => x.user)), votes: logUsernames(state.votes.keys()) }
+  : undefined
 
 export const logMessage = (message: Message) =>
-  message instanceof BasicMessage ? { content: `"${message.content}"` }
-    : { type: typeof message }
+  message instanceof BasicMessage ? { content: `"${message.content}"` }  : loggableType(message)
 
 export const getName = (obj: any) => obj?.constructor?.name
