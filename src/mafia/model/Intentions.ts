@@ -18,7 +18,7 @@ type FoldState = {
 }
 
 export class Intentions {
-  constructor(private readonly intentions: NightCommand[]) {}
+  constructor(private readonly intentions: NightCommand[]) { }
 
   get = (user: Player) =>
     this.intentions.find(x => x.user === user)
@@ -28,7 +28,7 @@ export class Intentions {
 
   cancel = (player: Player) =>
     new Intentions(this.intentions.filter(x => x.user !== player))
-  
+
   resolve = (): NightFate[] => {
     return [
       distractions,
@@ -43,7 +43,7 @@ export class Intentions {
 }
 
 function createProcess(f: (intentions: NightCommand[]) => [NightCommand[], NightFate[]]) {
-  return function(foldState: FoldState) {
+  return function (foldState: FoldState) {
     const [intentions, fates] = f(foldState.intentions)
     return {
       intentions,
@@ -55,16 +55,15 @@ function createProcess(f: (intentions: NightCommand[]) => [NightCommand[], Night
 const distractions = createProcess(intentions => {
   const fates: NightFate[] = []
   let [rest, distractions] = partition(intentions, isCase(Distract))
-  for (const command of distractions) {
-    const {target, user} = command
-    if (intentions.some(x => x.user === target)) {
-      fates.push(NightFate.Distracted(target))
+  for (const { target: distractee, user: distracter } of distractions) {
+    if (intentions.some(x => x.user === distractee)) {
+      fates.push(NightFate.Distracted(distractee))
     }
     // specific interaction: distracting the werewolf directs its attention towards you, but you can be saved by the bodyguard
-    if (target.role === Role.Werewolf) {
-      rest = rest.map(cmd => cmd.user === target && cmd.type === Kill.type ? Kill(target, user) : cmd)
+    if (distractee.role === Role.Werewolf) {
+      rest = rest.map(cmd => isCase(Kill)(cmd) && cmd.user === distractee ? Kill(distractee, distracter) : cmd)
     }
-    rest = rest.filter(x => x.user !== target)
+    rest = rest.filter(x => x.user !== distractee)
   }
   return [rest, fates]
 })
@@ -72,8 +71,8 @@ const distractions = createProcess(intentions => {
 const protections = createProcess(intentions => {
   const fates: NightFate[] = []
   let [rest, protections] = partition(intentions, isCase(Protect))
-  for (const command of protections) {
-    const [other, protectedKills] = partition(rest, x => isCase(Kill)(x) && x.target === command.target)
+  for (const { target: protectee } of protections) {
+    const [other, protectedKills] = partition(rest, x => isCase(Kill)(x) && x.target === protectee)
     for (const { user } of protectedKills) {
       fates.push(NightFate.TargetProtected(user))
     }
@@ -85,9 +84,9 @@ const protections = createProcess(intentions => {
 const kills = (role: Role) => createProcess(intentions => {
   const fates: NightFate[] = []
   const kills = intentions.filter(isCase(Kill)).filter(x => x.user.role === role)
-  for (const { user, target } of kills) {
-    fates.push(NightFate.Killed(user, target))
-    intentions = intentions.filter(x => x.user !== target && x.target !== target)
+  for (const { user: killer, target: killee } of kills) {
+    fates.push(NightFate.Killed(killer, killee))
+    intentions = intentions.filter(x => x.user !== killee && x.target !== killee)
   }
   return [intentions, fates]
 })
