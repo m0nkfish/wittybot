@@ -21,7 +21,7 @@ function chooseRoles(n: number): Iterable<Role> {
 
   switch (n) {
     case 2:
-    case 3: return [Mafia, Escort]
+    case 3:
     case 4: return oneOf(
       [Mafia, Mayor],
       [Mafia, Escort]
@@ -32,7 +32,7 @@ function chooseRoles(n: number): Iterable<Role> {
     )
     case 6: 
     case 7: return oneOf(
-      [Werewolf, Jester, ...sample(3, townRoles)],
+      [oneOf<Role>(Werewolf, Mafia), Jester, ...sample(3, townRoles)],
       [Werewolf, Mafia, ...maybeJester, ...sample(4, townRoles)],
       [Mafia, Mafia, ...sample(4, townRoles)]
     )
@@ -42,7 +42,7 @@ function chooseRoles(n: number): Iterable<Role> {
     )
 
     default: {
-      const villains = sample(choose(1, 3), [[Mafia, Mafia], [Yakuza, Yakuza], [Werewolf]]).flat()
+      const villains = sample(choose(2, 3), [[Mafia, Mafia], [Yakuza, Yakuza], [Werewolf]]).flat()
       return wu.chain<Role>(villains, maybeJester, townRoles, wu.repeat(Role.Villager))
     }
   }

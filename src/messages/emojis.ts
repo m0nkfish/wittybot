@@ -21,6 +21,7 @@ export const Emojis = {
   relieved: '😌',
   homes: '🏘️',
   cool: '🆒',
+  info: 'ℹ️',
 
   bell: '🔔',
   noBell: '🔕',

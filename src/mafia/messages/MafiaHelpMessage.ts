@@ -1,16 +1,14 @@
 import * as Discord from 'discord.js';
-import { StaticMessage } from '../../messages';
+import { Emojis, StaticMessage } from '../../messages';
 import { Role } from '../model/Role';
-import { roleText } from './text';
+import { commandText, roleText } from './text';
 
 export class MafiaHelpMessage implements StaticMessage {
   readonly type = 'static'
 
-  constructor() { }
-
   get content() {
     return new Discord.MessageEmbed()
-      .setTitle(':information_source: Mafia help')
+      .setTitle(`${Emojis.info} Mafia help`)
       .setDescription(`A simple mafia game for discord`)
       .addField('How to play', [
         `1. Someone starts a game with the \`!mafia\` command`,
@@ -20,12 +18,12 @@ export class MafiaHelpMessage implements StaticMessage {
         `5. The goal is to be the last team remaining`
       ])
       .addField('Commands', MafiaHelpMessage.commands.map(([command, description]) => `\`!${command}\` - ${description}`))
-      .addField('Roles', Object.values(Role).map(roleText).map(({ emoji, desc }) => `${emoji} - ${desc}`))
       .setFooter(`This incarnation of wittybot was brought to you by monkfish#4812`)
   }
 
   static commands = [
     ['help mafia', "you're looking at it"],
+    ['help mafia roles', `role information`],
     ['mafia [reveals <on|off>] [players <min>]', [`start a new game`,
       '• `reveals <on|off>`: determines whether roles are publicly revealed on death. default is on',
       "• `players <min>`: specify the minimum number of players (2 - 10). default is 5"
@@ -33,4 +31,29 @@ export class MafiaHelpMessage implements StaticMessage {
     ['in', "register your interest when a game begins"],
     ['out', "retract your interest"],
   ] as const
+}
+
+export class MafiaHelpRolesMessage implements StaticMessage {
+  readonly type = 'static'
+
+  get content() {
+    return new Discord.MessageEmbed()
+      .setTitle(`${Emojis.info} Mafia roles`)
+      .setDescription(`Each player is assigned a role at the start of the game. During each day and night, players may choose actions according to their role.`)
+      .addFields(
+        Object.values(Role).map(x => x as Role).map(role => {
+          const { emoji, name, desc } = roleText(role)
+          const { day, night } = role.commands
+          return {
+            name: `${emoji} ${name}`,
+            value: [
+              desc, ,
+              day && commandText(day).desc,
+              night && commandText(night).desc
+            ]
+          }
+        })
+      )
+      .setFooter(`This incarnation of wittybot was brought to you by monkfish#4812`)
+  }
 }

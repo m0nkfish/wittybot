@@ -1,13 +1,14 @@
 import { Send } from '../actions'
-import { Help, GlobalCommandHandler} from '../commands'
-import { MafiaHelpMessage } from '../mafia/messages';
-import { WittyHelpMessage } from '../witty/messages';
+import { GlobalCommandHandler, Help } from '../commands'
+import { MafiaHelpMessage, MafiaHelpRolesMessage } from '../mafia/messages'
+import { WittyHelpMessage } from '../witty/messages'
 
 export const HelpCommandHandler = () => new GlobalCommandHandler(async command => {
   if (command.type === Help.type) {
     const message = command.subject === 'witty' ? new WittyHelpMessage()
-    : command.subject === 'mafia' ? new MafiaHelpMessage()
-    : null
+      : command.subject === 'mafia' ? new MafiaHelpMessage()
+        : command.subject === 'mafia roles' ? new MafiaHelpRolesMessage()
+          : null
 
     if (message) {
       return Send(command.source, message)
