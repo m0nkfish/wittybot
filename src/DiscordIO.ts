@@ -2,7 +2,7 @@ import * as Discord from 'discord.js';
 import { MessageEmbed } from 'discord.js';
 import * as O from 'rxjs';
 import { Observable, Subject } from 'rxjs';
-import { concatMap, filter, map, mergeMap, tap } from 'rxjs/operators';
+import { concatMap, filter, map, mergeMap } from 'rxjs/operators';
 import { DiscordEvent, MessageReceived, ReactionAdded, ReactionRemoved } from './discord-events';
 import { GuildStates } from './GuildStates';
 import { log, loggableError } from './log';
@@ -22,23 +22,27 @@ export class DiscordIO {
           filter(m => m.author !== client.user && !m.author.bot),
           map(MessageReceived))
 
-    const discordReacts$ = O.merge(
+    const rawReacts$ = O.merge(
       discordEventObs(client, 'messageReactionAdd')
         .pipe(map(e => [...e, ReactionAdded] as const)),
       discordEventObs(client, 'messageReactionRemove')
         .pipe(map(e => [...e, ReactionRemoved] as const))
     ).pipe(
       filter(([_, u]) => u !== client.user), // ignore reactions from wittybot!
-      tap(([r, u, t]) => log('reaction-event', { emoji: r.emoji.name, type: t.type, user: u.username ?? 'partial-user' })),
+    )
+
+    const reactsWithUser$ = rawReacts$.pipe(
       concatMap(([reaction, user, ctor]) => client.users.fetch(user.id, true).then(user => [reaction, user, ctor] as const)),
-      tap(([r, u, t]) => log('reaction-event-user-fetched', { emoji: r.emoji.name, type: t.type, user: u.username })),
     )
 
     const reactionEvents$ = this.sentMessages.pipe(
       filter(([_, source]) => !!source.reactable),
-      mergeMap(([msg, source]) => discordReacts$.pipe(
+      mergeMap(([msg, source]) => reactsWithUser$.pipe(
         filter(([reaction]) => reaction.message.id === msg.id && source.reactable!.reacts.includes(reaction.emoji.name)),
         map(([reaction, user, ctor]) => ctor(reaction, user, source)))))
+
+    rawReacts$.subscribe(([r, u, t]) => log('react-received', { emoji: r.emoji.name, user: u.username ?? 'partial', type: t.type }))
+    reactsWithUser$.subscribe(([r, u, t]) => log('react-received-user-fetched', { emoji: r.emoji.name, user: u.username, type: t.type }))
         
     this.eventStream = O.merge(reactionEvents$, messageStream)
   }
