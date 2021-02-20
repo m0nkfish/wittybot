@@ -53,11 +53,9 @@ export class DayState implements GameState<MafiaGameContext> {
     const onTimeout = FromStateAction(context.guild, state =>
       OptionalAction(state instanceof DayState && state.context.sameRound(context) && state.sundown()))
 
-    const newContext = context.nextRound()
-
     return pause(Duration.seconds(5), context, () => CompositeAction(
-      NewState(new DayState(newContext, statuses, new Votes(new Map()), Timer.begin())),
-      Send(newContext.channel, new DayBeginsPublicMessage(newContext, statuses)),
+      NewState(new DayState(context, statuses, new Votes(new Map()), Timer.begin())),
+      Send(context.channel, new DayBeginsPublicMessage(context, statuses)),
       DelayedAction(context.settings.dayDuration, onTimeout)
     ))
   }
