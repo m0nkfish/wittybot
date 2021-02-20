@@ -1,4 +1,4 @@
-import { CompositeAction, NewState, OptionalAction, Send } from "../../actions"
+import { NewState, Send, toAction } from '../../actions'
 import { CommandHandler } from "../../commands"
 import { BasicMessage, mention } from "../../messages"
 import { Distract, Idle, Kill, Protect, Track } from "../commands"
@@ -7,11 +7,12 @@ import { NightState } from "../state"
 
 export const NightActionHandler = () => CommandHandler.build.state(NightState)
   .command(Idle).orCommand(Kill).orCommand(Distract).orCommand(Protect).orCommand(Track)
-  .sync((state, command) => {
+  .sync((state, command) => toAction(function* () {
     const { user, target } = command
     if (!user.canPerform(command)) {
       return
     }
+
     const existingIntention = state.intentions.get(user)
     if (existingIntention) {
       return Send(user.user, new BasicMessage(`You have already chosen to ${getCommandText(existingIntention)}`))
@@ -35,8 +36,8 @@ export const NightActionHandler = () => CommandHandler.build.state(NightState)
 
     const newState = state.withIntention(command)
 
-    return CompositeAction(
-      NewState(newState),
-      OptionalAction(newState.allDone() && newState.sunrise())
-    )
-  })
+    yield NewState(newState)
+    if (newState.allDone()) {
+      return newState.sunrise()
+    }
+  }))

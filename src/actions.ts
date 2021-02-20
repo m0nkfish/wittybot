@@ -34,12 +34,5 @@ export const DelayedAction = (delay: Duration, action: Action) => PromiseAction(
 export const OptionalAction = (action: Action | undefined | null | false): Action => action || NullAction()
 
 export function toAction(generator: () => Generator<Action>) {
-  const actions: Action[] = []
-  for (const x of generator()) {
-    actions.push(x)
-  }
-  if (actions.length === 1) {
-    return actions[0]
-  }
-  return CompositeAction(...actions)
+  return CompositeAction(...[...generator()])
 }

@@ -1,14 +1,7 @@
 import { NewState } from '../../actions';
 import { CommandHandler } from '../../commands';
-import { Retract } from '../commands/retract';
-import { DayState } from '../state/DayState';
+import { Retract } from '../commands';
+import { DayState } from '../state';
 
 export const RetractVoteHandler = () => CommandHandler.build.state(DayState).command(Retract)
-  .sync((state, { player }) => {
-    const existingVote = state.votes.get(player)
-    if (!existingVote) {
-      return
-    }
-
-    return NewState(state.cancelVote(player))
-  })
+  .sync((state, { player }) => NewState(state.cancelVote(player)))

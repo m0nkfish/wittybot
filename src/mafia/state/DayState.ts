@@ -1,4 +1,4 @@
-import { Action, CompositeAction, DelayedAction, FromStateAction, NewState, OptionalAction, Send } from '../../actions';
+import { Action, CompositeAction, DelayedAction, FromStateAction, NewState, OptionalAction, Send, toAction } from '../../actions';
 import { Duration } from '../../duration';
 import { GameState, IdleState, pause } from "../../state";
 import { Timer } from '../../util';
@@ -31,32 +31,30 @@ export class DayState implements GameState<MafiaGameContext> {
     this.players.alive().length === this.votes.votes.size
 
   sundown = (): Action => {
-    const toBeKilled = this.votes.winner()
-    const newStatus = toBeKilled ? this.players.execute(toBeKilled, this.context.round) : this.players
-    const winners = newStatus.checkWinners()
+    const { context, players, votes } = this
+    return toAction(function* () {
+      const toBeKilled = votes.winner()
 
-    const nextState = winners
-      ? CompositeAction(
-          NewState(new IdleState(this.context.guildCtx)),
-          Send(this.context.channel, new WinnersMessage(winners, newStatus)))
-      : CompositeAction(
-          Send(this.context.channel, new NotifyRoleCountsMessage(newStatus)),
-          NightState.enter(this.context.nextRound(), newStatus))
+      yield Send(context.channel, new DayEndsPublicMessage(context, toBeKilled))
 
-    return CompositeAction(
-      Send(this.context.channel, new DayEndsPublicMessage(this.context, toBeKilled)),
-      nextState
-    )
+      const newStatus = toBeKilled ? players.execute(toBeKilled, context.round) : players
+      const winners = newStatus.checkWinners()
+      if (winners) {
+        yield NewState(new IdleState(context.guildCtx))
+        yield Send(context.channel, new WinnersMessage(winners, newStatus))
+      } else {
+        yield Send(context.channel, new NotifyRoleCountsMessage(newStatus)),
+          yield NightState.enter(context.nextRound(), newStatus)
+      }
+    })
   }
 
   static enter(context: MafiaRoundContext, statuses: Players): Action {
-    const onTimeout = FromStateAction(context.guild, state =>
-      OptionalAction(state instanceof DayState && state.context.sameRound(context) && state.sundown()))
-
     return pause(Duration.seconds(5), context, () => CompositeAction(
-      NewState(new DayState(context, statuses, new Votes(new Map()), Timer.begin())),
+      NewState(new DayState(context, statuses, new Votes, Timer.begin())),
       Send(context.channel, new DayBeginsPublicMessage(context, statuses)),
-      DelayedAction(context.settings.dayDuration, onTimeout)
+      DelayedAction(context.settings.dayDuration, FromStateAction(context.guild, state =>
+        OptionalAction(state instanceof DayState && state.context.sameRound(context) && state.sundown())))
     ))
   }
 

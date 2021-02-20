@@ -1,8 +1,8 @@
-import { CompositeAction, NewState, OptionalAction, Send } from '../../actions';
+import { NewState, Send, toAction } from '../../actions';
 import { CommandHandler } from '../../commands';
 import { BasicMessage, mention } from '../../messages';
 import { Vote } from '../commands';
-import { DayState } from '../state/DayState';
+import { DayState } from '../state';
 
 export const VoteHandler = () => CommandHandler.build.state(DayState).command(Vote)
   .sync((state, command) => {
@@ -22,9 +22,11 @@ export const VoteHandler = () => CommandHandler.build.state(DayState).command(Vo
 
     const newState = state.vote(user, target)
 
-    return CompositeAction(
-      NewState(newState),
-      OptionalAction(newState.allVoted() && newState.sundown())
-    )
+    return toAction(function* () {
+      yield NewState(newState)
+      if (newState.allVoted()) {
+        return newState.sundown()
+      }
+    })
   })
 

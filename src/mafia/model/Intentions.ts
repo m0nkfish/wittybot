@@ -56,14 +56,15 @@ const distractions = createProcess(intentions => {
   const fates: NightFate[] = []
   let [rest, distractions] = partition(intentions, isCase(Distract))
   for (const { target: distractee, user: distracter } of distractions) {
-    if (intentions.some(x => x.user === distractee)) {
+    if (rest.some(x => x.user === distractee)) {
       fates.push(NightFate.Distracted(distractee))
     }
+    rest = rest.filter(x => x.user !== distractee)
+
     // specific interaction: distracting the werewolf directs its attention towards you, but you can be saved by the bodyguard
     if (distractee.role === Role.Werewolf) {
-      rest = rest.map(cmd => isCase(Kill)(cmd) && cmd.user === distractee ? Kill(distractee, distracter) : cmd)
+      rest = [...rest, Kill(distractee, distracter)]
     }
-    rest = rest.filter(x => x.user !== distractee)
   }
   return [rest, fates]
 })

@@ -2,7 +2,7 @@ import { getOrSet } from '../../util';
 import { Player } from './Player';
 
 export class Votes {
-  constructor(readonly votes: Map<Player, Player>) {}
+  constructor(readonly votes: Map<Player, Player> = new Map) { }
 
   get = (voter: Player) => this.votes.get(voter)
 
