@@ -3,7 +3,7 @@ import wu from 'wu';
 import { choose, flipCoin, oneOf, sample, shuffle } from '../../random';
 import { Player, Players, Role, Status } from '../model';
 
-export function allocateRoles(users: Discord.User[]): Players {
+export function allocateRoles(users: Discord.GuildMember[]): Players {
   users = shuffle(users)
 
   const players = wu.zip(users, wu.chain(chooseRoles(users.length), wu.repeat(Role.Villager)))
@@ -30,7 +30,7 @@ function chooseRoles(n: number): Iterable<Role> {
       [Werewolf, Mafia, ...sample(3, townRoles)],
       [oneOf<Role>(Werewolf, Mafia), ...sample(2, townRoles)],
     )
-    case 6: 
+    case 6:
     case 7: return oneOf(
       [oneOf<Role>(Werewolf, Mafia), Jester, ...sample(3, townRoles)],
       [Werewolf, Mafia, ...maybeJester, ...sample(4, townRoles)],

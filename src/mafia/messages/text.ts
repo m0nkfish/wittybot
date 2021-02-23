@@ -101,7 +101,7 @@ export function commandText(command: RoleCommandFactory | ReturnType<RoleCommand
 }
 
 export const getCommandText = (command: ReturnType<RoleCommandFactory>) => {
-  const append = command.target ? " " + mention(command.target.user) : ""
+  const append = command.target ? ` ${mention(command.target.user)} (${command.target.member.displayName})` : ""
   return commandText(command).verb + append
 }
 

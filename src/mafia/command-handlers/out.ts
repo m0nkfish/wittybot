@@ -7,7 +7,7 @@ import { StartingState } from '../state';
 export const OutHandler = () => CommandHandler.build.state(StartingState).command(Out).sync((state, command) =>
   toAction(function* () {
     if (state.isInterested(command.member.user)) {
-      const nextState = state.removeInterested(command.member.user)
+      const nextState = state.removeInterested(command.member)
       if (nextState.interested.length === 0) {
         yield NewState(new IdleState(state.context.guildCtx))
         yield Send(state.context.channel, new BasicMessage(`Mafia game cancelled`))

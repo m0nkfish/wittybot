@@ -13,18 +13,18 @@ export class StartingState implements GameState<MafiaGameContext> {
 
   constructor(
     readonly context: MafiaGameContext,
-    readonly interested: Discord.User[],
+    readonly interested: Discord.GuildMember[],
     readonly timer: Timer) { }
 
   remaining = () => StartingStateDelay.subtract(this.timer.duration())
 
   isInterested = (user: Discord.User) =>
-    this.interested.some(x => x === user)
+    this.interested.some(x => x.user === user)
 
-  addInterested = (user: Discord.User) =>
+  addInterested = (user: Discord.GuildMember) =>
     new StartingState(this.context, [...this.interested, user], this.timer)
 
-  removeInterested = (user: Discord.User) =>
+  removeInterested = (user: Discord.GuildMember) =>
     new StartingState(this.context, this.interested.filter(x => x !== user), this.timer)
 
   enoughInterest() { return this.interested.length >= this.context.settings.minPlayers }

@@ -12,7 +12,7 @@ import { StartingState } from '../state';
 export class GameStartedMessage implements StateStreamMessage {
   readonly type = 'state-stream'
 
-  constructor(readonly context: MafiaGameContext) { }
+  constructor(readonly context: MafiaGameContext, readonly startedBy: Discord.User) { }
 
   readonly inReact = Emojis.detective
 
@@ -20,7 +20,6 @@ export class GameStartedMessage implements StateStreamMessage {
     reacts: [this.inReact]
   }
 
-  get startedBy() { return this.context.initiator }
 
   get content(): EmbedContent {
     return new Discord.MessageEmbed()
@@ -50,7 +49,7 @@ export class GameStartedMessage implements StateStreamMessage {
         takeWhile(isType(StartingState)),
         map(s => chain(
           setFooter(this.footer(s.remaining())),
-          setDescription(this.description(s.interested))
+          setDescription(this.description(s.interested.map(x => x.user)))
         )))
 
     const subsequentState$ = stateStream$

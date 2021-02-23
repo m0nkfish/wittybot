@@ -17,7 +17,6 @@ export class MafiaGameContext extends GuildContext {
     readonly settings: MafiaSettings,
     readonly channel: Discord.TextChannel,
     readonly gameId: Id,
-    readonly initiator: Discord.User
   ) {
     super(guildCtx.globalCtx, guildCtx.guild)
   }
@@ -32,7 +31,7 @@ export class MafiaRoundContext extends MafiaGameContext {
     readonly gameCtx: MafiaGameContext,
     readonly round: number
   ) {
-    super(gameCtx.guildCtx, gameCtx.settings, gameCtx.channel, gameCtx.gameId, gameCtx.initiator)
+    super(gameCtx.guildCtx, gameCtx.settings, gameCtx.channel, gameCtx.gameId)
   }
 
   sameRound = (other: MafiaRoundContext) => this.sameGame(other) && this.round === other.round

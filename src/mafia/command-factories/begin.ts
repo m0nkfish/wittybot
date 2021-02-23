@@ -11,6 +11,11 @@ import { MafiaSettings } from '../context';
 
 export const BeginFactory = () => CommandFactory.build.state(IdleState).event(MessageReceived).process(((_, { message }) => {
   if (message.channel instanceof Discord.TextChannel && /^!mafia\b/.test(message.content)) {
+    const member = message.guild?.member(message.author)
+    if (!member) {
+      return
+    }
+
     const minPlayers = pipe(
       /\bplayers (\d+)\b/.exec(message.content),
       O.fromNullable,
@@ -22,9 +27,10 @@ export const BeginFactory = () => CommandFactory.build.state(IdleState).event(Me
     const settings: MafiaSettings = {
       nightDuration: Duration.seconds(60),
       dayDuration: Duration.seconds(60),
-      reveals:  (/\breveals (on|off)\b/.exec(message.content)?.[1] ?? "on") === "on",
+      reveals: (/\breveals (on|off)\b/.exec(message.content)?.[1] ?? "on") === "on",
       minPlayers
     }
-    return Begin(message.author, message.channel, settings)
+
+    return Begin(member, message.channel, settings)
   }
 }))

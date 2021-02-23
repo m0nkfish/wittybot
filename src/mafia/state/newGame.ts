@@ -12,20 +12,20 @@ import { getNotifyRole } from '../notify';
 import { IdleState } from './../../state';
 import { StartingState } from './StartingState';
 
-export function newGame(guildContext: GuildContext, settings: MafiaSettings, channel: Discord.TextChannel, initiator: Discord.User): Action {
-  const context = new MafiaGameContext(guildContext, settings, channel, Id.create(), initiator)
+export function newGame(guildContext: GuildContext, settings: MafiaSettings, channel: Discord.TextChannel, initiator: Discord.GuildMember): Action {
+  const context = new MafiaGameContext(guildContext, settings, channel, Id.create())
 
   const gameStartedMessage = getNotifyRole(context.guild)
     .then(role => CompositeAction(
       OptionalAction(role && Send(context.channel, new RoleMentionNotifyMessage(role))),
-      Send(context.channel, new GameStartedMessage(context))))
+      Send(context.channel, new GameStartedMessage(context, initiator.user))))
 
   const onTimeout =
     FromStateAction(context.channel.guild, state =>
       OptionalAction(state instanceof StartingState && state.context.sameGame(context) &&
         (state.enoughInterest()
-        ? state.begin()
-        : CompositeAction(
+          ? state.begin()
+          : CompositeAction(
             Send(context.channel, new BasicMessage(`Not enough players to begin the game`)),
             NewState(new IdleState(context.guildCtx))
           )

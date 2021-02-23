@@ -14,11 +14,13 @@ export const Status = {
 
 export class Player {
   constructor(
-    readonly user: Discord.User,
+    readonly member: Discord.GuildMember,
     readonly role: Role,
     readonly status: Status,
   ) {
   }
+
+  get user() { return this.member.user }
 
   get isAlive() {
     return this.status.type === Status.Alive.type
@@ -38,11 +40,11 @@ export class Player {
   }
 
   kill(by: Player, round: number) {
-    return new Player(this.user, this.role, Status.Killed(by, round))
+    return new Player(this.member, this.role, Status.Killed(by, round))
   }
 
   execute(round: number) {
-    return new Player(this.user, this.role, Status.Executed(round))
+    return new Player(this.member, this.role, Status.Executed(round))
   }
 
   get voteCount() {
